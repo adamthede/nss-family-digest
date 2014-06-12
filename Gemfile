@@ -18,6 +18,8 @@ gem 'rails', '4.1.1'
 gem 'sass-rails', '~> 4.0.3'
 # bundle exec rake doc:rails generates the API under doc/api.
 gem 'sdoc', '~> 0.4.0',          group: :doc
+# Extra form functionality
+gem 'simple_form'
 # Turbolinks makes following links in your web application faster. Read more: https://github.com/rails/turbolinks
 gem 'turbolinks'
 # Use Uglifier as compressor for JavaScript assets
