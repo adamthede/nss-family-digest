@@ -10,6 +10,9 @@ gem 'haml-rails'
 gem 'jbuilder', '~> 2.0'
 # Use jquery as the JavaScript library
 gem 'jquery-rails'
+# Use omniauth for 3rd party authentication and authorization
+# gem 'omniauth'
+# gem 'omniauth-facebook'
 # Use postgresql as the database for Active Record
 gem 'pg'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
@@ -35,6 +38,7 @@ end
 group :development, :test do
   gem 'rspec-rails'
   gem 'rspec'
+  gem 'letter_opener'
 end
 
 group :test do
