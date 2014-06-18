@@ -36,13 +36,15 @@ group :development do
 end
 
 group :development, :test do
+  gem 'email_spec'
+  gem 'letter_opener'
   gem 'rspec-rails'
   gem 'rspec'
-  gem 'letter_opener'
 end
 
 group :test do
   gem 'capybara'
+  gem 'fabrication'
   gem 'launchy'
   gem 'shoulda'
 end
