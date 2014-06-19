@@ -1,3 +1,6 @@
-%h1 User Show Page
-= image_tag current_user.gravatar_url
-%h3= current_user.email
+- if (current_user == @user)
+  %h1 Your Profile
+- else
+  %h1 #{@user.email}'s Profile
+= image_tag @user.gravatar_url
+%h3= @user.email

@@ -8,7 +8,7 @@ feature "User visits profile page" do
     login_as adam
     visit user_path(adam)
     page.should have_content "adam@cityofthedes.com"
-    page.should have_content "This is your profile"
+    page.should have_content "Your Profile"
   end
 
   scenario "User visits someone elses profile page" do
@@ -20,7 +20,8 @@ feature "User visits profile page" do
 
   scenario "user not logged in" do
     visit user_path(nat)
-    page.should have_content "nat@example.com"
+    page.should have_content "You need to sign in or sign up before continuing"
+    page.should_not have_content "nat@example.com"
     page.should_not have_content "adam@cityofthedes.com"
     page.should_not have_content "This is your profile"
   end
