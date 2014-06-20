@@ -5,6 +5,7 @@ source 'https://rubygems.org'
 # Use CoffeeScript for .js.coffee assets and views
 gem 'coffee-rails', '~> 4.0.0'
 gem 'devise'
+gem 'foundation-rails'
 gem 'haml-rails'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.0'
@@ -33,6 +34,7 @@ gem 'uglifier', '>= 1.3.0'
 group :development do
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
+  gem 'rails_layout'
 end
 
 group :development, :test do
