@@ -20,7 +20,7 @@ feature "User signs up" do
   end
 
   scenario "failed signup" do
-    User.create(email: "adam@example.com", password: "password", password_confirmation: "password")
+    Fabricate(:user, email: "adam@example.com")
     visit '/'
     click_link "I'm Ready!"
     fill_in "Email", with: "adam@example.com"

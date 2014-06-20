@@ -2,7 +2,7 @@ require 'spec_helper'
 
 feature "User recovers password" do
   scenario "happy path email" do
-    User.create(email: "adam@example.com", password: "mypassword", password_confirmation: "mypassword")
+    Fabricate(:user, email: "adam@example.com")
     visit '/'
     click_link "Sign in"
     click_link "Forgot your password?"
@@ -11,7 +11,7 @@ feature "User recovers password" do
     page.should have_content "You will receive an email with instructions on how to reset your password in a few minutes."
   end
   scenario "not happy path email" do
-    User.create(email: "adam@example.com", password: "mypassword", password_confirmation: "mypassword")
+    Fabricate(:user, email: "adam@example.com")
     visit '/'
     click_link "Sign in"
     click_link "Forgot your password?"

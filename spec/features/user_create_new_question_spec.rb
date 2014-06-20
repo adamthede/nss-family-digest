@@ -2,7 +2,7 @@ require 'spec_helper'
 
 feature "User creates new question" do
   scenario "successful new question" do
-    User.create(email: "adam@example.com", password: "password", password_confirmation: "password")
+    Fabricate(:user, email: "adam@example.com")
     visit "/"
     click_link "Sign in"
     fill_in "Email", with: "adam@example.com"
@@ -16,7 +16,7 @@ feature "User creates new question" do
   end
 
   scenario "failed new question (no question entered)" do
-    User.create(email: "adam@example.com", password: "password", password_confirmation: "password")
+    Fabricate(:user, email: "adam@example.com")
     visit "/"
     click_link "Sign in"
     fill_in "Email", with: "adam@example.com"

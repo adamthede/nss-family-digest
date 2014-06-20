@@ -7,15 +7,8 @@
     = csrf_meta_tags
   %body
     = render 'layouts/navigation'
-    %ul.devise_navigation
-      - if user_signed_in?
-        %li= link_to 'Sign out', destroy_user_session_path, method: 'delete'
-      - else
-        %li= link_to 'Sign in', new_user_session_path
-    %ul.site_navigation
-      %li= link_to 'Home Page', root_path
-      - if user_signed_in?
-        %li= link_to 'Questions', questions_path
     .alert= alert
     .notice= notice
-    = yield
+    .row
+      .columns.large-12
+      = yield

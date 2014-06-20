@@ -2,7 +2,7 @@ require 'spec_helper'
 
 feature "user views all questions" do
   scenario "view index page of questions" do
-    User.create(email: "adam@example.com", password: "password", password_confirmation: "password")
+    Fabricate(:user, email: "adam@example.com")
     visit "/"
     click_link "Sign in"
     fill_in "Email", with: "adam@example.com"
@@ -14,7 +14,7 @@ feature "user views all questions" do
     click_button "Add Question"
     click_link "Questions"
 
-    page.should have_content "Listing questions"
+    page.should have_content "Questions"
     page.should have_content "What is your favorite programming language?"
   end
 end

@@ -1,0 +1,8 @@
+= simple_form_for(current_user) do |f|
+  = f.error_notification
+
+  .form-inputs
+    = f.input :email, :as => :email
+
+  .form-actions
+    = f.button :submit, "Update Profile"
