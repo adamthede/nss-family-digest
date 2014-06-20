@@ -1,8 +1,32 @@
-- if (current_user == @user)
-  %h1 Your Profile
-- else
-  %h1 #{@user.email}'s Profile
-= image_tag @user.gravatar_url
-%h3= @user.email
+.row
+  .columns.small-12
+  - if (current_user == @user)
+    %h1 Your Profile
+  - else
+    %h1 #{@user.email}'s Profile
+  .columns.small-4
+    = image_tag @user.gravatar_url
+    %h4= @user.email
 
-= link_to "Edit Profile", edit_user_path(current_user)
+    = link_to "Edit Profile", edit_user_path(current_user)
+
+  .columns.small-8
+    %h1
+    %h4 Member of the Following Groups
+    %table
+      - @groups.each do |group|
+        %tr
+          %td= group.name
+    - if user_signed_in?
+      %td= link_to 'Create New Group', new_group_path
+    %h4 Questions Submitted
+    %table
+      - @questions.each do |question|
+        %tr
+          %td= question.question
+          %td= time_ago_in_words(question.created_at) + ' ago'
+          - if current_user && question.user_id = current_user.id
+            %td= link_to 'Edit', edit_question_path(question)
+            %td= link_to 'Delete', question, :method => :delete, :data => { :confirm => 'Are you sure?' }
+    - if user_signed_in?
+      %td= link_to 'New Question', new_question_path

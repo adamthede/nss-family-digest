@@ -6,6 +6,7 @@ class User < ActiveRecord::Base
          :recoverable, :rememberable, :trackable, :validatable
 
   has_many :questions
+  has_and_belongs_to_many :groups
 
   after_create :send_welcome_email
 
