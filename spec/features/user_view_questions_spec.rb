@@ -3,7 +3,7 @@ require 'spec_helper'
 feature "user views all questions" do
   scenario "view index page of questions" do
     Fabricate(:user, email: "adam@example.com")
-    visit "/"
+    visit root_path
     click_link "Sign in"
     fill_in "Email", with: "adam@example.com"
     fill_in "Password", with: "password"

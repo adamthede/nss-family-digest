@@ -4,7 +4,7 @@ feature "User edits account" do
   let!(:adam) { Fabricate(:user, email: "adam@cityofthedes.com") }
   scenario "happy path" do
     login_as adam
-    visit '/users/edit'
+    visit edit_user_registration_path
     fill_in "Email", with: "at@example.com"
     fill_in "Password", with: "newpassword"
     fill_in "Password confirmation", with: "newpassword"
@@ -16,13 +16,13 @@ feature "User edits account" do
 
   scenario "failed account edit" do
     login_as adam
-    visit '/users/edit'
+    visit edit_user_registration_path
     fill_in "Email", with: "at@example.com"
     fill_in "Password", with: "newpassword"
     fill_in "Password confirmation", with: "wrongpassword"
     fill_in "Current password", with: "password"
     click_button "Update"
-    page.should have_content "Password confirmation doesn't match Password"
+    page.should have_content "Password confirmationdoesn't match Password"
     page.should have_error("doesn't match Password", on: "Password confirmation")
   end
 end

@@ -13,22 +13,22 @@ describe User do
 
   describe "#gravatar_url" do
     context 'with a valid email address' do
-      adam = User.create(email: "adam@cityofthedes.com", password: "1234", password_confirmation: "1234")
+      let!(:adam) { Fabricate(:user, email: "adam@cityofthedes.com") }
       it "should match the correct url" do
         adam.gravatar_url.should == "http://www.gravatar.com/avatar/282155455047932483e1c5c23a38e420"
       end
     end
 
     context "with an email that has uppercase characters" do
+      let!(:adam) { Fabricate(:user, email: "Adam@cityofthedes.com") }
       it "should match the correct url" do
-        adam = User.create(email: "Adam@cityofthedes.com", password: "1234", password_confirmation: "1234")
         adam.gravatar_url.should == "http://www.gravatar.com/avatar/282155455047932483e1c5c23a38e420"
       end
     end
 
     context "with an email that has white space after" do
+      let!(:adam) { Fabricate(:user, email: "adam@cityofthedes.com  ") }
       it "should match the correct url" do
-        adam = User.create(email: "adam@cityofthedes.com  ", password: "1234", password_confirmation: "1234")
         adam.gravatar_url.should == "http://www.gravatar.com/avatar/282155455047932483e1c5c23a38e420"
       end
     end

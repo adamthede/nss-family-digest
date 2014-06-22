@@ -3,7 +3,7 @@ require 'spec_helper'
 feature "User creates new question" do
   scenario "successful new question" do
     Fabricate(:user, email: "adam@example.com")
-    visit "/"
+    visit root_path
     click_link "Sign in"
     fill_in "Email", with: "adam@example.com"
     fill_in "Password", with: "password"
@@ -17,7 +17,7 @@ feature "User creates new question" do
 
   scenario "failed new question (no question entered)" do
     Fabricate(:user, email: "adam@example.com")
-    visit "/"
+    visit root_path
     click_link "Sign in"
     fill_in "Email", with: "adam@example.com"
     fill_in "Password", with: "password"

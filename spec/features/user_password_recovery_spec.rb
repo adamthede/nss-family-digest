@@ -3,7 +3,7 @@ require 'spec_helper'
 feature "User recovers password" do
   scenario "happy path email" do
     Fabricate(:user, email: "adam@example.com")
-    visit '/'
+    visit root_path
     click_link "Sign in"
     click_link "Forgot your password?"
     fill_in "user_email", with: "adam@example.com"
@@ -12,7 +12,7 @@ feature "User recovers password" do
   end
   scenario "not happy path email" do
     Fabricate(:user, email: "adam@example.com")
-    visit '/'
+    visit root_path
     click_link "Sign in"
     click_link "Forgot your password?"
     fill_in "user_email", with: "not-adam@example.com"
