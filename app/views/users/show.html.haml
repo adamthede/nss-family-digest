@@ -15,11 +15,12 @@
 
   .columns.small-8
     %h1
-    %h4 Member of the Following Groups
+    %h4 Your Groups
     %table
       - @groups.each do |group|
         %tr
           %td= group.name
+          %td= link_to 'View This Group', group_path(group)
     - if user_signed_in?
       %td= link_to 'Create New Group', new_group_path
     %h4 Questions Submitted

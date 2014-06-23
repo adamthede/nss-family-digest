@@ -3,7 +3,7 @@ class UsersController < ApplicationController
 
   def show
     @questions = @user.questions
-    @groups = @user.groups
+    @groups = Group.where(user_id: current_user)
   end
 
   def edit
