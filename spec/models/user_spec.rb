@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'carrierwave/test/matchers'
 
 describe User, "validations" do
   it { should validate_presence_of(:email) }
@@ -7,6 +8,10 @@ end
 
 describe User, "validating uniqueness of email addresses" do
   it { should validate_uniqueness_of(:email) }
+end
+
+describe User, "responds to" do
+  it { should respond_to(:profile_image) }
 end
 
 describe User, "belongs to validations" do

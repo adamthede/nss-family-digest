@@ -2,6 +2,7 @@ ruby '2.1.1'
 #ruby-gemset=nss-family-digest
 source 'https://rubygems.org'
 
+gem 'carrierwave'
 # Use CoffeeScript for .js.coffee assets and views
 gem 'coffee-rails', '~> 4.0.0'
 gem 'devise'
@@ -14,6 +15,7 @@ gem 'jquery-rails'
 # Use omniauth for 3rd party authentication and authorization
 # gem 'omniauth'
 # gem 'omniauth-facebook'
+gem 'mini_magick'
 # Use postgresql as the database for Active Record
 gem 'pg'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
