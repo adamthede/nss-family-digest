@@ -52,9 +52,11 @@ end
 
 group :test do
   gem 'capybara'
+  gem 'codeclimate-test-reporter', require: false
   gem 'fabrication'
   gem 'launchy'
   gem 'shoulda'
+  gem 'simplecov', require: false
   gem 'vcr'
   gem 'webmock'
 end

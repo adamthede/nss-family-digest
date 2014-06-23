@@ -4,7 +4,8 @@ feature "User edits profile" do
   let!(:adam) { Fabricate(:user, email: "adam@cityofthedes.com") }
   scenario "happy path" do
     login_as adam
-    visit edit_user_path(adam)
+    visit user_path(adam)
+    click_link "Edit Profile"
     attach_file "Profile image", 'spec/data/db-schema.jpg'
     click_button "Update Profile"
     page.should have_content "Your profile was successfully updated."

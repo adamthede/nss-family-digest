@@ -1,0 +1,12 @@
+!!!
+%html
+  %head
+    %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+  %body
+    %h1 Hello there, #{@user.email}!
+    %p
+      The Family Digest password for #{@user.email} has been successfully changed.
+      %br/
+    %p
+      To login to the site, just follow this link: #{@url}.
+    %p Have a great day!
