@@ -27,4 +27,16 @@ feature "User creates new question" do
     click_button "Add Question"
     page.should have_content "can't be blank"
   end
+
+  scenario "User is not logged in" do
+    visit root_path
+    page.should_not have_content("Questions")
+
+    visit questions_path
+    page.should_not have_content("Questions")
+
+    visit new_question_path
+    current_path.should == new_user_session_path
+    page.should have_content("You need to sign in or sign up before continuing")
+  end
 end

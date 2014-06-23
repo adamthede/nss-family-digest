@@ -9,6 +9,10 @@ describe User, "validating uniqueness of email addresses" do
   it { should validate_uniqueness_of(:email) }
 end
 
+describe User, "belongs to validations" do
+  it { should have_and_belong_to_many(:groups) }
+end
+
 describe User do
 
   describe "#gravatar_url" do

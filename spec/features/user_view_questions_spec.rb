@@ -3,6 +3,7 @@ require 'spec_helper'
 feature "user views all questions" do
   scenario "view index page of questions" do
     Fabricate(:user, email: "adam@example.com")
+    Fabricate(:question, question: "What did you do today?")
     visit root_path
     click_link "Sign in"
     fill_in "Email", with: "adam@example.com"
@@ -16,5 +17,6 @@ feature "user views all questions" do
 
     page.should have_content "Questions"
     page.should have_content "What is your favorite programming language?"
+    page.should have_content "What did you do today?"
   end
 end
