@@ -14,5 +14,13 @@
 # Ignore all logfiles and tempfiles.
 /log/*.log
 /tmp
+
+# Ignore all uploads and test data
 /public/uploads/
 /spec/data/
+
+# Ignore db secrets and keys
+/config/database.yml
+
+# Ignore application configuration
+/config/application.yml
