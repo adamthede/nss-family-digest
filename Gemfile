@@ -36,6 +36,7 @@ gem 'turbolinks'
 gem 'uglifier', '>= 1.3.0'
 # Use unicorn as the app server
 # gem 'unicorn'
+gem 'rails_12factor'
 
 group :development do
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
