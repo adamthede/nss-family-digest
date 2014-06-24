@@ -20,9 +20,10 @@ gem 'jquery-rails'
 gem 'mini_magick'
 # Use postgresql as the database for Active Record
 gem 'pg'
+gem 'postmark-rails'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.1.1'
-# Use SCSS for stylesheets
+# Use SCSS for stylesheets'
 # bundle exec rake doc:rails generates the API under doc/api.
 gem 'sdoc', '~> 0.4.0',          group: :doc
 # Extra form functionality

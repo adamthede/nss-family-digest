@@ -8,6 +8,10 @@ Rails.application.routes.draw do
   root to: "home#index"
   resources :users
 
+  post 'invite' => 'groups#send_invite'
+  post 'start' => 'starts#start_questions'
+  post 'stop' => 'stops#stop_questions'
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

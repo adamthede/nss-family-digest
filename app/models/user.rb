@@ -17,6 +17,14 @@ class User < ActiveRecord::Base
   after_create :send_welcome_email
   after_update :send_confirmation_email
 
+  def self.find_or_create_by_email(email)
+    user = User.where(email: email).first_or_create do |user|
+      user.email = email
+      user.password = Devise.friendly_token[0,20]
+    end
+    user
+  end
+
   def send_welcome_email
     UserMailer.welcome_email(self).deliver
   end

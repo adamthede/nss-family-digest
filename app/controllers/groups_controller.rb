@@ -56,7 +56,11 @@ class GroupsController < ApplicationController
 
     emails = params[:emails].split(',').map!{ |e| e.strip }
 
-    GroupMailer.invite_email(emails, @group.id).deliver
+    emails.each do |email|
+      user = User.find_or_create_by_email(email)
+      GroupMailer.invite_email(user.email, @group.id).deliver
+      @group.users << user
+    end
 
     redirect_to group_path(@group.id), notice: "Your invites have been sent!"
   end

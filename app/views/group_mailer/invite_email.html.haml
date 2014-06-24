@@ -1,0 +1,12 @@
+!!!
+%html
+  %head
+    %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+  %body
+    %h1 You have been invited to a Group on Family Digest!
+    %p
+      If you are already a member of Family Digest, follow the link below to accept the invitation. You'll need to enter your Group Key, which is #{@group_key}.
+      If you aren't yet a member, please sign up for Family Digest using this email address, then follow the link below.
+    %p
+      To log in to the site, just follow this link:
+      = group_url(@group_id)

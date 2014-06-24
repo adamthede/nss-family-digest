@@ -1,24 +1,50 @@
 %p#notice= notice
 
-%p
-  %b Name:
-  = @group.name
+%h2 Group Name:
+%h3= @group.name
+- if current_user == @group.leader
+  = link_to 'Edit Group Name', edit_group_path(@group)
+
+.row
+  .columns.large-6
+    %h2 Members
+    - @group.users.each do |user|
+      %p
+        - if user == @group.leader
+          Leader:
+        #{user.email}
+
+    - if current_user == @group.leader
+      %h4 Add Members to this Group
+
+      = form_tag('/invite', method: 'post') do
+        .form-inputs
+          = label_tag(:emails, "Enter emails, separated by commas:")
+          = text_area_tag(:emails)
+          = hidden_field_tag(:group_id, @group.id)
+        .form-actions
+          = submit_tag("Add Members")
+  .columns.large-6
+    %h2 Q&A Digests
+    - if current_user == @group.leader && @group.questions
+      = form_tag('/start', method: 'post') do
+        .form-inputs
+          = hidden_field_tag(:group_id, @group.id)
+        .form-actions
+          = submit_tag('Start Asking Questions!')
+    - elsif current_user == @group.leader
+      = form_tag('/stop', method: 'post') do
+        .form-inputs
+          = hidden_field_tag(:group_id, @group.id)
+        .form-actions
+          = submit_tag('Stop Asking Questions!')
+
+    - @group.questions do |question|
+      %table
+        %tbody
+          %td= link_to '#{question.question}', question_path(question.id)
 
 - if current_user == @group.leader
-  %h2 Add Members to this Group
-  = form_tag('/invite', method: 'post') do
-    = label_tag(:emails, "Enter emails, separated by commas:")
-    = text_area_tag(:emails)
-    = hidden_field_tag(:group_id, @group.id)
-    = submit_tag("Invite")
-
-%h2 Members
-- @group.users.each do |user|
-  %p
-    - if user == @group.leader
-      Leader:
-      #{user.email}
-
-= link_to 'Edit', edit_group_path(@group)
-\|
-= link_to 'Back', groups_path
+  .row
+    .columns.large-12
+      %td= link_to 'Delete This Group?', @group, :method => :delete, :data => { :confirm => 'Are you sure?' }

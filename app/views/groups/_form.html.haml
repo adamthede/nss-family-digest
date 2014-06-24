@@ -3,6 +3,7 @@
 
   .form-inputs
     = f.input :name, autofocus: true
+    = f.hidden_field :leader, :value => current_user.id
 
   .form-actions
     = f.button :submit
