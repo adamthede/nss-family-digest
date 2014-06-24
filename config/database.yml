@@ -86,7 +86,4 @@ test:
 #
 production:
   <<: *default
-  database: nss-family-digest_production
-  host: localhost
-  # user: myapp
-  # password: password1
+  url: <%= ENV['DATABASE_URL'] %>
