@@ -51,6 +51,16 @@ class GroupsController < ApplicationController
     end
   end
 
+  def send_invite
+    @group = Group.find(params[:group_id])
+
+    emails = params[:emails].split(',').map!{ |e| e.strip }
+
+    GroupMailer.invite_email(emails, @group.id).deliver
+
+    redirect_to group_path(@group.id), notice: "Your invites have been sent!"
+  end
+
   # DELETE /groups/1
   # DELETE /groups/1.json
   def destroy
