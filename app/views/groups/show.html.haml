@@ -4,6 +4,21 @@
   %b Name:
   = @group.name
 
+- if current_user == @group.leader
+  %h2 Add Members to this Group
+  = form_tag('/invite', method: 'post') do
+    = label_tag(:emails, "Enter emails, separated by commas:")
+    = text_area_tag(:emails)
+    = hidden_field_tag(:group_id, @group.id)
+    = submit_tag("Invite")
+
+%h2 Members
+- @group.users.each do |user|
+  %p
+    - if user == @group.leader
+      Leader:
+      #{user.email}
+
 = link_to 'Edit', edit_group_path(@group)
 \|
 = link_to 'Back', groups_path

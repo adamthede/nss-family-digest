@@ -9,7 +9,10 @@ class User < ActiveRecord::Base
          :recoverable, :rememberable, :trackable, :validatable
 
   has_many :questions
-  has_and_belongs_to_many :groups
+  has_many :groups
+  has_many :memberships
+
+  validates_presence_of :email
 
   after_create :send_welcome_email
   after_update :send_confirmation_email
