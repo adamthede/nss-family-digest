@@ -9,8 +9,7 @@ Rails.application.routes.draw do
   resources :users
 
   post 'invite' => 'groups#send_invite'
-  post 'start' => 'starts#start_questions'
-  post 'stop' => 'stops#stop_questions'
+  post 'send_random' => 'random_question#send_random_question'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

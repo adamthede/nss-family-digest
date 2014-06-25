@@ -19,4 +19,12 @@ class QuestionMailer < ActionMailer::Base
       logger.info("No user found with email: #{email.from}")
     end
   end
+
+  def weekly_question(user, group)
+    email = user.email
+    @group_name = Group.find(group.id).name.to_s
+    @group_id = group.id
+    @question = Question.last.question
+    mail(to:email, subject: "#{@group_name} - QUESTION: * #{@question} *", host: 'example.com')
+  end
 end

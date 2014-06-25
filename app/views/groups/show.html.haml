@@ -26,18 +26,12 @@
           = submit_tag("Add Members")
   .columns.large-6
     %h2 Q&A Digests
-    - if current_user == @group.leader && @group.questions
-      = form_tag('/start', method: 'post') do
+    - if current_user == @group.leader
+      = form_tag('/send_random', method: 'post') do
         .form-inputs
           = hidden_field_tag(:group_id, @group.id)
         .form-actions
-          = submit_tag('Start Asking Questions!')
-    - elsif current_user == @group.leader
-      = form_tag('/stop', method: 'post') do
-        .form-inputs
-          = hidden_field_tag(:group_id, @group.id)
-        .form-actions
-          = submit_tag('Stop Asking Questions!')
+          = submit_tag('Send Random Question')
 
     - @group.questions do |question|
       %table
