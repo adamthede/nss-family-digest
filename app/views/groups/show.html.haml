@@ -33,10 +33,14 @@
         .form-actions
           = submit_tag('Send Random Question')
 
-    - @group.questions.each do |question|
+    - @question_records.each do |record|
       %table
         %tbody
-          %td= link_to "#{question.question}", question_path(question.id)
+          %tr
+            %td= Question.find(record.question_id).question
+            - if record.created_at
+              %td= record.created_at.strftime("%B %d, %Y")
+            %td= link_to 'View Digest for this Question', question_record_path(record.id)
 
 - if current_user == @group.leader
   .row

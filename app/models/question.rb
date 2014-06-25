@@ -8,7 +8,7 @@ class Question < ActiveRecord::Base
   def self.send_question
     question = Question.select_random_question
     Group.all.each do |group|
-      group.add_question_to_group(group, question)
+      Group.add_question_to_group(group, question)
       group.users.each do |user|
         QuestionMailer.weekly_question(user, group, question).deliver
       end

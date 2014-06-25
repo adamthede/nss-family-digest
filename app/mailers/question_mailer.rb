@@ -1,10 +1,11 @@
 class QuestionMailer < ActionMailer::Base
-  default from: "questions@example.com"
+  default from: "adam@thedetech.com"
+  default reply_to: ENV['POSTMARK_INBOUND']
 
   def send_questions(user, group, question)
     email = user.email
     @question = question
-    mail(to: email, subject: "#{group.name} - QUESTION: * #{@question} *", host: 'example.com')
+    mail(to: email, subject: "#{group.name} - QUESTION: * #{@question} *")
   end
 
   def receive(email)
@@ -24,7 +25,7 @@ class QuestionMailer < ActionMailer::Base
     @group_name = Group.find(group.id).name.to_s
     @group_id = group.id
     @question = question.question
-    mail(to:email, subject: "#{@group_name} - QUESTION: * #{@question} *", host: 'example.com')
+    mail(to: email, subject: "#{@group_name} - QUESTION: * #{@question} *")
   end
 
 end

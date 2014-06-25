@@ -1,0 +1,10 @@
+%p#notice= notice
+
+%p
+  %b Question and Answer Digest:
+  %h1= @group.name
+  %h4= @question.question
+  - if @question_record.created_at
+    %h4= @question_record.created_at.strftime("%B %d, %Y")
+  - @group.users.each do |user|
+    %p= user.email

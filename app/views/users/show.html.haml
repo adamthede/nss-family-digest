@@ -5,10 +5,10 @@
   - else
     %h1 #{@user.email}'s Profile
   .columns.small-4
-    - unless @user.profile_image_url(:thumb)
-      = image_tag @user.gravatar_url
-    .profile-image
+    - if @user.profile_image_url(:thumb)
       = image_tag @user.profile_image_url(:thumb).to_s
+    - else
+      = image_tag @user.gravatar_url
     %h4= @user.email
 
     = link_to "Edit Profile", edit_user_path(current_user)

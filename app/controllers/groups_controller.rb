@@ -10,6 +10,7 @@ class GroupsController < ApplicationController
   # GET /groups/1
   # GET /groups/1.json
   def show
+    @question_records = QuestionRecord.where(:group_id => @group.id) # has group_id, question_id, created_at
   end
 
   # GET /groups/new
