@@ -63,7 +63,7 @@ Rails.application.configure do
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.raise_delivery_errors = false
   config.action_mailer.default_url_options = { host: 'secret-earth-4801.herokuapp.com' }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
@@ -84,6 +84,6 @@ Rails.application.configure do
 
   # For Postmark
   config.action_mailer.delivery_method = :postmark
-  config.action_mailer.postmark_settings = { :api_key => ENV['POSTMARK_API'] }
+  config.action_mailer.postmark_settings = { :api_key => ENV["POSTMARK_API_KEY"] }
 
 end
