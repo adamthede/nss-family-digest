@@ -1,7 +1,9 @@
 class AnswersController < ApplicationController
   skip_before_filter  :verify_authenticity_token
-  
-  def process_inbound_email(email)
-    puts email
+
+  def self.create_from_inbound_hook(message)
+    self.new(:text => message["TextBody"],
+             :user_email => message["From"],
+             :discussion_id => message["MailboxHash"])
   end
 end
