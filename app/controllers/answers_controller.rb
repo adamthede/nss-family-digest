@@ -3,8 +3,6 @@ class AnswersController < ApplicationController
 
   def self.create_from_inbound_hook
     message = params
-    self.new(:text => message["TextBody"],
-             :user_email => message["From"],
-             :discussion_id => message["MailboxHash"])
+    puts message
   end
 end
