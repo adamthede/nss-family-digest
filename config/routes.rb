@@ -12,11 +12,7 @@ Rails.application.routes.draw do
 
   post 'invite' => 'groups#send_invite'
   post 'send_random' => 'questions#send_random_question'
-  post '/inbound' do
-    request.body.rewind
-    answer = Answer.create_from_inbound_hook(Postmark::Json.decode(request.body.read))
-    logger.info comment.inspect
-  end
+  post 'inbound' => 'answers#create_from_inbound_hook'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
