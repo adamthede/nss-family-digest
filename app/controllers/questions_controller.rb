@@ -61,6 +61,16 @@ class QuestionsController < ApplicationController
     end
   end
 
+  def send_random_question
+    group = Group.find(params[:group_id])
+    question = Question.select_random_question
+    Group.add_question_to_group(group, question)
+    group.users.each do |user|
+      QuestionMailer.send_questions(user, group, question.question).deliver
+    end
+    redirect_to group_path(params[:group_id]), notice: "Random question sent!"
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_question

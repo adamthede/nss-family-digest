@@ -1,11 +1,10 @@
 class QuestionMailer < ActionMailer::Base
   default from: "questions@example.com"
 
-  def send_questions(emails, group_id)
-    @group_name = Group.find(group_id).name.to_s
-    @group_id = group_id
-    @question = Question.last.question
-    mail(to: emails, subject: "#{@group_name} - QUESTION: * #{@question} *", host: 'example.com')
+  def send_questions(user, group, question)
+    email = user.email
+    @question = question
+    mail(to: email, subject: "#{group.name} - QUESTION: * #{@question} *", host: 'example.com')
   end
 
   def receive(email)
@@ -20,11 +19,12 @@ class QuestionMailer < ActionMailer::Base
     end
   end
 
-  def weekly_question(user, group)
+  def weekly_question(user, group, question)
     email = user.email
     @group_name = Group.find(group.id).name.to_s
     @group_id = group.id
-    @question = Question.last.question
+    @question = question.question
     mail(to:email, subject: "#{@group_name} - QUESTION: * #{@question} *", host: 'example.com')
   end
+
 end

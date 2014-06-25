@@ -33,10 +33,10 @@
         .form-actions
           = submit_tag('Send Random Question')
 
-    - @group.questions do |question|
+    - @group.questions.each do |question|
       %table
         %tbody
-          %td= link_to '#{question.question}', question_path(question.id)
+          %td= link_to "#{question.question}", question_path(question.id)
 
 - if current_user == @group.leader
   .row
