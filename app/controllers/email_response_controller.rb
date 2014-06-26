@@ -3,8 +3,7 @@ class EmailResponseController < ApplicationController
   skip_before_action :authenticate_user!
 
   def create_from_inbound_hook
-    message = params
-    puts message
+
   end
 
 end
