@@ -23,10 +23,10 @@ class Answer < ActiveRecord::Base
       answer = Answer.new(:answer => textbody,
                  :user_id => user.id,
                  :question_records_id => question_record_id)
-      if Answer.find(answer)
+      if Answer.where(answer)
         return
       else
-        answer.create
+        answer.save
       end
     else
       logger.info("No user found with email: #{from.to_s}")
