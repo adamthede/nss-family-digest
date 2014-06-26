@@ -13,7 +13,7 @@ class Answer < ActiveRecord::Base
 
   def self.create_from_email(from, subject, textbody)
     user = User.find_by_email(from.to_s)
-    Answer.new(:answer => textbody,
+    Answer.create(:answer => textbody,
                :user_id => user.id,
                :question_records_id => 1)
   end
