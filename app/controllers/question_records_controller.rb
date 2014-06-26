@@ -4,6 +4,7 @@ class QuestionRecordsController < ApplicationController
   def show
     @group = Group.find(@question_record.group_id)
     @question = Question.find(@question_record.question_id)
+    @answers = Answer.where(question_records_id: @question_record.id)
   end
 
   private

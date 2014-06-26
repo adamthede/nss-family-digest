@@ -10,9 +10,12 @@ Rails.application.routes.draw do
 
   resources :question_records
 
+  resources :answers
+
   post 'invite' => 'groups#send_invite'
   post 'send_random' => 'questions#send_random_question'
   post 'inbound' => 'answers#create_from_inbound_hook'
+  post 'answer' => 'answers#create_from_form'
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

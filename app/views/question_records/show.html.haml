@@ -6,5 +6,31 @@
   %h4= @question.question
   - if @question_record.created_at
     %h4= @question_record.created_at.strftime("%B %d, %Y")
-  - @group.users.each do |user|
-    %p= user.email
+  %table
+    %tbody
+      - @group.users.each do |user|
+        %tr
+          - if user.profile_image_url(:thumb)
+            %td= image_tag user.profile_image_url(:thumb).to_s
+          - else
+            %td= image_tag user.gravatar_url
+          %td= user.email
+          - if @answers.empty? && current_user.id == user.id
+            %td
+              = form_tag('/answer', method: 'post') do
+                = label_tag(:answer, "Answer this question:")
+                = text_area_tag(:answer)
+                = hidden_field_tag(:user_id, user.id)
+                = hidden_field_tag(:question_records_id, @question_record.id)
+                = submit_tag("Submit Answer")
+          - @answers.each do |answer|
+            - if answer.answer.empty? && current_user.id == user.id
+              %td
+                = form_tag('/answer', method: 'post') do
+                  = label_tag(:answer, "Answer this question:")
+                  = text_area_tag(:answer)
+                  = hidden_field_tag(:user_id, user.id)
+                  = hidden_field_tag(:question_records_id, @question_record.id)
+                  = submit_tag("Submit Answer")
+            - elsif user.id == answer.user_id
+              %td= answer.answer

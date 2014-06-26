@@ -16,7 +16,6 @@
 
     - if current_user == @group.leader
       %h4 Add Members to this Group
-
       = form_tag('/invite', method: 'post') do
         .form-inputs
           = label_tag(:emails, "Enter emails, separated by commas:")
