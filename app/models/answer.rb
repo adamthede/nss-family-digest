@@ -14,7 +14,7 @@ class Answer < ActiveRecord::Base
   def self.create_from_email(from, subject, textbody)
     answer = Answer.create do |answer|
       answer.answer = textbody
-      user = User.where(email: from)
+      user = User.find_by_email(from.to_s)
       answer.user_id = user.id
       answer.question_records_id = 7
     end
