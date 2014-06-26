@@ -10,5 +10,13 @@ class Answer < ActiveRecord::Base
     #          :user_email => message["From"],
     #          :discussion_id => message["MailboxHash"])
   end
+  
+  def self.create_from_email(from, subject, textbody)
+    answer = Answer.create do |answer|
+      answer.answer = textbody
+      answer.user_id = User.where(email: from).id
+      answer.question_records_id = 7
+    end
+  end
 
 end
