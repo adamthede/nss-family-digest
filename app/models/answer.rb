@@ -20,14 +20,14 @@ class Answer < ActiveRecord::Base
       group_id = group.id.to_s
       question_record = QuestionRecord.where(:group_id => group_id, :question_id => question_id).last
       question_record_id = question_record.id.to_s
-      answer = Answer.new(:answer => textbody,
-                 :user_id => user.id,
-                 :question_records_id => question_record_id)
-      if Answer.where(answer)
-        return
-      else
-        answer.save
-      end
+      Answer.create(:answer => textbody,
+                    :user_id => user.id,
+                    :question_records_id => question_record_id)
+      # if Answer.where(answer)
+      #   return
+      # else
+      #   answer.save
+      # end
     else
       logger.info("No user found with email: #{from.to_s}")
     end
