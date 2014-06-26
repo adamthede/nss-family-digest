@@ -1,6 +1,6 @@
 class AnswersController < ApplicationController
-  # skip_before_filter  :verify_authenticity_token
-  prepend_before_filter :require_no_authentication, :only => [ :new, :create, :cancel ]  
+  skip_before_filter  :verify_authenticity_token
+  skip_before_filter :require_no_authentication, :only => [ :new, :create, :cancel ]
 
   def create_from_inbound_hook
     message = params
