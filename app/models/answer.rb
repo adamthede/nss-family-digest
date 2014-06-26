@@ -16,7 +16,7 @@ class Answer < ActiveRecord::Base
       question = subject.split('*').last.strip
       question_id = Question.find_by_question(question).id.to_s
       groupname = subject.split('-').first.strip
-      group = Group.find_by_name(groupname)
+      group = Group.find_by_name(groupname[4..-1])
       group_id = group.id.to_s
       question_record = QuestionRecord.where(:group_id => group_id, :question_id => question_id).last
       question_record_id = question_record.id.to_s
