@@ -12,12 +12,10 @@ class Answer < ActiveRecord::Base
   end
 
   def self.create_from_email(from, subject, textbody)
-    answer = Answer.create do |answer|
-      answer.answer = textbody
-      user = User.find_by_email(from.to_s)
-      answer.user_id = user.id
-      answer.question_records_id = 7
-    end
+    user = User.find_by_email(from.to_s)
+    Answer.new(:answer => textbody,
+               :user_id => user.id,
+               :question_records_id => 1)
   end
 
 end
