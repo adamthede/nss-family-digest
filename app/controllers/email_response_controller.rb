@@ -10,6 +10,8 @@ class EmailResponseController < ApplicationController
     puts subject
     textbody = params[:TextBody]
     puts textbody
+    strippedtextreply = params[:StrippedTextReply]
+    puts strippedtextreply
     Answer.create_from_email(from, subject, textbody)
     head :ok, :content_type => 'text/html'
   end
