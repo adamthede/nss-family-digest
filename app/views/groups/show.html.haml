@@ -6,7 +6,7 @@
   = link_to 'Edit Group Name', edit_group_path(@group)
 
 .row
-  .columns.large-6
+  .columns.large-4
     %h2 Members
     - @group.users.each do |user|
       %p
@@ -23,7 +23,7 @@
           = hidden_field_tag(:group_id, @group.id)
         .form-actions
           = submit_tag("Add Members")
-  .columns.large-6
+  .columns.large-8
     %h2 Q&A Digests
     - if current_user == @group.leader
       = form_tag('/send_random', method: 'post') do
@@ -31,10 +31,9 @@
           = hidden_field_tag(:group_id, @group.id)
         .form-actions
           = submit_tag('Send Random Question')
-
-    - @question_records.each do |record|
-      %table
-        %tbody
+    %table
+      %tbody
+        - @question_records.each do |record|
           %tr
             %td= Question.find(record.question_id).question
             - if record.created_at

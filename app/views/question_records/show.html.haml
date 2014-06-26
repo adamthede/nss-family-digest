@@ -24,13 +24,5 @@
                 = hidden_field_tag(:question_records_id, @question_record.id)
                 = submit_tag("Submit Answer")
           - @answers.each do |answer|
-            - if answer.answer.empty? && current_user.id == user.id
-              %td
-                = form_tag('/answer', method: 'post') do
-                  = label_tag(:answer, "Answer this question:")
-                  = text_area_tag(:answer)
-                  = hidden_field_tag(:user_id, user.id)
-                  = hidden_field_tag(:question_records_id, @question_record.id)
-                  = submit_tag("Submit Answer")
-            - elsif user.id == answer.user_id
+            - if user.id == answer.user_id
               %td= answer.answer
