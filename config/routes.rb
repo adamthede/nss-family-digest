@@ -14,7 +14,7 @@ Rails.application.routes.draw do
 
   post 'invite' => 'groups#send_invite'
   post 'send_random' => 'questions#send_random_question'
-  post 'inbound' => 'answers#create_from_inbound_hook'
+  post 'inbound' => 'email_response#create_from_inbound_hook'
   post 'answer' => 'answers#create_from_form'
 
   # The priority is based upon order of creation: first created -> highest priority.
