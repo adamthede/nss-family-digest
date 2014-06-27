@@ -12,8 +12,41 @@
  *
  *= require_tree .
  *= require_self
+ *= require animate.css
  */
+
+ html {
+   font: 100%/1.5 "Roboto", Verdana, sans-serif;
+   color: #3d464d;
+   background-color: #fff;
+   -webkit-font-smoothing: antialiased;
+   width: 100%;
+   overflow: hidden-x;
+   /* Centering in The Unknown */
+   text-align: center;
+}
+
 
  table {
    width: 100%;
  }
+
+ .site-title {
+   text-align: center;
+   color: #FF7226;
+   background-image: -webkit-linear-gradient(92deg,#f35626,#feab3a);
+   -webkit-background-clip: text;
+   -webkit-text-fill-color: transparent;
+   -webkit-animation: hue 60s infinite linear;
+   font-size: 84px;
+ }
+
+.landing-page {
+  margin-top: 150px;
+  margin-bottom: auto;
+}
+
+.footer {
+  position: fixed;
+  bottom: 10px;
+}
