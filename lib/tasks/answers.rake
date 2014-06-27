@@ -2,5 +2,7 @@ require 'answers'
 
 desc "Send Weekly Digest of Answers"
 task :answers => :environment do
-  Answers.send!
+  if Time.now.friday?
+    Answers.send!
+  end
 end
