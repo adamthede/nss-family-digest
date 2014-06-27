@@ -187,7 +187,7 @@ Devise.setup do |config|
   # Time interval you can reset your  with a reset  key.
   # Don't put a too small interval or your users won't have the time to
   # change their s.
-  config.reset__within = 6.hours
+  config.reset_password_within = 6.hours
 
   # ==> Configuration for :encryptable
   # Allow you to use another encryption algorithm besides bcrypt (default). You can use
