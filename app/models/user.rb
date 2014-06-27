@@ -15,7 +15,7 @@ class User < ActiveRecord::Base
   validates_presence_of :email
 
   after_create :send_welcome_email
-  after_update :send_confirmation_email
+  # after_update :send_confirmation_email
 
   def self.find_or_create_by_email(email)
     user = User.where(email: email).first_or_create do |user|

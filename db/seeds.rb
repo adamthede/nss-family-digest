@@ -5,3 +5,8 @@
 #
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
+require 'csv'
+
+CSV.foreach("#{Rails.root}/lib/data/questions-csv.csv") do |row|
+  Question.create!(:question => row[0], :user_id => 8)
+end

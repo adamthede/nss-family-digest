@@ -20,8 +20,9 @@ class Answer < ActiveRecord::Base
       group_id = group.id.to_s
       question_record = QuestionRecord.where(:group_id => group_id, :question_id => question_id).last
       question_record_id = question_record.id.to_s
+      answer = textbody.split('On #{question_record.created_at.strf(%b %d, %Y)}, at ').first.strip
       if question_record.created_at < 5.days.ago
-        Answer.create(:answer => textbody,
+        Answer.create(:answer => answer,
                       :user_id => user.id,
                       :question_records_id => question_record_id)
       else
