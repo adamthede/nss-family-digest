@@ -10,9 +10,10 @@
   - @groups.each do |group|
     %tr
       %td= group.name
-      %td= link_to 'Show', group
-      %td= link_to 'Edit', edit_group_path(group)
-      %td= link_to 'Destroy', group, :method => :delete, :data => { :confirm => 'Are you sure?' }
+      - if current_user == group.leader
+        %td= link_to 'Show', group
+        %td= link_to 'Edit', edit_group_path(group)
+        %td= link_to 'Delete This Group?', group, :method => :delete, :data => { :confirm => 'Are you sure?' }
 
 %br
 

@@ -5,7 +5,7 @@ class UserMailer < ActionMailer::Base
   def welcome_email(user)
     @user = user
     @url = root_url
-    mail(to: @user.email, subject: "Welcome to Family Digest")
+    mail(to: @user.email, subject: "Welcome to Answers 2 Answers")
   end
 
   def confirmation_email(user)

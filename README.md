@@ -1,7 +1,7 @@
-NSS - Family Digest
+NSS - Answers 2 Answers
 ===================
 
-Ruby on Rails Capstone Project.  "Family Digest" manages and publishes a weekly digest of questions and answers, submitted by a group of family members.
+Ruby on Rails Capstone Project.  "Answers 2 Answers" manages and publishes a weekly digest of questions and answers, submitted by a group people.
 
 ## Features:
 
@@ -10,7 +10,7 @@ Ruby on Rails Capstone Project.  "Family Digest" manages and publishes a weekly 
 
 ### Create Digest:
 * Create and name a digest
-* Add family members via email addresses
+* Add members via email addresses
 * Add ability to opt out
 
 ### Add Questions:

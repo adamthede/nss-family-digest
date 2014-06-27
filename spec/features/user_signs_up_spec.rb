@@ -8,7 +8,7 @@ feature "User signs up" do
     fill_in "Password", with: "mypassword"
     fill_in "Re-enter Password", with: "mypassword"
     click_button "Sign up"
-    page.should have_content "Welcome to Family Digest!"
+    page.should have_content "Welcome to Answers 2 Answers!"
     page.should_not have_link("I'm Ready!")
 
     click_link "Sign out"
@@ -27,7 +27,7 @@ feature "User signs up" do
     fill_in "Password", with: "mypassword"
     fill_in "Re-enter Password", with: "notthesame"
     click_button "Sign up"
-    page.should_not have_content "Welcome to Family Digest!"
+    page.should_not have_content "Welcome to Answers 2 Answers!"
     page.should have_content "Your account could not be created"
 
     page.should have_error("has already been taken", on: "Email")

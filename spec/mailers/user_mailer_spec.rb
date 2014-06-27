@@ -16,11 +16,11 @@ describe "Welcome email" do
   it "should be sent to the user's email address" do
     @mail.should deliver_to(@user.email)
   end
-  it "should have a subject line of 'Welcome to Family Digest'" do
-    @mail.should have_subject("Welcome to Family Digest")
+  it "should have a subject line of 'Welcome to Answers 2 Answers'" do
+    @mail.should have_subject("Welcome to Answers 2 Answers")
   end
-  it "should actually welcome the user to Family Digest" do
-    @mail.should have_body_text("Welcome to Family Digest, #{@user.email}!")
+  it "should actually welcome the user to Answers 2 Answers" do
+    @mail.should have_body_text("Welcome to Answers 2 Answers, #{@user.email}!")
   end
   it "should have a link to the site in it" do
     @mail.should have_body_text("To login to the site, just follow this link: #{@url}.")

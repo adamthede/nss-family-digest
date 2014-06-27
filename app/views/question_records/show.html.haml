@@ -23,6 +23,7 @@
                 = hidden_field_tag(:user_id, user.id)
                 = hidden_field_tag(:question_records_id, @question_record.id)
                 = submit_tag("Submit Answer")
-          - @answers.each do |answer|
-            - if user.id == answer.user_id
-              %td= answer.answer
+          - unless @question_record.created_at > 5.days.ago
+            - @answers.each do |answer|
+              - if user.id == answer.user_id
+                %td= answer.answer

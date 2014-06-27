@@ -15,6 +15,9 @@
 //= require turbolinks
 //= require foundation
 //= require_tree .
+//= require fss.js
+//= require fss.min.js
+
 $(function() {
   $(document).foundation();
 });
