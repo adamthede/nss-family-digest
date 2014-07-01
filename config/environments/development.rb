@@ -38,13 +38,13 @@ Rails.application.configure do
 
   # config.action_mailer.delivery_method = :letter_opener
 
-  config.action_mailer.delivery_method = :smtp
-  config.action_mailer.smtp_settings = {
-    :address              => "smtp.postmarkapp.com",
-    :port                 => 25,
-    :domain               => 'abcd',
-    :user_name            => ENV['POSTMARK_API_KEY'],
-    :password             => ENV['POSTMARK_API_KEY'],
-    :authentication       => 'plain',
-    :enable_starttls_auto => true  }
+  config.action_mailer.delivery_method = :letter_opener
+  #config.action_mailer.smtp_settings = {
+#    :address              => "smtp.postmarkapp.com",
+#    :port                 => 25,
+#    :domain               => 'abcd',
+#    :user_name            => ENV['POSTMARK_API_KEY'],
+#    :password             => ENV['POSTMARK_API_KEY'],
+#    :authentication       => 'plain',
+#    :enable_starttls_auto => true  }
 end

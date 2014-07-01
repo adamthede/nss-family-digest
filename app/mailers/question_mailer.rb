@@ -1,6 +1,7 @@
 class QuestionMailer < ActionMailer::Base
   default from: "adam@thedetech.com"
   default reply_to: ENV['POSTMARK_INBOUND']
+  layout 'mail_layout'
 
   def send_questions(user, group, question)
     email = user.email

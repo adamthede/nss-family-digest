@@ -1,6 +1,7 @@
 class GroupMailer < ActionMailer::Base
   default from: "adam@thedetech.com"
   default reply_to: ENV['POSTMARK_INBOUND']
+  layout 'mail_layout'
 
   def invite_email(emails, group_id)
     @group_id = group_id
