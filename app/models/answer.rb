@@ -33,7 +33,7 @@ class Answer < ActiveRecord::Base
   end
 
   def self.send_answer_digest
-    start_date = 5.days.ago
+    start_date = 7.days.ago
     end_date = DateTime.now
     question_record = QuestionRecord.where(:created_at => start_date..end_date)
     question_record.each do |record|
