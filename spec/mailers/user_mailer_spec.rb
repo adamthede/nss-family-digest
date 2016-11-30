@@ -10,8 +10,8 @@ describe "Welcome email" do
     @mail = UserMailer.welcome_email(@user)
   end
 
-  it "should be from from@example.com" do
-    @mail.should deliver_from("from@example.com")
+  it "should be from adam@thedetech.com" do
+    @mail.should deliver_from("adam@thedetech.com")
   end
   it "should be sent to the user's email address" do
     @mail.should deliver_to(@user.email)

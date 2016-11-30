@@ -8,7 +8,7 @@ gem 'coffee-rails', '~> 4.0.0'
 gem 'devise'
 gem 'figaro'
 gem 'fog'
-gem 'foundation-rails'
+gem 'foundation-rails', '~> 5.3'
 gem 'haml-rails'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.0'
