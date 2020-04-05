@@ -8,5 +8,5 @@ class AnswersController < ApplicationController
     end
     redirect_to question_record_path(params[:question_records_id]), notice: "Your answer has been submitted!"
   end
-  
+
 end
