@@ -1,4 +1,4 @@
-class Question < ActiveRecord::Base
+class Question < ApplicationRecord
   belongs_to :user
   has_many :groups, through: :question_record
 

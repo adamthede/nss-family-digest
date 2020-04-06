@@ -4,14 +4,14 @@ source 'https://rubygems.org'
 
 gem 'carrierwave'
 # Use CoffeeScript for .js.coffee assets and views
-gem 'coffee-rails', '~> 4.0.0'
+gem 'coffee-rails'
 gem 'devise'
 gem 'figaro'
 gem 'fog'
 gem 'foundation-rails', '~> 5.3'
 gem 'haml-rails'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
-gem 'jbuilder', '~> 2.0'
+gem 'jbuilder'
 # Use jquery as the JavaScript library
 gem 'jquery-rails'
 # Use omniauth for 3rd party authentication and authorization
@@ -22,7 +22,7 @@ gem 'mini_magick'
 gem 'pg'
 gem 'postmark-rails'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '>= 5.0.0.rc2', '< 5.1'
+gem 'rails', '~> 5.1', '>= 5.1.7'
 # Use SCSS for stylesheets'
 # bundle exec rake doc:rails generates the API under doc/api.
 gem 'sdoc', '~> 0.4.0',          group: :doc
@@ -33,7 +33,7 @@ gem 'simple_form'
 # Turbolinks makes following links in your web application faster. Read more: https://github.com/rails/turbolinks
 gem 'turbolinks'
 # Use Uglifier as compressor for JavaScript assets
-gem 'uglifier', '>= 1.3.0'
+gem 'uglifier'
 # Use unicorn as the app server
 # gem 'unicorn'
 gem 'rails_12factor'
@@ -43,6 +43,7 @@ group :development do
   gem 'spring'
   gem 'rails_layout'
   gem 'rails-erd'
+  gem 'listen'
 end
 
 group :development, :test do

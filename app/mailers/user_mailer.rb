@@ -1,4 +1,4 @@
-class UserMailer < ActionMailer::Base
+class UserMailer < ApplicationMailer
   layout 'mail_layout'
   default from: "adam@thedetech.com"
 
