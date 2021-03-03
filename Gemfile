@@ -3,30 +3,24 @@ ruby '2.6.0'
 source 'https://rubygems.org'
 
 gem 'carrierwave'
-# Use CoffeeScript for .js.coffee assets and views
 gem 'coffee-rails'
+gem 'sass-rails'
 gem 'devise'
 gem 'figaro'
 gem 'fog'
 gem 'foundation-rails', '~> 5.3'
 gem 'haml-rails'
-# Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder'
-# Use jquery as the JavaScript library
 gem 'jquery-rails'
 # Use omniauth for 3rd party authentication and authorization
 # gem 'omniauth'
 # gem 'omniauth-facebook'
 gem 'mini_magick'
-# Use postgresql as the database for Active Record
 gem 'pg'
 gem 'postmark-rails'
-# Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.1', '>= 5.1.7'
-# Use SCSS for stylesheets'
 # bundle exec rake doc:rails generates the API under doc/api.
 gem 'sdoc', '~> 0.4.0',          group: :doc
-# Extra form functionality
 gem 'simple_form'
 # Social Sharing
 # gem 'social-share-button'
