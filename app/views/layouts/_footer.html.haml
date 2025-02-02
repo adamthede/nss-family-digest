@@ -2,5 +2,5 @@
   .container.mx-auto.px-4.text-center
     = link_to 'github repo', 'http://www.github.com/adamthede/nss-family-digest',
       class: "text-gray-600 hover:text-gray-900 mx-2"
-    = link_to 'email me', 'mailto:adam@cityofthedes.com',
+    = link_to 'email me', "mailto:#{ENV['DEFAULT_MAILER_FROM']}",
       class: "text-gray-600 hover:text-gray-900 mx-2"
