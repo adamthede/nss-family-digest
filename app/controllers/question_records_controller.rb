@@ -1,5 +1,5 @@
 class QuestionRecordsController < ApplicationController
-  before_action :set_question_record, only: [:show, :edit, :update, :destroy]
+  before_action :set_question_record, only: [:show]
 
   def show
     @group = Group.find(@question_record.group_id)

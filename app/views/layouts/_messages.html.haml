@@ -1,6 +1,7 @@
 -# Rails flash messages styled for Zurb Foundation
 - flash.each do |name, msg|
   - if msg.is_a?(String)
-    %div{:class => "alert-box round #{name.to_s == 'notice' ? 'success' : 'alert'}", "data-alert" => ""}
-      = content_tag :div, msg
-      %a.close{:href => "#"} &times;
+    %div{class: "rounded-md p-4 #{name.to_s == 'notice' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}", role: "alert"}
+      %div.flex
+        %div.flex-grow= msg
+        %button.close.text-sm.font-semibold.opacity-50.hover:opacity-75{href: "#"} &times;

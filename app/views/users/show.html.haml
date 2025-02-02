@@ -5,6 +5,7 @@
   - else
     %h1 #{@user.email}'s Profile
   .columns.small-4
+    .profile-image
     - if @user.profile_image_url(:thumb)
       = image_tag @user.profile_image_url(:thumb).to_s
     - else

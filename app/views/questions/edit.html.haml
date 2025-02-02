@@ -1,7 +1,8 @@
-%h1 Editing question
+.container.mx-auto.px-4.py-8
+  %h1.text-2xl.font-bold.mb-6 Editing Question
 
-= render 'form'
+  = render 'form'
 
-= link_to 'Show', @question
-\|
-= link_to 'Back', questions_path
+  .mt-4.space-x-4
+    = link_to 'Show', @question, class: "text-blue-600 hover:text-blue-800"
+    = link_to 'Back', questions_path, class: "text-blue-600 hover:text-blue-800"
