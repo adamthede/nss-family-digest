@@ -1,6 +1,6 @@
 class UserMailer < ApplicationMailer
   layout 'mail_layout'
-  default from: "adam@thedetech.com"
+  default from: ENV['DEFAULT_MAILER_FROM']
 
   def welcome_email(user)
     @user = user

@@ -24,6 +24,7 @@
 
 # Ignore application configuration
 /config/application.yml
+.env
 
 # Ignore coverage information
 /coverage
