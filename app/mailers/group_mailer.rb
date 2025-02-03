@@ -1,5 +1,4 @@
-class GroupMailer < ActionMailer::Base
-  default from: "adam@thedetech.com"
+class GroupMailer < ApplicationMailer
   default reply_to: ENV['POSTMARK_INBOUND']
   layout 'mail_layout'
 

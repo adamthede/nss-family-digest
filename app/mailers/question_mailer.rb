@@ -1,5 +1,4 @@
-class QuestionMailer < ActionMailer::Base
-  default from: "adam@thedetech.com"
+class QuestionMailer < ApplicationMailer
   default reply_to: ENV['POSTMARK_INBOUND']
   layout 'mail_layout'
 

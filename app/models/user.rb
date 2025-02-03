@@ -1,6 +1,6 @@
 require 'digest/md5'
 
-class User < ActiveRecord::Base
+class User < ApplicationRecord
   mount_uploader :profile_image, ProfileImageUploader
 
   # Include default devise modules. Others available are:

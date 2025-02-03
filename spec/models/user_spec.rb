@@ -1,24 +1,24 @@
 require 'spec_helper'
 require 'carrierwave/test/matchers'
 
-describe User, "validations" do
-  it { should validate_presence_of(:email) }
-  it { should validate_presence_of(:password) }
-end
+# RSpec
+RSpec.describe User, type: :model do
+  describe 'associations' do
+    it { should have_many(:groups) }
+  end
 
-describe User, "validating uniqueness of email addresses" do
-  it { should validate_uniqueness_of(:email) }
-end
+  describe 'validations' do
+    it { should validate_presence_of(:email) }
+    it { should validate_presence_of(:password) }
+  end
 
-describe User, "responds to" do
-  it { should respond_to(:profile_image) }
-end
+  describe "validating uniqueness of email addresses" do
+    it { should validate_uniqueness_of(:email) }
+  end
 
-describe User, "belongs to validations" do
-  it { should have_and_belong_to_many(:groups) }
-end
-
-describe User do
+  describe "responds to" do
+    it { should respond_to(:profile_image) }
+  end
 
   describe "#gravatar_url" do
     context 'with a valid email address' do

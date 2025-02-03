@@ -1,18 +1,14 @@
-%li.divider
-%li
-  %ul.devise_navigation
-    - if user_signed_in?
-      %li= link_to 'Sign out', destroy_user_session_path, method: 'delete'
-    - else
-      %li= link_to 'Sign in', new_user_session_path
-%li.divider
-%li
-  %ul
+.flex.items-center.space-x-4.ml-4
   - if user_signed_in?
-    %li= link_to 'Questions', questions_path
-    %li.divider
-    %li= link_to 'Profile', user_path(current_user)
-%li.divider
-%li.has-form
-  - unless user_signed_in?
-    %a.small.button{href: new_user_registration_path} I'm Ready!
+    = link_to 'Questions', questions_path,
+      class: "text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+    = link_to 'Profile', user_path(current_user),
+      class: "text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+    = link_to 'Sign out', destroy_user_session_path,
+      method: :delete,
+      class: "text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+  - else
+    = link_to 'Sign in', new_user_session_path,
+      class: "text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+    = link_to "I'm Ready!", new_user_registration_path,
+      class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

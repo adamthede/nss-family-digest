@@ -1,4 +1,4 @@
-class Group < ActiveRecord::Base
+class Group < ApplicationRecord
   belongs_to :leader, :class_name => :User, :foreign_key => 'user_id'
   has_many :questions, through: :question_records
   has_many :memberships, dependent: :destroy

@@ -1,7 +1,8 @@
-%h1 Editing group
+.container.mx-auto.px-4.py-8
+  %h1.text-2xl.font-bold.mb-6 Editing Group
 
-= render 'form'
+  = render 'form'
 
-= link_to 'Show', @group
-\|
-= link_to 'Back', groups_path
+  .mt-4.space-x-4
+    = link_to 'Show', @group, class: "text-blue-600 hover:text-blue-800"
+    = link_to 'Back', groups_path, class: "text-blue-600 hover:text-blue-800"

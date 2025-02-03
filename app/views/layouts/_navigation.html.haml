@@ -1,13 +1,12 @@
--# navigation styled for Zurb Foundation 5
--# the syntax for data-topbar may need to change for Zurb Foundation 5
-%div.sticky
-  %nav.top-bar.docs-bar{"data-topbar" => true}
-    %ul.title-area
-      %li.name
-        %h1= link_to 'Answers 2 Answers', root_path
-      %li.toggle-topbar.menu-icon
-        %a{:href => "#"}
+%nav.bg-gray-800.sticky.top-0
+  .max-w-7xl.mx-auto.px-4.sm:px-6.lg:px-8
+    .flex.items-center.justify-between.h-16
+      .flex-shrink-0
+        %h1.text-white= link_to 'Answers 2 Answers', root_path
+      .hidden.md:block
+        .ml-auto
+          = render 'layouts/navigation_links'
+      .md:hidden
+        %button.inline-flex.items-center.justify-center.p-2.rounded-md.text-gray-400.hover:text-white.hover:bg-gray-700.focus:outline-none{"aria-controls" => "mobile-menu", "aria-expanded" => "false", type: "button"}
+          %span.sr-only Toggle menu
           Menu
-    .top-bar-section
-      %ul.right
-        = render 'layouts/navigation_links'
