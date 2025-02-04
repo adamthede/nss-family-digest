@@ -1,0 +1,14 @@
+<% if resource.errors %>
+  <div class="alert">Your account could not be created.</div>
+<% end %>
+
+<h2>Sign up</h2>
+
+<%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+  <%= f.input :email, placeholder: "Email", required: true, autofocus: true %>
+  <%= f.input :password, placeholder: "Password", required: true, autocomplete: "off" %>
+  <%= f.input :password_confirmation, placeholder: "Re-enter Password", required: true, autocomplete: "off" %>
+  <%= f.button :submit, "Sign up" %>
+<% end %>
+
+<%= render "devise/shared/links" %>

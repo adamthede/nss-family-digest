@@ -1,0 +1,36 @@
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-6">Questions</h1>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <tbody class="bg-white divide-y divide-gray-200">
+        <% @questions.each do |question| %>
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4"><%= question.question %></td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <%= time_ago_in_words(question.created_at) + ' ago' %>
+            </td>
+            <% if current_user && question.user_id == current_user.id %>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <%= link_to 'Edit', edit_question_path(question), class: "text-blue-600 hover:text-blue-800" %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <%= link_to 'Delete', question,
+                    method: :delete,
+                    data: { confirm: 'Are you sure?' },
+                    class: "text-red-600 hover:text-red-800" %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if user_signed_in? %>
+    <div class="mt-8">
+      <%= link_to 'New Question', new_question_path,
+          class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+    </div>
+  <% end %>
+</div>

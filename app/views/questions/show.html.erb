@@ -1,0 +1,13 @@
+<div class="container mx-auto px-4 py-8">
+  <div id="notice" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"><%= notice %></div>
+
+  <div class="bg-white shadow rounded-lg p-6 mb-6">
+    <h2 class="text-xl font-bold mb-2">Question</h2>
+    <p class="text-gray-700 text-lg"><%= @question.question %></p>
+  </div>
+
+  <div class="space-x-4">
+    <%= link_to 'Edit', edit_question_path(@question), class: "text-blue-600 hover:text-blue-800" %>
+    <%= link_to 'Back', questions_path, class: "text-blue-600 hover:text-blue-800" %>
+  </div>
+</div>

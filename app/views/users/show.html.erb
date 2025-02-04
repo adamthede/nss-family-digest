@@ -1,0 +1,61 @@
+<div class="row">
+  <div class="columns small-12">
+    <% if (current_user == @user) %>
+      <h1>Your Profile</h1>
+    <% else %>
+      <h1><%= @user.email %>'s Profile</h1>
+    <% end %>
+  </div>
+  <div class="columns small-4">
+    <div class="profile-image">
+      <% if @user.profile_image_url(:thumb) %>
+        <%= image_tag @user.profile_image_url(:thumb).to_s %>
+      <% else %>
+        <%= image_tag @user.gravatar_url %>
+      <% end %>
+    </div>
+    <h4><%= @user.email %></h4>
+
+    <%= link_to "Edit Profile", edit_user_path(current_user) %>
+  </div>
+
+  <div class="columns small-8">
+    <h1></h1>
+    <h4>Your Groups</h4>
+    <table>
+      <tbody>
+        <% @user.memberships.each do |membership| %>
+          <tr>
+            <td><%= membership.group.name %></td>
+            <% if membership.group.user_id == current_user.id %>
+              <td>You Are The Group Leader</td>
+            <% end %>
+            <td><%= link_to 'View Group', group_path(membership.group.id) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <% if user_signed_in? %>
+      <td><%= link_to 'Create New Group', new_group_path %></td>
+    <% end %>
+
+    <h4>Questions Submitted</h4>
+    <table>
+      <% @questions.each do |question| %>
+        <tr>
+          <td><%= question.question %></td>
+          <td><%= time_ago_in_words(question.created_at) + ' ago' %></td>
+          <% if current_user && question.user_id == current_user.id %>
+            <td><%= link_to 'Edit', edit_question_path(question) %></td>
+            <td><%= link_to 'Delete', question, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+          <% end %>
+        </tr>
+      <% end %>
+    </table>
+
+    <% if user_signed_in? %>
+      <td><%= link_to 'New Question', new_question_path %></td>
+    <% end %>
+  </div>
+</div>

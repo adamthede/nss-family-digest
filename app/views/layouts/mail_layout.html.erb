@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      @import url('http://fonts.googleapis.com/css?family=Open+Sans');
+      body {
+        background: rgb(255,175,75); /* Old browsers */
+        background: -moz-linear-gradient(top,  rgba(255,175,75,1) 0%, rgba(255,146,10,1) 100%); /* FF3.6+ */
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,175,75,1)), color-stop(100%,rgba(255,146,10,1))); /* Chrome,Safari4+ */
+        background: -webkit-linear-gradient(top,  rgba(255,175,75,1) 0%,rgba(255,146,10,1) 100%); /* Chrome10+,Safari5.1+ */
+        background: -o-linear-gradient(top,  rgba(255,175,75,1) 0%,rgba(255,146,10,1) 100%); /* Opera 11.10+ */
+        background: -ms-linear-gradient(top,  rgba(255,175,75,1) 0%,rgba(255,146,10,1) 100%); /* IE10+ */
+        background: linear-gradient(to bottom,  rgba(255,175,75,1) 0%,rgba(255,146,10,1) 100%); /* W3C */
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffaf4b', endColorstr='#ff920a',GradientType=0 ); /* IE6-9 */
+        font-family: 'Open Sans', sans-serif;
+      }
+      #message_headers {
+        font-size: 0.8em;
+        margin: 1em auto;
+        width: 80%;
+        background-color: rgba(255,255,255,.3);
+        border-radius: 2em;
+        color: black;
+      }
+      #container{
+        width: 80%;
+        margin: 1em auto;
+      }
+      #wrapper {
+        padding: 30px 0px 0px 0px;
+        margin: 40px auto;
+        width: 80%;
+        background-color: rgba(0, 0, 0, .1);
+        border-radius: 2em;
+      }
+      #wrapper h1 {
+        text-align: center;
+        padding: 20px 0px 0px 0px;
+      }
+      #wrapper p {
+        max-width: 500px;
+        text-align: center;
+        margin: auto;
+        padding: 0px 0px 40px 0px;
+        font-size: 22px;
+      }
+      #footer {
+        text-align: center;
+        margin: 1em auto;
+        width: 80%;
+        color: white;
+        text-shadow: 1px 1px 1px #000;
+      }
+      #footer h1 {
+        display: inline;
+      }
+      #footer p {
+        padding: 1em;
+        display: inline-flex;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wrapper">
+      <%= yield %>
+    </div>
+  </body>
+</html>
