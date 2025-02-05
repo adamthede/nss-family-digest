@@ -1,12 +1,50 @@
-<%= simple_form_for(current_user) do |f| %>
-  <%= f.error_notification %>
+<div class="px-8 py-6">
+  <%= simple_form_for(current_user) do |f| %>
+    <% if f.error_notification.present? %>
+      <div class="mb-6 p-4 rounded-md bg-red-50 border border-red-200">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <i class="fas fa-exclamation-circle text-red-400"></i>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">
+              <%= f.error_notification %>
+            </h3>
+          </div>
+        </div>
+      </div>
+    <% end %>
 
-  <div class="form-inputs">
-    <%= f.input :email, as: :email %>
-    <%= f.input :profile_image, as: :file %>
-  </div>
+    <div class="space-y-8">
+      <!-- Email Input -->
+      <div class="form-group">
+        <%= f.label :email, class: "block text-base font-medium text-gray-900 mb-2" %>
+        <%= f.email_field :email,
+            class: "block w-full px-4 py-3 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500",
+            placeholder: "your.email@example.com" %>
+      </div>
 
-  <div class="form-actions">
-    <%= f.button :submit, "Update Profile" %>
-  </div>
-<% end %>
+      <!-- Profile Image Input -->
+      <div class="form-group">
+        <%= f.label :profile_image, class: "block text-base font-medium text-gray-900 mb-2" %>
+        <div class="flex items-center space-x-4">
+          <span class="inline-block h-16 w-16 overflow-hidden rounded-full bg-gray-100">
+            <% if current_user.profile_image_url(:thumb) %>
+              <%= image_tag current_user.profile_image_url(:thumb).to_s, class: "h-full w-full object-cover" %>
+            <% else %>
+              <%= image_tag current_user.gravatar_url, class: "h-full w-full object-cover" %>
+            <% end %>
+          </span>
+          <%= f.file_field :profile_image,
+              class: "block w-full text-base text-gray-600 file:mr-4 file:py-2.5 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-600 file:text-white hover:file:bg-indigo-700" %>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="form-actions">
+        <%= f.button :submit, "Update Profile",
+            class: "w-full py-3 px-4 border-0 rounded-md text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200" %>
+      </div>
+    </div>
+  <% end %>
+</div>

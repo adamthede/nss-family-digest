@@ -4,8 +4,6 @@ source 'https://rubygems.org'
 
 gem 'rails', '8.0.1'
 gem 'carrierwave', '~> 3.1.1'
-gem 'cssbundling-rails', '~> 1.4.1'
-gem 'jsbundling-rails', '~> 1.3.1'
 gem 'turbo-rails', '~> 2.0.11'
 gem 'devise'
 gem 'figaro'
