@@ -4,14 +4,25 @@
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
   </head>
   <body>
-    <h1>Hello there, <%= @user.email %>!</h1>
-    <p>
-      The Answers 2 Answers password for <%= @user.email %> has been successfully changed!
-      <br/>
-    </p>
-    <p>
-      To login to the site, just follow this link: <%= @url %>.
-    </p>
-    <p>Have a great day!</p>
+    <div class="header">
+      <h1>Password Changed Successfully</h1>
+      <p>Your account has been updated</p>
+    </div>
+
+    <div class="content">
+      <p>Hello <%= @user.email %>!</p>
+
+      <p>
+        The Answers 2 Answers password for your account has been successfully changed!
+      </p>
+
+      <%= link_to 'Login to Your Account', @url, class: 'button' %>
+
+      <p>Have a great day!</p>
+    </div>
+
+    <div class="footer">
+      <p>This email was sent from Answers 2 Answers</p>
+    </div>
   </body>
 </html>

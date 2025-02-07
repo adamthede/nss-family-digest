@@ -4,19 +4,28 @@
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
   </head>
   <body>
-    <h1>You have been invited to a Group on Answers 2 Answers!</h1>
-    <p>
-      If you are already a member of Answers 2 Answers, follow the link below to login and check out the group.
-    </p>
-    <p>
-      If you aren't yet a member,
-      <span><%= link_to('click here', new_user_password_url) %></span>
-      <span>to set a password for this email address. Please make sure you use the following email:</span>
-      <span><%= @email %></span>
-    </p>
-    <p>
-      To log in to the site, just follow
-      <span><%= link_to('this link.', group_url(@group_id)) %></span>
-    </p>
+    <div class="header">
+      <h1>Welcome to Answers 2 Answers!</h1>
+      <p>You've been invited to join a group</p>
+    </div>
+
+    <div class="content">
+      <p>
+        If you are already a member of Answers 2 Answers, follow the link below to login and check out the group.
+      </p>
+
+      <p>
+        If you aren't yet a member, <%= link_to 'click here', new_user_password_url, class: 'button' %>
+        to set a password for this email address: <%= @email %>
+      </p>
+
+      <p>
+        <%= link_to 'View Group', group_url(@group_id), class: 'button' %>
+      </p>
+    </div>
+
+    <div class="footer">
+      <p>This email was sent from Answers 2 Answers</p>
+    </div>
   </body>
 </html>

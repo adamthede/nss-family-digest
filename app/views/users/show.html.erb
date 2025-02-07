@@ -39,9 +39,14 @@
             <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
               <div>
                 <h3 class="font-medium text-gray-900"><%= membership.group.name %></h3>
-                <% if membership.group.user_id == current_user.id %>
-                  <span class="text-sm text-indigo-600">Group Leader</span>
-                <% end %>
+                <div class="flex items-center space-x-2">
+                  <% if membership.group.user_id == current_user.id %>
+                    <span class="text-sm text-indigo-600">Group Leader</span>
+                  <% end %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                    <%= pluralize(@digest_counts[membership.group.id] || 0, 'digest') %>
+                  </span>
+                </div>
               </div>
               <%= link_to 'View Group', group_path(membership.group.id), class: "text-indigo-600 hover:text-indigo-800" %>
             </div>

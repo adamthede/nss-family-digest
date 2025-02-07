@@ -4,8 +4,25 @@
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
   </head>
   <body>
-    <p>
-      <h4><%= @question %></h4>
-    </p>
+    <div class="header">
+      <h1>New Question</h1>
+      <p>Time to share your thoughts!</p>
+    </div>
+
+    <div class="content">
+      <p class="question">
+        <%= @question %>
+      </p>
+
+      <p>
+        Click the button below to answer this question:
+      </p>
+
+      <%= link_to 'Answer Question', group_url(@group_id), class: 'button' %>
+    </div>
+
+    <div class="footer">
+      <p>This email was sent from Answers 2 Answers</p>
+    </div>
   </body>
 </html>

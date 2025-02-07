@@ -1,12 +1,54 @@
-<h2>Sign in</h2>
+<div class="max-w-md mx-auto px-4 py-8">
+  <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-8 py-6">
+      <h2 class="text-2xl font-bold text-white">Sign in</h2>
+      <p class="text-indigo-100 mt-2">Welcome back!</p>
+    </div>
 
-<%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
-  <%= f.input :email, label: "Email", required: true, autofocus: true %>
-  <%= f.input :password, label: "Password", required: true, autocomplete: "off" %>
-  <% if devise_mapping.rememberable? %>
-    <%= f.input :remember_me, label: "Remember me", accepts: true, as: :boolean, boolean_style: :inline %>
-  <% end %>
-  <%= f.button :submit, "Sign in" %>
-<% end %>
+    <!-- Form Container -->
+    <div class="px-8 py-8">
+      <%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+        <div class="space-y-6">
+          <%= f.input :email,
+              required: true,
+              autofocus: true,
+              label: "Email",
+              label_html: { class: "block text-sm font-medium text-gray-700 mb-2" },
+              input_html: {
+                class: "mt-2 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              },
+              wrapper_html: { class: "block" } %>
 
-<%= render "devise/shared/links" %>
+          <%= f.input :password,
+              required: true,
+              label: "Password",
+              label_html: { class: "block text-sm font-medium text-gray-700 mb-2" },
+              input_html: {
+                class: "mt-2 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              },
+              wrapper_html: { class: "block" } %>
+
+          <% if devise_mapping.rememberable? %>
+            <%= f.input :remember_me,
+                as: :boolean,
+                label: "Remember me",
+                label_html: { class: "text-sm font-medium text-gray-700 ml-2" },
+                input_html: { class: "h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" },
+                wrapper_html: { class: "flex items-center" } %>
+          <% end %>
+
+          <div class="pt-6">
+            <%= f.button :submit, "Sign in",
+                class: "w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition duration-150 ease-in-out" %>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Links -->
+      <div class="mt-8 mb-8">
+        <%= render "devise/shared/links" %>
+      </div>
+    </div>
+  </div>
+</div>

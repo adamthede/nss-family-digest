@@ -4,32 +4,47 @@
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
   </head>
   <body>
-    <p>
-      <h1>Question and Answer Digest:</h1>
-      <h2><%= @group.name %></h2>
-      <h4><%= @question %></h4>
-      <% if @question_record.created_at %>
-        <h4><%= @question_record.created_at.strftime("%B %d, %Y") %></h4>
-      <% end %>
-    </p>
-    <table>
-      <tbody>
+    <div class="header">
+      <h1><%= @group.name %> - Weekly Digest</h1>
+      <p><%= @question_record.created_at.strftime("%B %d, %Y") if @question_record.created_at %></p>
+    </div>
+
+    <div class="content">
+      <div class="question-section">
+        <h2 style="color: #4F46E5; margin-bottom: 16px;">This Week's Question</h2>
+        <p class="question" style="font-size: 18px; font-weight: 500; margin-bottom: 24px;">
+          <%= @question %>
+        </p>
+      </div>
+
+      <div class="answers-section">
+        <h2 style="color: #4F46E5; margin: 24px 0 16px;">Group Responses</h2>
+
         <% @group.users.each do |user| %>
-          <tr>
-            <% if user.profile_image_url(:thumb) %>
-              <td><%= image_tag user.profile_image_url(:thumb).to_s %></td>
-            <% else %>
-              <td><%= image_tag user.gravatar_url %></td>
-            <% end %>
-            <td><%= user.email %></td>
+          <div class="user-response" style="margin-bottom: 24px; padding: 16px; background-color: #F3F4F6; border-radius: 8px;">
+            <div class="user-info" style="display: flex; align-items: center; margin-bottom: 12px;">
+              <% if user.profile_image_url(:thumb) %>
+                <%= image_tag user.profile_image_url(:thumb).to_s, style: "width: 40px; height: 40px; border-radius: 50%; margin-right: 12px;" %>
+              <% else %>
+                <%= image_tag user.gravatar_url, style: "width: 40px; height: 40px; border-radius: 50%; margin-right: 12px;" %>
+              <% end %>
+              <span style="font-weight: 500; color: #374151;"><%= user.email %></span>
+            </div>
+
             <% @answers.each do |answer| %>
               <% if user.id == answer.user_id %>
-                <td><%= answer.answer %></td>
+                <p style="margin: 0; color: #4B5563;"><%= answer.answer %></p>
               <% end %>
             <% end %>
-          </tr>
+          </div>
         <% end %>
-      </tbody>
-    </table>
+      </div>
+
+      <%= link_to 'View Group Discussion', group_url(@group.id), class: 'button' %>
+    </div>
+
+    <div class="footer">
+      <p>This email was sent from Answers 2 Answers</p>
+    </div>
   </body>
 </html>

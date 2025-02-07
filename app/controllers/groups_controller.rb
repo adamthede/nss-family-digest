@@ -10,7 +10,31 @@ class GroupsController < ApplicationController
   # GET /groups/1
   # GET /groups/1.json
   def show
-    @question_records = QuestionRecord.where(:group_id => @group.id) # has group_id, question_id, created_at
+    @group = Group.find(params[:id])
+
+    # Get base query for question records
+    @question_records = QuestionRecord.where(group_id: @group.id)
+
+    # Get answer counts for sorting
+    @answer_counts = Answer.where(question_records_id: @question_records.pluck(:id))
+                          .group(:question_records_id)
+                          .count
+
+    # Apply sorting
+    case params[:sort]
+    when 'answers_desc'
+      @question_records = @question_records.sort_by { |record| -(@answer_counts[record.id] || 0) }
+    when 'answers_asc'
+      @question_records = @question_records.sort_by { |record| @answer_counts[record.id] || 0 }
+    when 'date_asc'
+      @question_records = @question_records.order(created_at: :asc)
+    else # date_desc by default
+      @question_records = @question_records.order(created_at: :desc)
+    end
+
+    # Preload questions to avoid N+1 queries
+    @questions = Question.where(id: @question_records.pluck(:question_id))
+                        .index_by(&:id)
   end
 
   # GET /groups/new

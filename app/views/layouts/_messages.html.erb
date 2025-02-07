@@ -1,11 +1,13 @@
 <%# Rails flash messages styled for Zurb Foundation %>
-<% flash.each do |name, msg| %>
-  <% if msg.is_a?(String) %>
-    <div class="rounded-md p-4 <%= name.to_s == 'notice' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>" role="alert">
-      <div class="flex">
-        <div class="flex-grow"><%= msg %></div>
-        <button class="close text-sm font-semibold opacity-50 hover:opacity-75" href="#">&times;</button>
+<div class="max-w-4xl mx-auto px-4 mt-4">
+  <% flash.each do |name, msg| %>
+    <% if msg.is_a?(String) %>
+      <div data-controller="alert" class="rounded-md p-4 <%= name.to_s == 'notice' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>" role="alert">
+        <div class="flex">
+          <div class="flex-grow"><%= msg %></div>
+          <button data-action="click->alert#close" class="close text-sm font-semibold opacity-50 hover:opacity-75">&times;</button>
+        </div>
       </div>
-    </div>
+    <% end %>
   <% end %>
-<% end %>
+</div>

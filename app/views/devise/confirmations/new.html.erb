@@ -1,12 +1,51 @@
-<h2>Resend confirmation instructions</h2>
+<div class="max-w-md mx-auto px-4 py-8">
+  <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-8 py-6">
+      <h2 class="text-2xl font-bold text-white">Resend confirmation instructions</h2>
+      <p class="text-indigo-100 mt-2">Didn't receive confirmation email?</p>
+    </div>
 
-<%= form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post }) do |f| %>
-  <%= devise_error_messages! %>
+    <!-- Form Container -->
+    <div class="px-8 py-8">
+      <%= simple_form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post }) do |f| %>
+        <div class="space-y-6">
+          <% if f.error_notification.present? %>
+            <div class="mb-6 p-4 rounded-md bg-red-50 border border-red-200">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <i class="fas fa-exclamation-circle text-red-400"></i>
+                </div>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-red-800">
+                    <%= f.error_notification %>
+                  </h3>
+                </div>
+              </div>
+            </div>
+          <% end %>
 
-  <div><%= f.label :email %><br />
-  <%= f.email_field :email, autofocus: true %></div>
+          <%= f.input :email,
+              required: true,
+              autofocus: true,
+              label: "Email",
+              label_html: { class: "block text-sm font-medium text-gray-700 mb-2" },
+              input_html: {
+                class: "mt-2 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              },
+              wrapper_html: { class: "block" } %>
 
-  <div><%= f.submit "Resend confirmation instructions" %></div>
-<% end %>
+          <div class="pt-6">
+            <%= f.button :submit, "Resend confirmation instructions",
+                class: "w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition duration-150 ease-in-out" %>
+          </div>
+        </div>
+      <% end %>
 
-<%= render "devise/shared/links" %>
+      <!-- Links -->
+      <div class="mt-8 mb-8">
+        <%= render "devise/shared/links" %>
+      </div>
+    </div>
+  </div>
+</div>
