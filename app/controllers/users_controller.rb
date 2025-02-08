@@ -3,6 +3,10 @@ class UsersController < ApplicationController
 
   def show
     @questions = @user.questions
+    @memberships = @user.memberships.includes(:group)
+    @digest_counts = QuestionRecord.where(group_id: @user.groups.pluck(:id))
+                                  .group(:group_id)
+                                  .count
     @groups = Group.where(user_id: current_user)
   end
 

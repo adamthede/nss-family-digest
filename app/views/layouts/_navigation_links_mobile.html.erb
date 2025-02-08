@@ -1,0 +1,35 @@
+<div class="space-y-1 px-2">
+  <% if user_signed_in? %>
+    <%= link_to questions_path,
+        class: "text-indigo-100 hover:text-white hover:bg-indigo-500 block px-3 py-2 rounded-md text-base font-medium transition-all duration-200" do %>
+      <i class="fas fa-question-circle mr-1"></i>
+      Questions
+    <% end %>
+
+    <%= link_to user_path(current_user),
+        class: "text-indigo-100 hover:text-white hover:bg-indigo-500 block px-3 py-2 rounded-md text-base font-medium transition-all duration-200" do %>
+      <i class="fas fa-user mr-1"></i>
+      Profile
+    <% end %>
+
+    <%= button_to destroy_user_session_path,
+        method: :delete,
+        data: { turbo: true },
+        class: "w-full text-left text-indigo-100 hover:text-white hover:bg-indigo-500 block px-3 py-2 rounded-md text-base font-medium transition-all duration-200" do %>
+      <i class="fas fa-sign-out-alt mr-1"></i>
+      Sign out
+    <% end %>
+  <% else %>
+    <%= link_to new_user_session_path,
+        class: "text-indigo-100 hover:text-white hover:bg-indigo-500 block px-3 py-2 rounded-md text-base font-medium transition-all duration-200" do %>
+      <i class="fas fa-sign-in-alt mr-1"></i>
+      Sign in
+    <% end %>
+
+    <%= link_to new_user_registration_path,
+        class: "text-indigo-100 hover:text-white hover:bg-indigo-500 block px-3 py-2 rounded-md text-base font-medium transition-all duration-200" do %>
+      <i class="fas fa-user-plus mr-1"></i>
+      Get Started
+    <% end %>
+  <% end %>
+</div>

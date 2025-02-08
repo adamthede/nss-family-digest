@@ -5,6 +5,7 @@ class QuestionMailer < ApplicationMailer
   def send_questions(user, group, question)
     email = user.email
     @question = question
+    @group_id = group.id
     mail(to: email, subject: "#{group.name} - QUESTION: * #{@question} *")
   end
 

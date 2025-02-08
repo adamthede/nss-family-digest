@@ -1,0 +1,61 @@
+<div class="flex items-center space-x-4">
+  <% if user_signed_in? %>
+    <!-- Groups Dropdown -->
+    <div class="relative" data-controller="dropdown">
+      <%= link_to "#",
+          data: { action: "click->dropdown#toggle" },
+          class: "text-indigo-100 hover:text-white hover:bg-indigo-500 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 inline-flex items-center" do %>
+        <i class="fas fa-users mr-1"></i>
+        Groups
+        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      <% end %>
+
+      <div data-dropdown-target="menu" class="hidden absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+        <% current_user.memberships.each do |membership| %>
+          <%= link_to membership.group.name,
+              group_path(membership.group),
+              class: "block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600" %>
+        <% end %>
+
+        <div class="border-t border-gray-100 mt-1"></div>
+        <%= link_to new_group_path,
+            class: "block px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50" do %>
+          <i class="fas fa-plus mr-1"></i>New Group
+        <% end %>
+      </div>
+    </div>
+
+    <%= link_to questions_path,
+        class: "text-indigo-100 hover:text-white hover:bg-indigo-500 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200" do %>
+      <i class="fas fa-question-circle mr-1"></i>
+      Questions
+    <% end %>
+
+    <%= link_to user_path(current_user),
+        class: "text-indigo-100 hover:text-white hover:bg-indigo-500 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200" do %>
+      <i class="fas fa-user mr-1"></i>
+      Profile
+    <% end %>
+
+    <%= link_to destroy_user_session_path,
+        data: { turbo_method: :delete },
+        class: "text-indigo-100 hover:text-white hover:bg-indigo-500 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200" do %>
+      <i class="fas fa-sign-out-alt mr-1"></i>
+      Sign out
+    <% end %>
+  <% else %>
+    <%= link_to new_user_session_path,
+        class: "text-indigo-100 hover:text-white hover:bg-indigo-500 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200" do %>
+      <i class="fas fa-sign-in-alt mr-1"></i>
+      Sign in
+    <% end %>
+
+    <%= link_to new_user_registration_path,
+        class: "ml-4 inline-flex items-center px-4 py-2 rounded-md text-indigo-600 bg-white hover:bg-indigo-50 font-medium text-sm transition-all duration-200 shadow-sm hover:shadow" do %>
+      <i class="fas fa-user-plus mr-1"></i>
+      Get Started
+    <% end %>
+  <% end %>
+</div>

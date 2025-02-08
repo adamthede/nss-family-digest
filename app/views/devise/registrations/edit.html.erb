@@ -1,0 +1,105 @@
+<div class="max-w-md mx-auto px-4 py-8">
+  <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-8 py-6">
+      <h2 class="text-2xl font-bold text-white">Edit Profile</h2>
+      <p class="text-indigo-100 mt-2">Update your account information</p>
+    </div>
+
+    <!-- Form Container -->
+    <div class="px-8 py-8">
+      <%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
+        <div class="space-y-6">
+          <% if f.error_notification.present? %>
+            <div class="mb-6 p-4 rounded-md bg-red-50 border border-red-200">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <i class="fas fa-exclamation-circle text-red-400"></i>
+                </div>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-red-800">
+                    <%= f.error_notification %>
+                  </h3>
+                </div>
+              </div>
+            </div>
+          <% end %>
+
+          <%= f.input :email,
+              required: true,
+              autofocus: true,
+              label: "Email",
+              label_html: { class: "block text-sm font-medium text-gray-700 mb-2" },
+              input_html: {
+                class: "mt-2 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              },
+              wrapper_html: { class: "block" } %>
+
+          <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+            <div class="text-sm text-gray-600">
+              Currently waiting confirmation for: <%= resource.unconfirmed_email %>
+            </div>
+          <% end %>
+
+          <%= f.input :password,
+              required: false,
+              label: "New password",
+              label_html: { class: "block text-sm font-medium text-gray-700 mb-2" },
+              hint: "Leave blank if you don't want to change it",
+              hint_html: { class: "mt-1 text-sm text-gray-500" },
+              input_html: {
+                class: "mt-2 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              },
+              wrapper_html: { class: "block" } %>
+
+          <%= f.input :password_confirmation,
+              required: false,
+              label: "Confirm new password",
+              label_html: { class: "block text-sm font-medium text-gray-700 mb-2" },
+              input_html: {
+                class: "mt-2 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              },
+              wrapper_html: { class: "block" } %>
+
+          <%= f.input :current_password,
+              required: true,
+              label: "Current password",
+              label_html: { class: "block text-sm font-medium text-gray-700 mb-2" },
+              hint: "We need your current password to confirm your changes",
+              hint_html: { class: "mt-1 text-sm text-gray-500" },
+              input_html: {
+                class: "mt-2 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              },
+              wrapper_html: { class: "block" } %>
+
+          <div class="pt-6">
+            <%= f.button :submit, "Update",
+                class: "w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition duration-150 ease-in-out" %>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Account Management -->
+      <div class="mt-8 pt-8 border-t border-gray-200">
+        <h3 class="text-lg font-medium text-gray-900">Cancel my account</h3>
+        <p class="mt-1 text-sm text-gray-600">
+          Unhappy? You can cancel your account below.
+        </p>
+        <div class="mt-6">
+          <%= button_to "Cancel my account",
+              registration_path(resource_name),
+              data: { confirm: "Are you sure? This action cannot be undone." },
+              method: :delete,
+              class: "inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-lg text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" %>
+        </div>
+      </div>
+
+      <!-- Links -->
+      <div class="mt-8 mb-8">
+        <%= link_to "Back",
+            :back,
+            class: "text-indigo-600 hover:text-indigo-800 text-sm font-medium transition duration-150 ease-in-out" %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -2,13 +2,13 @@
   <div class="bg-white rounded-lg shadow-lg overflow-hidden">
     <!-- Header -->
     <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-8 py-6">
-      <h2 class="text-2xl font-bold text-white">Resend confirmation instructions</h2>
-      <p class="text-indigo-100 mt-2">Didn't receive confirmation email?</p>
+      <h2 class="text-2xl font-bold text-white">Forgot your password?</h2>
+      <p class="text-indigo-100 mt-2">We'll help you reset it</p>
     </div>
 
     <!-- Form Container -->
     <div class="px-8 py-8">
-      <%= simple_form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post }) do |f| %>
+      <%= simple_form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
         <div class="space-y-6">
           <% if f.error_notification.present? %>
             <div class="mb-6 p-4 rounded-md bg-red-50 border border-red-200">
@@ -36,7 +36,7 @@
               wrapper_html: { class: "block" } %>
 
           <div class="pt-6">
-            <%= f.button :submit, "Resend confirmation instructions",
+            <%= f.button :submit, "Send me reset password instructions",
                 class: "w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition duration-150 ease-in-out" %>
           </div>
         </div>
