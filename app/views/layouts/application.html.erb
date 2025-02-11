@@ -8,6 +8,7 @@
 
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+    <%= tag :meta, name: 'canonical', content: url_for(protocol: 'https') %>
   </head>
 
   <body class="min-h-screen bg-white flex flex-col">

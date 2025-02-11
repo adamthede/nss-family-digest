@@ -5,5 +5,3 @@
 //= link application.css
 //= link tailwind.css
 //= link_tree ../builds
-//= link controllers/application.js
-//= link controllers/index.js

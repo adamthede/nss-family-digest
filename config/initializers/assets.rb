@@ -7,8 +7,9 @@ Rails.application.config.assets.version = "1.0"
 Rails.application.config.assets.paths << Rails.root.join("app/assets/builds")
 
 # Precompile additional assets.
-Rails.application.config.assets.precompile += %w( tailwind.css controllers/application.js controllers/index.js )
+Rails.application.config.assets.precompile += %w( tailwind.css application.js controllers/*.js )
 
+# The following lines are commented out as they're Rails defaults
 # Add additional assets to the asset load path.
 # Rails.application.config.assets.paths << Emoji.images_path
 
