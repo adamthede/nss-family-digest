@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
-export default class extends Controller {
+// Explicitly name the controller
+export default class DropdownController extends Controller {
   static targets = ["menu"]
 
   toggle(event) {
