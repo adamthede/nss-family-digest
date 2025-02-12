@@ -1,3 +1,4 @@
+<% content_for :title, current_user == @user ? "Your Profile" : "#{@user.email}'s Profile" %>
 <div class="max-w-7xl mx-auto px-4 py-8">
   <div class="bg-white rounded-lg shadow-lg overflow-hidden">
     <!-- Profile Header -->
