@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_13_034259) do
+ActiveRecord::Schema[8.0].define(version: 2025_02_13_035114) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -36,14 +36,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_13_034259) do
   create_table "ahoy_messages", force: :cascade do |t|
     t.string "user_type"
     t.bigint "user_id"
-    t.text "to_ciphertext"
-    t.string "to_bidx"
+    t.string "to"
     t.string "mailer"
     t.text "subject"
     t.datetime "sent_at"
     t.string "campaign"
     t.index ["campaign"], name: "index_ahoy_messages_on_campaign"
-    t.index ["to_bidx"], name: "index_ahoy_messages_on_to_bidx"
+    t.index ["to"], name: "index_ahoy_messages_on_to"
     t.index ["user_type", "user_id"], name: "index_ahoy_messages_on_user"
   end
 
