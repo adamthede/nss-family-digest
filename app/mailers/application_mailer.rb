@@ -10,15 +10,4 @@ class ApplicationMailer < ActionMailer::Base
 
   # Add click tracking with a campaign
   track_clicks campaign: -> { "#{mailer_name}-#{action_name}" }
-
-  include Ahoy::Messages::Tracking
-
-  track click: true, open: true, message: true
-  after_action :track_email
-
-  private
-
-  def track_email
-    ahoy_message.save_message
-  end
 end
