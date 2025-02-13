@@ -9,6 +9,7 @@
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags "main" %>
     <%= tag :meta, name: 'canonical', content: url_for(protocol: 'https') %>
+    <%= javascript_include_tag 'ahoy' %>
   </head>
 
   <body class="min-h-screen bg-white flex flex-col">

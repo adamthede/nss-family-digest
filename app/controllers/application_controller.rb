@@ -4,4 +4,12 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
 
   before_action :authenticate_user!
+
+  after_action :track_action
+
+  protected
+
+  def track_action
+    ahoy.track "#{controller_name}##{action_name}", request.path_parameters
+  end
 end

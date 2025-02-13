@@ -40,3 +40,4 @@ latest.dump
 
 # Ignore the .specstory directory and all its subdirectories
 .specstory/**
+docs/**
