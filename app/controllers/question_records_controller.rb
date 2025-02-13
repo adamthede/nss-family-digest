@@ -4,7 +4,7 @@ class QuestionRecordsController < ApplicationController
   def show
     @group = Group.find(@question_record.group_id)
     @question = Question.find(@question_record.question_id)
-    @answers = Answer.where(question_records_id: @question_record.id)
+    @answers = Answer.where(question_record_id: @question_record.id)
     @next_digest = @question_record.next_digest
     @previous_digest = @question_record.previous_digest
   end

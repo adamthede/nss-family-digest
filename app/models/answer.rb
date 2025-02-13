@@ -23,7 +23,7 @@ class Answer < ApplicationRecord
       if DateTime.now < question_record.created_at + 5.days
         Answer.create(:answer => textbody,
                       :user_id => user.id,
-                      :question_records_id => question_record_id)
+                      :question_record_id => question_record_id)
       else
         logger.info("TOO LATE!  Answering has closed for this question.")
       end
@@ -41,7 +41,7 @@ class Answer < ApplicationRecord
       question_id = record.question_id
       group = Group.find(group_id)
       question = Question.find(question_id)
-      answers = Answer.where(question_records_id: record.id)
+      answers = Answer.where(question_record_id: record.id)
       group.users.each do |user|
         QuestionMailer.weekly_digest(user, group, question, answers, record).deliver
       end

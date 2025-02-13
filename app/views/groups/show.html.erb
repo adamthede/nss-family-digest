@@ -21,17 +21,24 @@
         <h2 class="text-xl font-bold mb-4">Members</h2>
         <div class="space-y-3">
           <% @group.users.each do |user| %>
-            <div class="flex items-center bg-gray-50 p-3 rounded-lg">
-              <% if user.profile_image_url(:thumb) %>
-                <%= image_tag user.profile_image_url(:thumb).to_s, class: "h-10 w-10 rounded-full" %>
-              <% else %>
-                <%= image_tag user.gravatar_url, class: "h-10 w-10 rounded-full" %>
-              <% end %>
-              <div class="ml-4 flex items-center">
-                <% if user == @group.leader %>
-                  <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full mr-2">Leader</span>
+            <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+              <div class="flex items-center">
+                <% if user.profile_image_url(:thumb) %>
+                  <%= image_tag user.profile_image_url(:thumb).to_s, class: "h-10 w-10 rounded-full" %>
+                <% else %>
+                  <%= image_tag user.gravatar_url, class: "h-10 w-10 rounded-full" %>
                 <% end %>
-                <span class="text-gray-700"><%= user.email %></span>
+                <div class="ml-4 flex items-center">
+                  <% if user == @group.leader %>
+                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full mr-2">Leader</span>
+                  <% end %>
+                  <span class="text-gray-700"><%= user.email %></span>
+                </div>
+              </div>
+              <div class="flex items-center">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <%= pluralize(@participation_counts[user.id] || 0, 'digest') %>
+                </span>
               </div>
             </div>
           <% end %>

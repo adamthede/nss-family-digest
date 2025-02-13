@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_13_035114) do
+ActiveRecord::Schema[8.0].define(version: 2025_02_13_040940) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -79,7 +79,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_13_035114) do
 
   create_table "answers", id: :serial, force: :cascade do |t|
     t.text "answer"
-    t.integer "question_records_id"
+    t.integer "question_record_id"
     t.integer "user_id"
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil

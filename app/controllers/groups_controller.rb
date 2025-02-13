@@ -16,8 +16,8 @@ class GroupsController < ApplicationController
     @question_records = QuestionRecord.where(group_id: @group.id)
 
     # Get answer counts for sorting
-    @answer_counts = Answer.where(question_records_id: @question_records.pluck(:id))
-                          .group(:question_records_id)
+    @answer_counts = Answer.where(question_record_id: @question_records.pluck(:id))
+                          .group(:question_record_id)
                           .count
 
     # Apply sorting
@@ -35,6 +35,13 @@ class GroupsController < ApplicationController
     # Preload questions to avoid N+1 queries
     @questions = Question.where(id: @question_records.pluck(:question_id))
                         .index_by(&:id)
+
+    # Calculate participation counts for each user
+    @participation_counts = Answer.joins(:question_record)
+      .where(question_records: { group_id: @group.id })
+      .group(:user_id)
+      .distinct
+      .count
   end
 
   # GET /groups/new

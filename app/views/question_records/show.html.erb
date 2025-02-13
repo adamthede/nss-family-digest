@@ -56,7 +56,7 @@
                       <%= label_tag :answer, "Answer this question:", class: "block text-sm font-medium text-gray-700" %>
                       <%= text_area_tag :answer, nil, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" %>
                       <%= hidden_field_tag :user_id, user.id %>
-                      <%= hidden_field_tag :question_records_id, @question_record.id %>
+                      <%= hidden_field_tag :question_record_id, @question_record.id %>
                     </div>
                     <%= submit_tag "Submit Answer", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
                   <% end %>
