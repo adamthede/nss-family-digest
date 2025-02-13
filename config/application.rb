@@ -23,5 +23,8 @@ module NssFamilyDigest
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Set application version
+    config.version = '1.0.0'  # You can keep this if you want to use it elsewhere
   end
 end

@@ -17,8 +17,11 @@ Ahoy.cookie_domain = :all
 # Associate users
 Ahoy.user_method = :current_user
 
-# Automatic controller tracking
-Ahoy.track_actions = true
-
 # Set visit duration
 Ahoy.visit_duration = 30.minutes
+
+# Enable geocoding
+Ahoy.geocode = true
+
+# Configure which URLs to mask
+Ahoy.mask_ips = true
