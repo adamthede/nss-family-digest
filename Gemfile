@@ -23,6 +23,10 @@ gem 'puma', '~> 6.4'
 gem 'tailwindcss-rails'
 gem 'stimulus-rails'
 gem 'importmap-rails'
+gem 'ahoy_matey', '~> 5.1.0'
+gem 'ahoy_email', '~> 2.1.1'
+gem 'geocoder', '~> 1.8.2'
+gem 'device_detector', '~> 1.1'
 
 group :development do
   gem 'bootsnap', require: false

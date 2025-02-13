@@ -11,6 +11,9 @@ class User < ApplicationRecord
   has_many :questions
   has_many :groups
   has_many :memberships
+  has_many :visits, class_name: 'Ahoy::Visit'
+  has_many :events, class_name: 'Ahoy::Event'
+  has_many :messages, class_name: 'Ahoy::Message'
 
   validates_presence_of :email
 
