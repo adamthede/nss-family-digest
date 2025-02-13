@@ -10,10 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_12_185747) do
+ActiveRecord::Schema[8.0].define(version: 2025_02_13_034259) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
+
+  create_table "ahoy_clicks", force: :cascade do |t|
+    t.string "campaign"
+    t.string "token"
+    t.index ["campaign"], name: "index_ahoy_clicks_on_campaign"
+  end
 
   create_table "ahoy_events", force: :cascade do |t|
     t.bigint "visit_id"
@@ -35,6 +41,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_12_185747) do
     t.string "mailer"
     t.text "subject"
     t.datetime "sent_at"
+    t.string "campaign"
+    t.index ["campaign"], name: "index_ahoy_messages_on_campaign"
     t.index ["to_bidx"], name: "index_ahoy_messages_on_to_bidx"
     t.index ["user_type", "user_id"], name: "index_ahoy_messages_on_user"
   end
