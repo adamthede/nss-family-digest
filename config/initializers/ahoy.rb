@@ -6,7 +6,7 @@ class Ahoy::Store < Ahoy::DatabaseStore
 end
 
 # Set to true for JavaScript tracking
-Ahoy.api = false
+Ahoy.api = true
 
 # Better user tracking
 Ahoy.server_side_visits = true
