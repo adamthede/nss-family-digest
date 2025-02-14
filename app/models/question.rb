@@ -1,6 +1,7 @@
 class Question < ApplicationRecord
   belongs_to :user
-  has_many :groups, through: :question_record
+  has_many :question_records
+  has_many :groups, through: :question_records
 
   validates_presence_of :question
   validates_presence_of :user

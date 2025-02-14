@@ -1,9 +1,9 @@
 class Group < ApplicationRecord
   belongs_to :leader, :class_name => :User, :foreign_key => 'user_id'
+  has_many :question_records
   has_many :questions, through: :question_records
   has_many :memberships, dependent: :destroy
   has_many :users, through: :memberships
-  has_many :question_records
 
   validates_presence_of :leader
 

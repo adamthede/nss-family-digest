@@ -31,4 +31,8 @@ Rails.application.routes.draw do
     get 'dashboard/cities_data', to: 'dashboard#cities_data'
     get 'dashboard/user_activity_data', to: 'dashboard#user_activity_data'
   end
+
+  if Rails.env.development?
+    mount LetterOpenerWeb::Engine, at: "/letter_opener"
+  end
 end
