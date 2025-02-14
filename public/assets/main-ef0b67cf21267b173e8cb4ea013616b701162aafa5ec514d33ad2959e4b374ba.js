@@ -2,6 +2,8 @@
 import "@hotwired/turbo-rails"
 import { Application } from "@hotwired/stimulus"
 import "ahoy.js"
+import "chartkick"
+import "Chart.bundle"
 
 // Initialize Stimulus before importing controllers
 const application = Application.start()
