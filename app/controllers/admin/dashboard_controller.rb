@@ -38,7 +38,13 @@ class Admin::DashboardController < ApplicationController
   end
 
   def hourly_visits_data
-    render json: Ahoy::Visit.group_by_hour_of_day(:started_at, format: "%l %P").count
+    render json: Ahoy::Visit
+      .group_by_hour_of_day(
+        :started_at,
+        format: "%l %P",
+        time_zone: Time.zone.name
+      )
+      .count
   end
 
   def countries_data

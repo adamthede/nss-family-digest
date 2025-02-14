@@ -38,7 +38,9 @@
 
       <!-- Traffic Patterns -->
       <div class="mt-6">
-        <h3 class="text-lg font-medium text-gray-700 mb-3">Traffic by Hour of Day</h3>
+        <h3 class="text-lg font-medium text-gray-700 mb-3">
+          Traffic by Hour of Day (<%= Time.zone.name %>)
+        </h3>
         <%= column_chart admin_dashboard_hourly_visits_data_path,
             colors: ["#818CF8"],
             suffix: " visits",
