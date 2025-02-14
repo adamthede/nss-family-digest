@@ -1,0 +1,125 @@
+<div class="p-6">
+  <h1 class="text-3xl font-bold text-gray-900 mb-8">Global Admin Dashboard</h1>
+
+  <div class="space-y-8">
+    <!-- Visit Statistics Section -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Visit Statistics</h2>
+
+      <!-- Visit Trend Chart -->
+      <div class="mb-6">
+        <h3 class="text-lg font-medium text-gray-700 mb-3">Daily Visits (Last 30 Days)</h3>
+        <%= line_chart admin_dashboard_daily_visits_data_path,
+            colors: ["#4F46E5"],
+            suffix: " visits",
+            points: false,
+            loading: "Loading visits...",
+            library: {
+              scales: {
+                y: { beginAtZero: true }
+              }
+            } %>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-gray-50 rounded-lg p-6 text-center">
+          <h3 class="text-sm font-medium text-gray-600">Total Visits</h3>
+          <p class="mt-2 text-2xl font-bold text-gray-900"><%= @stats[:total_visits] %></p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-6 text-center">
+          <h3 class="text-sm font-medium text-gray-600">Unique Visitors</h3>
+          <p class="mt-2 text-2xl font-bold text-gray-900"><%= @stats[:unique_visitors] %></p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-6 text-center">
+          <h3 class="text-sm font-medium text-gray-600">Last 30 Days</h3>
+          <p class="mt-2 text-2xl font-bold text-gray-900"><%= @stats[:visits_last_30_days] %></p>
+        </div>
+      </div>
+
+      <!-- Traffic Patterns -->
+      <div class="mt-6">
+        <h3 class="text-lg font-medium text-gray-700 mb-3">Traffic by Hour of Day</h3>
+        <%= column_chart admin_dashboard_hourly_visits_data_path,
+            colors: ["#818CF8"],
+            suffix: " visits",
+            loading: "Loading traffic patterns..." %>
+      </div>
+    </div>
+
+    <!-- Geographic Distribution Section -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Geographic Distribution</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-lg font-medium text-gray-700 mb-3">Top Countries</h3>
+          <%= pie_chart admin_dashboard_countries_data_path,
+              colors: ["#4F46E5", "#818CF8", "#C7D2FE", "#E0E7FF"],
+              donut: true,
+              loading: "Loading countries..." %>
+        </div>
+        <div>
+          <h3 class="text-lg font-medium text-gray-700 mb-3">Device Types</h3>
+          <%= pie_chart admin_dashboard_devices_data_path,
+              colors: ["#4F46E5", "#818CF8", "#C7D2FE"],
+              donut: true,
+              loading: "Loading devices..." %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Email Campaign Performance Section -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Email Campaign Performance</h2>
+
+      <!-- Email Trend Chart -->
+      <div class="mb-6">
+        <h3 class="text-lg font-medium text-gray-700 mb-3">Emails Sent (Last 30 Days)</h3>
+        <%= area_chart admin_dashboard_emails_data_path,
+            colors: ["#4F46E5"],
+            suffix: " emails",
+            loading: "Loading email data..." %>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th class="py-3 text-left text-sm font-medium text-gray-500">Campaign</th>
+              <th class="py-3 text-right text-sm font-medium text-gray-500">Emails Sent</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <% @stats[:email_campaigns].each do |campaign, count| %>
+              <tr>
+                <td class="py-3 text-sm text-gray-900"><%= campaign.presence || 'Uncategorized' %></td>
+                <td class="py-3 text-sm text-gray-600 text-right"><%= count %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Event Analysis Section -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Event Analysis</h2>
+      <div class="mb-6">
+        <h3 class="text-lg font-medium text-gray-700 mb-3">Top Events</h3>
+        <%= bar_chart admin_dashboard_events_data_path,
+            colors: ["#4F46E5"],
+            suffix: " occurrences",
+            loading: "Loading events..." %>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="text-lg font-medium text-gray-700 mb-3">Recent Events</h3>
+        <% @stats[:recent_events].each do |event| %>
+          <div class="flex justify-between items-center py-3 border-b border-gray-200 last:border-0">
+            <span class="text-sm text-gray-900"><%= event.name %></span>
+            <span class="text-sm text-gray-500"><%= event.time.strftime("%Y-%m-%d %H:%M") %></span>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
