@@ -27,5 +27,8 @@ Rails.application.routes.draw do
     get 'dashboard/devices_data', to: 'dashboard#devices_data'
     get 'dashboard/emails_data', to: 'dashboard#emails_data'
     get 'dashboard/events_data', to: 'dashboard#events_data'
+    get 'dashboard/regions_data', to: 'dashboard#regions_data'
+    get 'dashboard/cities_data', to: 'dashboard#cities_data'
+    get 'dashboard/user_activity_data', to: 'dashboard#user_activity_data'
   end
 end

@@ -51,7 +51,9 @@
     <!-- Geographic Distribution Section -->
     <div class="bg-white rounded-lg shadow p-6">
       <h2 class="text-xl font-semibold text-gray-800 mb-4">Geographic Distribution</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- First Row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
           <h3 class="text-lg font-medium text-gray-700 mb-3">Top Countries</h3>
           <%= pie_chart admin_dashboard_countries_data_path,
@@ -65,6 +67,32 @@
               colors: ["#4F46E5", "#818CF8", "#C7D2FE"],
               donut: true,
               loading: "Loading devices..." %>
+        </div>
+      </div>
+
+      <!-- Second Row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-lg font-medium text-gray-700 mb-3">US States Heat Map</h3>
+          <%= geo_chart admin_dashboard_regions_data_path,
+              library: {
+                region: 'US',
+                resolution: 'provinces',
+                backgroundColor: '#ffffff',
+                datalessRegionColor: '#F3F4F6',
+                colorAxis: {
+                  colors: ['#C7D2FE', '#4F46E5']
+                }
+              },
+              loading: "Loading states map...",
+              height: "400px" %>
+        </div>
+        <div>
+          <h3 class="text-lg font-medium text-gray-700 mb-3">Top Cities</h3>
+          <%= bar_chart admin_dashboard_cities_data_path,
+              colors: ["#818CF8"],
+              loading: "Loading cities...",
+              height: "400px" %>
         </div>
       </div>
     </div>
@@ -105,6 +133,7 @@
     <!-- Event Analysis Section -->
     <div class="bg-white rounded-lg shadow p-6">
       <h2 class="text-xl font-semibold text-gray-800 mb-4">Event Analysis</h2>
+
       <div class="mb-6">
         <h3 class="text-lg font-medium text-gray-700 mb-3">Top Events</h3>
         <%= bar_chart admin_dashboard_events_data_path,
@@ -115,12 +144,107 @@
 
       <div class="space-y-2">
         <h3 class="text-lg font-medium text-gray-700 mb-3">Recent Events</h3>
-        <% @stats[:recent_events].each do |event| %>
-          <div class="flex justify-between items-center py-3 border-b border-gray-200 last:border-0">
-            <span class="text-sm text-gray-900"><%= event.name %></span>
-            <span class="text-sm text-gray-500"><%= event.time.strftime("%Y-%m-%d %H:%M") %></span>
-          </div>
-        <% end %>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr>
+                <th class="py-3 text-left text-sm font-medium text-gray-500">Event</th>
+                <th class="py-3 text-left text-sm font-medium text-gray-500">User</th>
+                <th class="py-3 text-left text-sm font-medium text-gray-500">Time</th>
+                <th class="py-3 text-left text-sm font-medium text-gray-500">Details</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <% @stats[:recent_events].each do |event| %>
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 text-sm text-gray-900"><%= event[:name] %></td>
+                  <td class="py-3 text-sm text-gray-600">
+                    <%= event[:user] %>
+                  </td>
+                  <td class="py-3 text-sm text-gray-500">
+                    <%= event[:time].strftime("%Y-%m-%d %H:%M") %>
+                  </td>
+                  <td class="py-3 text-sm text-gray-500">
+                    <% if event[:properties].present? %>
+                      <details class="cursor-pointer">
+                        <summary class="text-indigo-600 hover:text-indigo-800">View Details</summary>
+                        <div class="mt-2 text-xs">
+                          <% event[:properties].each do |key, value| %>
+                            <div class="mb-1">
+                              <span class="font-medium"><%= key %>:</span>
+                              <%= value.to_s.truncate(50) %>
+                            </div>
+                          <% end %>
+                        </div>
+                      </details>
+                    <% else %>
+                      No additional details
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Analytics Section -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">User Analytics</h2>
+
+      <!-- User Activity Chart -->
+      <div class="mb-6">
+        <h3 class="text-lg font-medium text-gray-700 mb-3">Daily User Activity (Last 30 Days)</h3>
+        <%= line_chart admin_dashboard_user_activity_data_path,
+            colors: ["#4F46E5"],
+            suffix: " actions",
+            points: false,
+            loading: "Loading user activity..." %>
+      </div>
+
+      <!-- Top Users Table -->
+      <div class="mb-6">
+        <h3 class="text-lg font-medium text-gray-700 mb-3">Most Active Users</h3>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+              <tr>
+                <th class="py-3 text-left text-sm font-medium text-gray-500">User</th>
+                <th class="py-3 text-left text-sm font-medium text-gray-500">Total Actions</th>
+                <th class="py-3 text-left text-sm font-medium text-gray-500">Last Active</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <% @stats[:top_users].each do |user| %>
+                <tr class="hover:bg-gray-50">
+                  <td class="py-3 text-sm text-gray-900">
+                    <%= user.email %>
+                  </td>
+                  <td class="py-3 text-sm text-gray-600">
+                    <%= user.event_count %>
+                  </td>
+                  <td class="py-3 text-sm text-gray-500">
+                    <%= user.last_active&.strftime("%Y-%m-%d %H:%M") || 'N/A' %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Most Common User Actions -->
+      <div>
+        <h3 class="text-lg font-medium text-gray-700 mb-3">Most Common User Actions</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <% @stats[:most_common_user_actions].each do |action, count| %>
+            <div class="bg-gray-50 rounded-lg p-4">
+              <div class="text-sm font-medium text-gray-600"><%= action %></div>
+              <div class="mt-2 text-2xl font-bold text-indigo-600"><%= count %></div>
+            </div>
+          <% end %>
+        </div>
       </div>
     </div>
   </div>
