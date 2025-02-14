@@ -17,6 +17,9 @@ class User < ApplicationRecord
 
   validates_presence_of :email
 
+  # Ensures only one user can have global_admin true
+  validates :global_admin, uniqueness: true, if: :global_admin?
+
   after_create :send_welcome_email
   # after_update :send_confirmation_email
 
@@ -40,5 +43,10 @@ class User < ApplicationRecord
     md5 = Digest::MD5.new
     hash = md5.hexdigest(email.strip.downcase)
     return 'http://www.gravatar.com/avatar/' + hash
+  end
+
+  # Helper method to check global admin privileges
+  def global_admin?
+    global_admin
   end
 end

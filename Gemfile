@@ -26,6 +26,8 @@ gem 'ahoy_matey', '~> 5.1.0'
 gem 'ahoy_email', '~> 2.1.1'
 gem 'geocoder', '~> 1.8.2'
 gem 'device_detector', '~> 1.1'
+gem "chartkick", "~> 5.0"
+gem "groupdate", "~> 6.4"
 
 group :development do
   gem 'bootsnap', require: false
