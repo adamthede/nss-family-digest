@@ -1,0 +1,117 @@
+<%= render 'admin/dashboard/nav' %>
+
+<div class="p-6">
+  <div class="mb-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">User Details: <%= @user.email %></h1>
+      <p class="mt-1 text-sm text-gray-500">Detailed activity analysis for this user</p>
+    </div>
+    <%= link_to "← Back to User Statistics",
+        admin_dashboard_users_path,
+        class: "text-indigo-600 hover:text-indigo-900" %>
+  </div>
+
+  <!-- Activity Overview Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-sm font-medium text-gray-500">Total Visits</h3>
+      <p class="mt-2 text-3xl font-semibold text-gray-900"><%= @stats[:total_visits] %></p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-sm font-medium text-gray-500">Total Events</h3>
+      <p class="mt-2 text-3xl font-semibold text-gray-900"><%= @stats[:total_events] %></p>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <h3 class="text-sm font-medium text-gray-500">Most Common Action</h3>
+      <p class="mt-2 text-3xl font-semibold text-gray-900">
+        <%= @stats[:most_common_events].first&.first || 'N/A' %>
+      </p>
+    </div>
+  </div>
+
+  <!-- User Activity Chart -->
+  <div class="bg-white rounded-lg shadow p-6 mb-6">
+    <h2 class="text-lg font-medium text-gray-900 mb-4">Activity Over Time</h2>
+    <%= line_chart @stats[:activity_by_day],
+        colors: ["#4F46E5"],
+        suffix: " events",
+        points: false %>
+  </div>
+
+  <!-- Visits List -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h2 class="text-lg font-medium text-gray-900">Recent Visits</h2>
+    </div>
+
+    <div class="divide-y divide-gray-200">
+      <% @visits.each do |visit| %>
+        <div class="p-6 hover:bg-gray-50">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-sm font-medium text-gray-900">
+                Visit on <%= visit.started_at.strftime("%B %d, %Y") %>
+              </h3>
+              <p class="text-sm text-gray-500">
+                <%= visit.browser %> on <%= visit.device_type %>
+                <% if visit.city.present? && visit.country.present? %>
+                  from <%= visit.city %>, <%= visit.country %>
+                <% end %>
+              </p>
+              <% if visit.events.any? %>
+                <p class="text-xs text-gray-500 mt-1">
+                  Duration:
+                  <%= visit.events.minimum(:time)&.strftime("%I:%M:%S %p") %> -
+                  <%= visit.events.maximum(:time)&.strftime("%I:%M:%S %p") %>
+                  (<%= distance_of_time_in_words(visit.events.minimum(:time), visit.events.maximum(:time)) %>)
+                </p>
+              <% end %>
+            </div>
+            <button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                    onclick="document.getElementById('visit-<%= visit.id %>').classList.toggle('hidden')">
+              View Events
+            </button>
+          </div>
+
+          <div id="visit-<%= visit.id %>" class="hidden">
+            <div class="bg-gray-50 rounded-lg p-4 mt-2">
+              <h4 class="text-sm font-medium text-gray-900 mb-2">Events during this visit:</h4>
+              <div class="space-y-2">
+                <% visit.events.order(time: :asc).each do |event| %>
+                  <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                      <div class="w-2 h-2 bg-indigo-400 rounded-full mt-2"></div>
+                    </div>
+                    <div class="ml-4">
+                      <p class="text-sm text-gray-900"><%= event.name %></p>
+                      <p class="text-xs text-gray-500">
+                        <%= event.time.strftime("%I:%M:%S %p") %>
+                      </p>
+                      <% if event.properties.present? %>
+                        <details class="mt-1">
+                          <summary class="text-xs text-indigo-600 cursor-pointer">
+                            View Details
+                          </summary>
+                          <div class="mt-1 text-xs text-gray-600">
+                            <% event.properties.each do |key, value| %>
+                              <div class="ml-2">
+                                <span class="font-medium"><%= key %>:</span>
+                                <%= value.to_s.truncate(50) %>
+                              </div>
+                            <% end %>
+                          </div>
+                        </details>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

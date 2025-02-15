@@ -1,0 +1,108 @@
+<div class="bg-white border-b border-gray-200">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col sm:flex-row">
+      <div class="flex-shrink-0 py-4 px-4 sm:px-6 lg:px-8 bg-gray-50 sm:bg-transparent">
+        <h1 class="text-xl font-bold text-gray-900">Admin Dashboard</h1>
+      </div>
+      <div class="flex overflow-x-auto">
+        <%= link_to "Overview", admin_dashboard_path,
+            class: "#{current_page?(admin_dashboard_path) ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500'} whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm hover:text-gray-700 hover:border-gray-300" %>
+
+        <%= link_to "Visit Statistics", admin_dashboard_visits_path,
+            class: "#{current_page?(admin_dashboard_visits_path) ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500'} whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm hover:text-gray-700 hover:border-gray-300" %>
+
+        <%= link_to "Email Performance", admin_dashboard_emails_path,
+            class: "#{current_page?(admin_dashboard_emails_path) ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500'} whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm hover:text-gray-700 hover:border-gray-300" %>
+
+        <%= link_to "Event Analysis", admin_dashboard_events_path,
+            class: "#{current_page?(admin_dashboard_events_path) ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500'} whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm hover:text-gray-700 hover:border-gray-300" %>
+
+        <%= link_to "User Statistics", admin_dashboard_users_path,
+            class: "#{current_page?(admin_dashboard_users_path) ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500'} whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm hover:text-gray-700 hover:border-gray-300" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bg-gray-50 py-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Users Card -->
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-8 py-6">
+          <div class="flex items-center space-x-6">
+            <div class="flex-shrink-0">
+              <div class="bg-indigo-100 rounded-lg w-12 h-12 flex items-center justify-center">
+                <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-500">Total Users</p>
+              <p class="mt-1.5 text-2xl font-semibold text-gray-900"><%= @total_users %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visits Card -->
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-8 py-6">
+          <div class="flex items-center space-x-6">
+            <div class="flex-shrink-0">
+              <div class="bg-blue-100 rounded-lg w-12 h-12 flex items-center justify-center">
+                <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </div>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-500">Total Visits</p>
+              <p class="mt-1.5 text-2xl font-semibold text-gray-900"><%= @total_visits %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Events Card -->
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-8 py-6">
+          <div class="flex items-center space-x-6">
+            <div class="flex-shrink-0">
+              <div class="bg-green-100 rounded-lg w-12 h-12 flex items-center justify-center">
+                <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-500">Total Events</p>
+              <p class="mt-1.5 text-2xl font-semibold text-gray-900"><%= @total_events %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Emails Card -->
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-8 py-6">
+          <div class="flex items-center space-x-6">
+            <div class="flex-shrink-0">
+              <div class="bg-purple-100 rounded-lg w-12 h-12 flex items-center justify-center">
+                <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-500">Total Emails</p>
+              <p class="mt-1.5 text-2xl font-semibold text-gray-900"><%= @total_emails_sent || 0 %></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

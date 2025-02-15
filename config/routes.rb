@@ -18,7 +18,13 @@ Rails.application.routes.draw do
   post 'answer' => 'answers#create_from_form'
 
   namespace :admin do
+    # Main dashboard and sections
     get 'dashboard', to: 'dashboard#index'
+    get 'dashboard/visits', to: 'dashboard#visits'
+    get 'dashboard/emails', to: 'dashboard#emails'
+    get 'dashboard/events', to: 'dashboard#events'
+    get 'dashboard/users', to: 'dashboard#users'
+    get 'dashboard/users/:id', to: 'dashboard#user_details', as: 'dashboard_user_details'
 
     # Chart data endpoints
     get 'dashboard/daily_visits_data', to: 'dashboard#daily_visits_data'

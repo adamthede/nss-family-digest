@@ -1,0 +1,100 @@
+<%= render 'admin/dashboard/nav' %>
+
+<div class="p-6">
+  <div class="space-y-8">
+    <!-- Visit Statistics Section -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Visit Statistics</h2>
+
+      <!-- Visit Trend Chart -->
+      <div class="mb-6">
+        <h3 class="text-lg font-medium text-gray-700 mb-3">Daily Visits (Last 30 Days)</h3>
+        <%= line_chart admin_dashboard_daily_visits_data_path,
+            colors: ["#4F46E5"],
+            suffix: " visits",
+            points: false,
+            loading: "Loading visits...",
+            library: {
+              scales: {
+                y: { beginAtZero: true }
+              }
+            } %>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="bg-gray-50 rounded-lg p-6 text-center">
+          <h3 class="text-sm font-medium text-gray-600">Total Visits</h3>
+          <p class="mt-2 text-2xl font-bold text-gray-900"><%= @stats[:total_visits] || 0 %></p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-6 text-center">
+          <h3 class="text-sm font-medium text-gray-600">Unique Visitors</h3>
+          <p class="mt-2 text-2xl font-bold text-gray-900"><%= @stats[:unique_visitors] || 0 %></p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-6 text-center">
+          <h3 class="text-sm font-medium text-gray-600">Last 30 Days</h3>
+          <p class="mt-2 text-2xl font-bold text-gray-900"><%= @stats[:visits_last_30_days] || 0 %></p>
+        </div>
+      </div>
+
+      <!-- Traffic Patterns -->
+      <div class="mt-6">
+        <h3 class="text-lg font-medium text-gray-700 mb-3">
+          Traffic by Hour of Day (<%= Time.zone.name %>)
+        </h3>
+        <%= column_chart admin_dashboard_hourly_visits_data_path,
+            colors: ["#818CF8"],
+            suffix: " visits",
+            loading: "Loading traffic patterns..." %>
+      </div>
+    </div>
+
+    <!-- Geographic Distribution Section -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Geographic Distribution</h2>
+
+      <!-- First Row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <h3 class="text-lg font-medium text-gray-700 mb-3">Top Countries</h3>
+          <%= pie_chart admin_dashboard_countries_data_path,
+              colors: ["#4F46E5", "#818CF8", "#C7D2FE", "#E0E7FF"],
+              donut: true,
+              loading: "Loading countries..." %>
+        </div>
+        <div>
+          <h3 class="text-lg font-medium text-gray-700 mb-3">Device Types</h3>
+          <%= pie_chart admin_dashboard_devices_data_path,
+              colors: ["#4F46E5", "#818CF8", "#C7D2FE"],
+              donut: true,
+              loading: "Loading devices..." %>
+        </div>
+      </div>
+
+      <!-- Second Row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-lg font-medium text-gray-700 mb-3">US States Heat Map</h3>
+          <%= geo_chart admin_dashboard_regions_data_path,
+              library: {
+                region: 'US',
+                resolution: 'provinces',
+                backgroundColor: '#ffffff',
+                datalessRegionColor: '#F3F4F6',
+                colorAxis: {
+                  colors: ['#C7D2FE', '#4F46E5']
+                }
+              },
+              loading: "Loading states map...",
+              height: "400px" %>
+        </div>
+        <div>
+          <h3 class="text-lg font-medium text-gray-700 mb-3">Top Cities</h3>
+          <%= bar_chart admin_dashboard_cities_data_path,
+              colors: ["#818CF8"],
+              loading: "Loading cities...",
+              height: "400px" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

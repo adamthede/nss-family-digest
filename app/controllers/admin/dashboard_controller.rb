@@ -1,33 +1,20 @@
 class Admin::DashboardController < ApplicationController
   before_action :authenticate_user!
   before_action :require_global_admin
+  before_action :set_common_stats
 
   def index
+    # Overview stats
     @stats = {
-      # Visit Statistics
       total_visits: Ahoy::Visit.count,
-      unique_visitors: Ahoy::Visit.distinct.count(:visitor_token),
-      visits_last_30_days: Ahoy::Visit.where('started_at > ?', 30.days.ago).count,
-
-      # Visit Trends
-      daily_visits: Ahoy::Visit.group_by_day(:started_at, last: 30).count,
-      hourly_visits: Ahoy::Visit.group_by_hour_of_day(:started_at, format: "%l %P").count,
-
-      # Geographic Data
-      top_countries: Ahoy::Visit.group(:country).count.sort_by { |_, v| -v }.first(10),
-      top_regions: Ahoy::Visit.group(:region).count.sort_by { |_, v| -v }.first(10),
-      top_cities: Ahoy::Visit.group(:city).count.sort_by { |_, v| -v }.first(10),
-
-      # Device/Platform Info
-      browser_stats: Ahoy::Visit.group(:browser).count,
-      device_stats: Ahoy::Visit.group(:device_type).count,
-
-      # Events
+      total_users: User.count,
       total_events: Ahoy::Event.count,
+      total_emails_sent: Ahoy::Message.count,
+      email_campaigns: Ahoy::Message.group(:campaign).count || {},
       recent_events: Ahoy::Event
         .includes(:user)
         .order(time: :desc)
-        .limit(10)
+        .limit(5)
         .map { |event|
           {
             name: event.name,
@@ -36,14 +23,6 @@ class Admin::DashboardController < ApplicationController
             properties: event.properties
           }
         },
-      events_by_name: Ahoy::Event.group(:name).count.sort_by { |_, v| -v }.first(10),
-
-      # Email Campaign Stats
-      email_campaigns: Ahoy::Message.group(:campaign).count,
-      total_emails_sent: Ahoy::Message.count,
-      emails_over_time: Ahoy::Message.group_by_day(:sent_at, last: 30).count,
-
-      # Add User Analytics
       top_users: User
         .joins("LEFT JOIN ahoy_events ON ahoy_events.user_id = users.id")
         .group("users.id, users.email")
@@ -54,7 +33,73 @@ class Admin::DashboardController < ApplicationController
           "MAX(ahoy_events.time) as last_active"
         )
         .order("event_count DESC")
-        .limit(10),
+        .limit(5),  # Limit to 5 for overview
+      most_common_user_actions: Ahoy::Event
+        .where.not(user_id: nil)
+        .group(:name)
+        .order(Arel.sql('COUNT(*) DESC'))
+        .limit(5)
+        .count || {},
+      unique_visitors: Ahoy::Visit.distinct.count(:visitor_token),
+      visits_last_30_days: Ahoy::Visit.where('started_at > ?', 30.days.ago).count
+    }
+  end
+
+  def visits
+    @stats = {
+      total_visits: Ahoy::Visit.count,
+      unique_visitors: Ahoy::Visit.distinct.count(:visitor_token),
+      visits_last_30_days: Ahoy::Visit.where('started_at > ?', 30.days.ago).count,
+      daily_visits: Ahoy::Visit.group_by_day(:started_at, last: 30).count,
+      hourly_visits: Ahoy::Visit.group_by_hour_of_day(:started_at, format: "%l %P").count,
+      top_countries: Ahoy::Visit.group(:country).count.sort_by { |_, v| -v }.first(10),
+      top_regions: Ahoy::Visit.group(:region).count.sort_by { |_, v| -v }.first(10),
+      top_cities: Ahoy::Visit.group(:city).count.sort_by { |_, v| -v }.first(10),
+      browser_stats: Ahoy::Visit.group(:browser).count,
+      device_stats: Ahoy::Visit.group(:device_type).count
+    }
+  end
+
+  def emails
+    @stats = {
+      email_campaigns: Ahoy::Message.group(:campaign).count,
+      total_emails_sent: Ahoy::Message.count,
+      emails_over_time: Ahoy::Message.group_by_day(:sent_at, last: 30).count
+    }
+  end
+
+  def events
+    @stats = {
+      total_events: Ahoy::Event.count,
+      recent_events: Ahoy::Event
+        .includes(:user)
+        .order(time: :desc)
+        .limit(20)
+        .map { |event|
+          {
+            name: event.name,
+            time: event.time,
+            user: event.user&.email || 'Anonymous',
+            properties: event.properties
+          }
+        },
+      events_by_name: Ahoy::Event.group(:name).count.sort_by { |_, v| -v }.first(10)
+    }
+  end
+
+  def users
+    @stats = {
+      top_users: User
+        .joins("LEFT JOIN ahoy_events ON ahoy_events.user_id = users.id")
+        .group("users.id, users.email")
+        .select(
+          "users.email",
+          "users.id",
+          "COUNT(DISTINCT ahoy_events.id) as event_count",
+          "MAX(ahoy_events.time) as last_active"
+        )
+        .order("event_count DESC")
+        .limit(20),
 
       user_activity_by_day: Ahoy::Event
         .where.not(user_id: nil)
@@ -65,7 +110,7 @@ class Admin::DashboardController < ApplicationController
         .where.not(user_id: nil)
         .group(:name)
         .order(Arel.sql('COUNT(*) DESC'))
-        .limit(5)
+        .limit(10)
         .count
     }
   end
@@ -143,7 +188,46 @@ class Admin::DashboardController < ApplicationController
       .count
   end
 
+  def user_details
+    @user = User.find(params[:id])
+
+    # Fetch the visits as an array (ensuring the relation is fully loaded)
+    @visits = Ahoy::Visit.where(user_id: @user.id)
+                        .includes(events: :user)
+                        .order(started_at: :desc)
+
+    @stats = {
+      total_visits: Ahoy::Visit.where(user_id: @user.id).count,
+      total_events: Ahoy::Event.where(user_id: @user.id).count,
+      most_common_events: Ahoy::Event
+        .where(user_id: @user.id)
+        .group(:name)
+        .order('count_id DESC')
+        .count(:id)
+        .first(5),
+      activity_by_day: Ahoy::Event
+        .where(user_id: @user.id)
+        .group_by_day(:time, last: 30)
+        .count,
+      browser_stats: Ahoy::Visit
+        .where(user_id: @user.id)
+        .group(:browser)
+        .count,
+      device_stats: Ahoy::Visit
+        .where(user_id: @user.id)
+        .group(:device_type)
+        .count
+    }
+  end
+
   private
+
+  def set_common_stats
+    @total_users = User.count
+    @total_visits = Ahoy::Visit.count
+    @total_events = Ahoy::Event.count
+    @total_emails_sent = Ahoy::Message.count
+  end
 
   def require_global_admin
     unless current_user&.global_admin?
