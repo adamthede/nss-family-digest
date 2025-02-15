@@ -6,13 +6,11 @@ gem 'rails', '8.0.1'
 gem 'carrierwave', '~> 3.1.1'
 gem 'turbo-rails', '~> 2.0.11'
 gem 'devise'
-gem 'figaro'
 gem 'aws-sdk-s3', '~> 1.141'
 gem 'jbuilder'
 gem 'jquery-rails'
 gem 'mini_magick'
 gem 'pg', '~> 1.5.9'
-gem 'postmark-rails'
 gem 'simple_form'
 gem 'uglifier'
 gem 'carrierwave-aws', '~> 1.6'
@@ -28,6 +26,7 @@ gem 'geocoder', '~> 1.8.2'
 gem 'device_detector', '~> 1.1'
 gem "chartkick", "~> 5.0"
 gem "groupdate", "~> 6.4"
+gem 'sendgrid-ruby'
 
 group :development do
   gem 'bootsnap', require: false
@@ -42,6 +41,7 @@ group :development, :test do
   gem 'letter_opener_web'
   gem 'rspec-rails'
   gem 'rspec'
+  gem 'dotenv-rails'
 end
 
 group :test do

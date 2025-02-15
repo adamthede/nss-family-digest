@@ -3,17 +3,17 @@ class EmailResponseController < ApplicationController
   skip_before_action :authenticate_user!
 
   def create_from_inbound_hook
-    puts params
-    from = params[:From]
-    puts from
-    subject = params[:Subject]
-    puts subject
-    textbody = params[:TextBody]
-    puts textbody
-    strippedtextreply = params[:StrippedTextReply]
-    puts strippedtextreply
-    Answer.create_from_email(from, subject, textbody)
-    head :ok, :content_type => 'text/html'
+    Rails.logger.info "Inbound email params: #{params.inspect}"
+
+    from = params['from']
+    subject = params['subject']
+    # Use 'text' field; use 'html' as a fallback if needed
+    text_body = params['text'] || params['html']
+
+    # Process the email (existing method call, update as needed)
+    Answer.create_from_email(from, subject, text_body)
+
+    head :ok, content_type: 'text/html'
   end
 
 end
