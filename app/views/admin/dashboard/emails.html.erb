@@ -1,0 +1,44 @@
+<%= render 'admin/dashboard/nav' %>
+
+<div class="p-6">
+  <div class="space-y-8">
+    <!-- Email Campaign Performance Section -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Email Campaign Performance</h2>
+
+      <!-- Email Trend Chart -->
+      <div class="mb-6">
+        <h3 class="text-lg font-medium text-gray-700 mb-3">Emails Sent (Last 30 Days)</h3>
+        <%= area_chart admin_dashboard_emails_data_path,
+            colors: ["#4F46E5"],
+            suffix: " emails",
+            loading: "Loading email data..." %>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th class="py-3 text-left text-sm font-medium text-gray-500">Campaign</th>
+              <th class="py-3 text-right text-sm font-medium text-gray-500">Emails Sent</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <% if @stats[:email_campaigns].present? %>
+              <% @stats[:email_campaigns].each do |campaign, count| %>
+                <tr>
+                  <td class="py-3 text-sm text-gray-900"><%= campaign.presence || 'Uncategorized' %></td>
+                  <td class="py-3 text-sm text-gray-600 text-right"><%= count %></td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="2" class="py-3 text-sm text-gray-500 text-center">No email campaigns data available</td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

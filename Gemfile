@@ -34,13 +34,12 @@ group :development do
   gem 'rails_layout'
   gem 'rails-erd'
   gem 'listen'
-  gem 'letter_opener'
-  gem 'letter_opener_web'
 end
 
 group :development, :test do
   gem 'email_spec'
   gem 'letter_opener'
+  gem 'letter_opener_web'
   gem 'rspec-rails'
   gem 'rspec'
 end
