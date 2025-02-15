@@ -1,6 +1,7 @@
 require 'digest/md5'
 
 class User < ApplicationRecord
+  include AnalyticsHelper
   mount_uploader :profile_image, ProfileImageUploader
 
   # Include default devise modules. Others available are:

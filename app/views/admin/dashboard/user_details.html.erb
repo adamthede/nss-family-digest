@@ -69,10 +69,12 @@
                 </p>
               <% end %>
             </div>
-            <button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                    onclick="document.getElementById('visit-<%= visit.id %>').classList.toggle('hidden')">
-              View Events
-            </button>
+            <div class="flex items-center">
+              <button class="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                      onclick="document.getElementById('visit-<%= visit.id %>').classList.toggle('hidden')">
+                View Events (<%= visit.events.size %>)
+              </button>
+            </div>
           </div>
 
           <div id="visit-<%= visit.id %>" class="hidden">

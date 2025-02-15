@@ -4,87 +4,30 @@ class Admin::DashboardController < ApplicationController
   before_action :set_common_stats
 
   def index
-    # Overview stats
     @stats = {
-      total_visits: Ahoy::Visit.count,
+      **AnalyticsService.visit_statistics,
       total_users: User.count,
       total_events: Ahoy::Event.count,
       total_emails_sent: Ahoy::Message.count,
-      email_campaigns: Ahoy::Message.group(:campaign).count || {},
-      recent_events: Ahoy::Event
-        .includes(:user)
-        .order(time: :desc)
-        .limit(5)
-        .map { |event|
-          {
-            name: event.name,
-            time: event.time,
-            user: event.user&.email || 'Anonymous',
-            properties: event.properties
-          }
-        },
-      top_users: User
-        .joins("LEFT JOIN ahoy_events ON ahoy_events.user_id = users.id")
-        .group("users.id, users.email")
-        .select(
-          "users.email",
-          "users.id",
-          "COUNT(DISTINCT ahoy_events.id) as event_count",
-          "MAX(ahoy_events.time) as last_active"
-        )
-        .order("event_count DESC")
-        .limit(5),  # Limit to 5 for overview
-      most_common_user_actions: Ahoy::Event
-        .where.not(user_id: nil)
-        .group(:name)
-        .order(Arel.sql('COUNT(*) DESC'))
-        .limit(5)
-        .count || {},
-      unique_visitors: Ahoy::Visit.distinct.count(:visitor_token),
-      visits_last_30_days: Ahoy::Visit.where('started_at > ?', 30.days.ago).count
+      email_campaigns: Rails.cache.fetch("email_campaigns", expires_in: 30.minutes) do
+        Ahoy::Message.group(:campaign).count
+      end,
+      recent_events: AnalyticsService.recent_events,
+      top_users: User.top_users,
+      most_common_user_actions: AnalyticsService.most_common_user_actions
     }
   end
 
   def visits
-    @stats = {
-      total_visits: Ahoy::Visit.count,
-      unique_visitors: Ahoy::Visit.distinct.count(:visitor_token),
-      visits_last_30_days: Ahoy::Visit.where('started_at > ?', 30.days.ago).count,
-      daily_visits: Ahoy::Visit.group_by_day(:started_at, last: 30).count,
-      hourly_visits: Ahoy::Visit.group_by_hour_of_day(:started_at, format: "%l %P").count,
-      top_countries: Ahoy::Visit.group(:country).count.sort_by { |_, v| -v }.first(10),
-      top_regions: Ahoy::Visit.group(:region).count.sort_by { |_, v| -v }.first(10),
-      top_cities: Ahoy::Visit.group(:city).count.sort_by { |_, v| -v }.first(10),
-      browser_stats: Ahoy::Visit.group(:browser).count,
-      device_stats: Ahoy::Visit.group(:device_type).count
-    }
+    @stats = AnalyticsService.visit_details
   end
 
   def emails
-    @stats = {
-      email_campaigns: Ahoy::Message.group(:campaign).count,
-      total_emails_sent: Ahoy::Message.count,
-      emails_over_time: Ahoy::Message.group_by_day(:sent_at, last: 30).count
-    }
+    @stats = AnalyticsService.email_statistics
   end
 
   def events
-    @stats = {
-      total_events: Ahoy::Event.count,
-      recent_events: Ahoy::Event
-        .includes(:user)
-        .order(time: :desc)
-        .limit(20)
-        .map { |event|
-          {
-            name: event.name,
-            time: event.time,
-            user: event.user&.email || 'Anonymous',
-            properties: event.properties
-          }
-        },
-      events_by_name: Ahoy::Event.group(:name).count.sort_by { |_, v| -v }.first(10)
-    }
+    @stats = AnalyticsService.event_statistics
   end
 
   def users
@@ -116,33 +59,27 @@ class Admin::DashboardController < ApplicationController
   end
 
   def daily_visits_data
-    render json: Ahoy::Visit.group_by_day(:started_at, last: 30).count
+    render json: AnalyticsService.visit_details[:daily_visits]
   end
 
   def hourly_visits_data
-    render json: Ahoy::Visit
-      .group_by_hour_of_day(
-        :started_at,
-        format: "%l %P",
-        time_zone: Time.zone.name
-      )
-      .count
+    render json: AnalyticsService.visit_details[:hourly_visits]
   end
 
   def countries_data
-    render json: Ahoy::Visit.group(:country).count.sort_by { |_, v| -v }.first(10)
+    render json: AnalyticsService.visit_details[:top_countries]
   end
 
   def devices_data
-    render json: Ahoy::Visit.group(:device_type).count
+    render json: AnalyticsService.visit_details[:device_stats]
   end
 
   def emails_data
-    render json: Ahoy::Message.group_by_day(:sent_at, last: 30).count
+    render json: AnalyticsService.email_statistics[:emails_over_time]
   end
 
   def events_data
-    render json: Ahoy::Event.group(:name).count.sort_by { |_, v| -v }.first(10)
+    render json: AnalyticsService.event_statistics[:events_by_name]
   end
 
   def regions_data
@@ -190,34 +127,10 @@ class Admin::DashboardController < ApplicationController
 
   def user_details
     @user = User.find(params[:id])
-
-    # Fetch the visits as an array (ensuring the relation is fully loaded)
     @visits = Ahoy::Visit.where(user_id: @user.id)
                         .includes(events: :user)
                         .order(started_at: :desc)
-
-    @stats = {
-      total_visits: Ahoy::Visit.where(user_id: @user.id).count,
-      total_events: Ahoy::Event.where(user_id: @user.id).count,
-      most_common_events: Ahoy::Event
-        .where(user_id: @user.id)
-        .group(:name)
-        .order('count_id DESC')
-        .count(:id)
-        .first(5),
-      activity_by_day: Ahoy::Event
-        .where(user_id: @user.id)
-        .group_by_day(:time, last: 30)
-        .count,
-      browser_stats: Ahoy::Visit
-        .where(user_id: @user.id)
-        .group(:browser)
-        .count,
-      device_stats: Ahoy::Visit
-        .where(user_id: @user.id)
-        .group(:device_type)
-        .count
-    }
+    @stats = AnalyticsService.user_statistics(@user.id)
   end
 
   private
