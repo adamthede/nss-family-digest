@@ -24,8 +24,6 @@ Rails.application.routes.draw do
     get 'dashboard/emails', to: 'dashboard#emails'
     get 'dashboard/events', to: 'dashboard#events'
     get 'dashboard/users', to: 'dashboard#users'
-
-    # Add new route for user details
     get 'dashboard/users/:id', to: 'dashboard#user_details', as: 'dashboard_user_details'
 
     # Chart data endpoints
