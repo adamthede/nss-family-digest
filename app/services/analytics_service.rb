@@ -111,4 +111,17 @@ class AnalyticsService
       }
     end
   end
+
+  def self.users_dashboard_statistics
+    Rails.cache.fetch("users_dashboard_stats", expires_in: 5.minutes) do
+      {
+        top_users: User.top_users(limit: 20),
+        user_activity_by_day: Ahoy::Event
+          .where.not(user_id: nil)
+          .group_by_day(:time, last: 30)
+          .count,
+        most_common_user_actions: most_common_user_actions(limit: 10)
+      }
+    end
+  end
 end

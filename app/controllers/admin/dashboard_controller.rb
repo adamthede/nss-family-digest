@@ -31,31 +31,7 @@ class Admin::DashboardController < ApplicationController
   end
 
   def users
-    @stats = {
-      top_users: User
-        .joins("LEFT JOIN ahoy_events ON ahoy_events.user_id = users.id")
-        .group("users.id, users.email")
-        .select(
-          "users.email",
-          "users.id",
-          "COUNT(DISTINCT ahoy_events.id) as event_count",
-          "MAX(ahoy_events.time) as last_active"
-        )
-        .order("event_count DESC")
-        .limit(20),
-
-      user_activity_by_day: Ahoy::Event
-        .where.not(user_id: nil)
-        .group_by_day(:time, last: 30)
-        .count,
-
-      most_common_user_actions: Ahoy::Event
-        .where.not(user_id: nil)
-        .group(:name)
-        .order(Arel.sql('COUNT(*) DESC'))
-        .limit(10)
-        .count
-    }
+    @stats = AnalyticsService.users_dashboard_statistics
   end
 
   def daily_visits_data
