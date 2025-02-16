@@ -3,6 +3,10 @@ class Question < ApplicationRecord
   has_many :question_records
   has_many :groups, through: :question_records
 
+  # Tag associations
+  has_many :question_tags, dependent: :destroy
+  has_many :tags, through: :question_tags
+
   validates_presence_of :question
   validates_presence_of :user
 

@@ -2,7 +2,12 @@ class Answer < ApplicationRecord
   belongs_to :question_record
   belongs_to :user
 
-  validates_presence_of :answer
+  has_rich_text :answer
+
+  validates_presence_of :user
+  validates_presence_of :question_record
+
+  validate :answer_present?
 
   def self.create_from_inbound_hook(message)
     puts message
@@ -46,6 +51,13 @@ class Answer < ApplicationRecord
         QuestionMailer.weekly_digest(user, group, question, answers, record).deliver
       end
     end
+  end
+
+  private
+
+  def answer_present?
+    return if answer.present? || read_attribute(:answer).present?
+    errors.add(:answer, "can't be blank")
   end
 
 end

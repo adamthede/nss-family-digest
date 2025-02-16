@@ -115,7 +115,22 @@
               <% if DateTime.now > (@question_record.created_at + 5.days) %>
                 <% if user_answer %>
                   <div class="prose prose-sm max-w-none text-gray-700">
-                    <%= user_answer.answer %>
+                    <!-- Debug information -->
+                    <% if Rails.env.development? %>
+                      <div class="text-xs text-gray-500 mb-2">
+                        Type: <%= user_answer.answer.class.name %>
+                        Has Rich Text: <%= user_answer.answer.is_a?(ActionText::RichText) %>
+                        Raw Answer: <%= user_answer.read_attribute(:answer).present? %>
+                      </div>
+                    <% end %>
+
+                    <% if user_answer.answer.is_a?(ActionText::RichText) && user_answer.answer.body.present? %>
+                      <%= user_answer.answer %>
+                    <% elsif user_answer.read_attribute(:answer).present? %>
+                      <%= simple_format(user_answer.read_attribute(:answer).gsub(/\r\n/, "\n")) %>
+                    <% else %>
+                      <%= simple_format(user_answer.answer.to_s.gsub(/\r\n/, "\n")) %>
+                    <% end %>
                   </div>
                 <% else %>
                   <div class="text-gray-400 italic">No response this week</div>
@@ -124,8 +139,8 @@
                 <% if current_user.id == user.id && @answers.empty? %>
                   <%= form_tag('/answer', method: 'post', class: "space-y-4") do %>
                     <div class="form-group">
-                      <%= text_area_tag :answer, nil,
-                          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50",
+                      <%= rich_text_area_tag :answer, nil,
+                          class: "trix-content mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50",
                           placeholder: "Share your thoughts..." %>
                       <%= hidden_field_tag :user_id, user.id %>
                       <%= hidden_field_tag :question_record_id, @question_record.id %>
@@ -177,7 +192,7 @@
           <div>
             <div class="text-sm text-gray-500">Average Length</div>
             <div class="mt-1 text-xl font-semibold text-gray-900">
-              <%= @answers.any? ? @answers.map { |a| a.answer.length }.sum / @answers.count : 0 %> chars
+              <%= @answers.any? ? @answers.map { |a| a.answer.to_plain_text.length }.sum / @answers.count : 0 %> chars
             </div>
           </div>
         </div>

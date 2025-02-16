@@ -55,3 +55,5 @@ group :test do
   gem 'webmock'
   gem 'shoulda-matchers'
 end
+
+gem "image_processing", "~> 1.13"

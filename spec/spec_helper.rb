@@ -21,6 +21,10 @@ Dir[Rails.root.join("spec/support/**/*.rb")].each { |f| require f }
 # If you are not using ActiveRecord, you can remove this line.
 ActiveRecord::Migration.maintain_test_schema!
 
+# Only add these if they don't exist
+require "action_text/system_test_helper"
+require "active_storage/engine"
+
 RSpec.configure do |config|
   # ## Mock Framework
   #
@@ -51,6 +55,9 @@ RSpec.configure do |config|
 
   config.include(EmailSpec::Helpers)
   config.include(EmailSpec::Matchers)
+
+  # Only add if you need system tests with Action Text
+  config.include ActionText::SystemTestHelper, type: :system
 end
 
 Shoulda::Matchers.configure do |config|
