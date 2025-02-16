@@ -7,6 +7,10 @@ Rails.application.routes.draw do
 
   # Core Resources
   resources :groups do
+    member do
+      get 'digests'
+      get 'questions'
+    end
     resources :members, only: [:show], controller: 'group_members'
   end
   resources :questions

@@ -1,155 +1,150 @@
 <% content_for :title, @group.name %>
 
-<div class="container mx-auto px-4 py-8 max-w-7xl">
-  <% if notice.present? %>
-    <div id="notice" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
-      <%= notice %>
-    </div>
-  <% end %>
-
-  <!-- Header Section -->
-  <div class="bg-indigo-600 rounded-xl shadow-sm overflow-hidden mb-8">
-    <div class="px-8 py-6">
-      <div class="flex flex-col">
-        <span class="text-sm text-indigo-100 mb-2">Group Overview</span>
-        <h1 class="text-3xl font-bold mb-4 text-white"><%= @group.name %></h1>
-        <div class="flex items-center justify-between">
-          <div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
-            <span class="text-white"><%= pluralize(@group.users.count, 'member') %></span>
-          </div>
-          <% if current_user == @group.leader %>
-            <%= link_to 'Edit Group Name', edit_group_path(@group),
-                class: "text-sm text-white bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors" %>
-          <% end %>
-        </div>
+<div class="min-h-screen bg-gray-50">
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <!-- Notice Section -->
+    <% if notice.present? %>
+      <div id="notice" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-8">
+        <%= notice %>
       </div>
-    </div>
-  </div>
+    <% end %>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-    <!-- Members Section -->
-    <div class="col-span-1">
-      <div class="bg-white shadow-sm rounded-xl overflow-hidden">
-        <div class="px-8 py-6 border-b border-gray-200">
+    <!-- Header Section -->
+    <div class="bg-indigo-600 rounded-xl shadow-sm overflow-hidden mb-8">
+      <div class="px-8 py-6">
+        <div class="flex flex-col">
+          <span class="text-sm text-indigo-100 mb-2">Group Overview</span>
+          <h1 class="text-3xl font-bold mb-4 text-white"><%= @group.name %></h1>
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold text-gray-900">Members</h2>
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-              <%= pluralize(@group.users.count, 'member') %>
-            </span>
-          </div>
-        </div>
-
-        <div class="px-8 py-6 space-y-4">
-          <% @group.users.each do |user| %>
-            <div class="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
-              <div class="flex items-center">
-                <% if user.profile_image_url(:thumb) %>
-                  <%= image_tag user.profile_image_url(:thumb).to_s, class: "h-10 w-10 rounded-full" %>
-                <% else %>
-                  <%= image_tag user.gravatar_url, class: "h-10 w-10 rounded-full" %>
-                <% end %>
-                <div class="ml-4 flex items-center space-x-2">
-                  <% if user == @group.leader %>
-                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">Leader</span>
-                  <% end %>
-                  <%= link_to user.email, group_member_path(@group, user), class: "text-gray-700 font-medium hover:text-indigo-600" %>
-                </div>
-              </div>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                <%= pluralize(@participation_counts[user.id] || 0, 'digest') %>
-              </span>
-            </div>
-          <% end %>
-        </div>
-
-        <% if current_user == @group.leader %>
-          <div class="px-8 py-6 bg-gray-50 border-t border-gray-200">
-            <h4 class="text-lg font-semibold mb-4">Add Members</h4>
-            <%= form_tag('/invite', method: 'post', class: "space-y-4") do %>
-              <div class="form-inputs">
-                <%= label_tag :emails, "Enter emails, separated by commas:", class: "block text-sm font-medium text-gray-700 mb-1" %>
-                <%= text_area_tag :emails, nil, class: "mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50", rows: 3 %>
-                <%= hidden_field_tag :group_id, @group.id %>
-              </div>
-              <div class="form-actions">
-                <%= submit_tag "Add Members", class: "w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
-              </div>
-            <% end %>
-          </div>
-        <% end %>
-      </div>
-    </div>
-
-    <!-- Q&A Digests Section -->
-    <div class="col-span-2">
-      <div class="bg-white shadow-sm rounded-xl overflow-hidden">
-        <div class="px-8 py-6 border-b border-gray-200">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-              <h2 class="text-xl font-bold text-gray-900">Q&A Digests</h2>
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                <%= pluralize(@question_records.count, 'digest') %>
-              </span>
+            <div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+              <span class="text-white"><%= pluralize(@group.users.count, 'member') %></span>
             </div>
             <% if current_user == @group.leader %>
-              <%= form_tag('/send_random', method: 'post', class: "inline-block") do %>
-                <%= hidden_field_tag :group_id, @group.id %>
-                <%= submit_tag 'Send Random Question',
-                    class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
-              <% end %>
+              <%= link_to 'Edit Group Name', edit_group_path(@group),
+                  class: "text-sm text-white bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors" %>
             <% end %>
           </div>
-
-          <div class="mt-4 flex items-center space-x-2 text-sm">
-            <span class="text-gray-500">Sort by:</span>
-            <div class="flex items-center space-x-4 border-l pl-4 ml-2">
-              <%= link_to 'Newest', group_path(@group, sort: 'date_desc'),
-                  class: "text-indigo-600 hover:text-indigo-900 #{params[:sort] == 'date_desc' || params[:sort].nil? ? 'font-semibold underline' : ''}" %>
-              <%= link_to 'Oldest', group_path(@group, sort: 'date_asc'),
-                  class: "text-indigo-600 hover:text-indigo-900 #{params[:sort] == 'date_asc' ? 'font-semibold underline' : ''}" %>
-              <%= link_to 'Most Answers', group_path(@group, sort: 'answers_desc'),
-                  class: "text-indigo-600 hover:text-indigo-900 #{params[:sort] == 'answers_desc' ? 'font-semibold underline' : ''}" %>
-              <%= link_to 'Least Answers', group_path(@group, sort: 'answers_asc'),
-                  class: "text-indigo-600 hover:text-indigo-900 #{params[:sort] == 'answers_asc' ? 'font-semibold underline' : ''}" %>
-            </div>
-          </div>
-        </div>
-
-        <div class="divide-y divide-gray-200">
-          <% @question_records.each do |record| %>
-            <div class="px-8 py-6 hover:bg-gray-50">
-              <div class="flex items-center justify-between">
-                <div class="flex-1">
-                  <p class="text-lg font-medium text-gray-900 mb-1">
-                    <%= @questions[record.question_id].question %>
-                  </p>
-                  <p class="text-sm text-gray-500">
-                    Week of <%= record.created_at.strftime("%B %d, %Y") %>
-                  </p>
-                </div>
-                <div class="ml-6 flex items-center space-x-4">
-                  <% answer_count = @answer_counts[record.id] || 0 %>
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= answer_count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
-                    <%= pluralize(answer_count, 'answer') %>
-                  </span>
-                  <%= link_to 'View Digest', question_record_path(record.id),
-                      class: "inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
-                </div>
-              </div>
-            </div>
-          <% end %>
         </div>
       </div>
     </div>
-  </div>
 
-  <% if current_user == @group.leader %>
-    <div class="mt-8 border-t pt-8">
-      <%= button_to 'Delete This Group',
-          group_path(@group),
-          method: :delete,
-          class: "px-4 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 transition-colors",
-          form: { data: { turbo_confirm: 'Are you sure?' } } %>
+    <!-- Main Content Layout -->
+    <div class="flex gap-8">
+      <!-- Members Section (Always Visible) -->
+      <div class="w-80 flex-shrink-0">
+        <div class="bg-white shadow-sm rounded-xl overflow-hidden sticky top-4">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-900">Members</h2>
+          </div>
+
+          <!-- Members List -->
+          <div class="px-6 py-4 space-y-4">
+            <% @group.users.each do |user| %>
+              <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                <div class="flex items-center">
+                  <%= image_tag user.gravatar_url, class: "h-8 w-8 rounded-full" %>
+                  <div class="ml-3 flex items-center space-x-2">
+                    <% if user == @group.leader %>
+                      <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">Leader</span>
+                    <% end %>
+                    <%= link_to user.email, group_member_path(@group, user),
+                        class: "text-sm text-gray-700 font-medium hover:text-indigo-600" %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <!-- Add Members Form (for leader) -->
+          <%= render 'shared/add_members_form' if current_user == @group.leader %>
+        </div>
+      </div>
+
+      <!-- Main Content Area with Tabs -->
+      <div class="flex-1">
+        <div class="bg-white shadow-sm rounded-xl overflow-hidden">
+          <!-- Tab Navigation -->
+          <div class="border-b border-gray-200">
+            <nav class="flex -mb-px" aria-label="Tabs">
+              <%= link_to group_path(@group),
+                  class: "w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm #{!params[:tab] ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}" do %>
+                Q&A Digests
+              <% end %>
+
+              <%= link_to group_path(@group, tab: 'questions'),
+                  class: "w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm #{params[:tab] == 'questions' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}" do %>
+                Question Bank
+              <% end %>
+            </nav>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="p-6">
+            <% if params[:tab] == 'questions' %>
+              <!-- Question Bank Content -->
+              <div class="space-y-6">
+                <div class="flex justify-between items-center">
+                  <h3 class="text-lg font-medium text-gray-900">Available Questions</h3>
+                  <% if current_user == @group.leader %>
+                    <%= form_tag('/send_random', method: 'post', class: "inline-block") do %>
+                      <%= hidden_field_tag :group_id, @group.id %>
+                      <%= submit_tag 'Send Random Question',
+                          class: "inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700" %>
+                    <% end %>
+                  <% end %>
+                </div>
+
+                <div class="space-y-4">
+                  <% @group.questions.each do |question| %>
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                      <p class="text-base text-gray-900"><%= question.question %></p>
+                      <div class="mt-4 flex items-center justify-between text-sm text-gray-500">
+                        <span>Added <%= time_ago_in_words(question.created_at) %> ago</span>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% else %>
+              <!-- Q&A Digests Content -->
+              <div class="space-y-6">
+                <% @question_records.each do |record| %>
+                  <div class="bg-gray-50 p-6 rounded-lg">
+                    <div class="flex items-center justify-between">
+                      <div class="flex-1">
+                        <h4 class="text-lg font-medium text-gray-900 mb-2">
+                          <%= @questions[record.question_id].question %>
+                        </h4>
+                        <p class="text-sm text-gray-500">
+                          Week of <%= record.created_at.strftime("%B %d, %Y") %>
+                        </p>
+                      </div>
+                      <div class="ml-6 flex items-center space-x-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= @answer_counts[record.id].to_i > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+                          <%= pluralize(@answer_counts[record.id].to_i, 'answer') %>
+                        </span>
+                        <%= link_to 'View Digest', question_record_path(record),
+                            class: "inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700" %>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
     </div>
-  <% end %>
+
+    <!-- Delete Group Button (for leader) -->
+    <% if current_user == @group.leader %>
+      <div class="mt-8 border-t pt-8">
+        <%= button_to 'Delete This Group',
+            group_path(@group),
+            method: :delete,
+            class: "px-4 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 transition-colors",
+            form: { data: { turbo_confirm: 'Are you sure?' } } %>
+      </div>
+    <% end %>
+  </div>
 </div>

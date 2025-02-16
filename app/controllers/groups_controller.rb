@@ -11,11 +11,8 @@ class GroupsController < ApplicationController
   # GET /groups/1.json
   def show
     @group = Group.find(params[:id])
-
-    # Get base query for question records
-    @question_records = QuestionRecord.where(group_id: @group.id)
-
-    # Get answer counts for sorting
+    @questions = Question.where(id: @group.question_records.pluck(:question_id)).index_by(&:id)
+    @question_records = @group.question_records.order(created_at: :desc)
     @answer_counts = Answer.where(question_record_id: @question_records.pluck(:id))
                           .group(:question_record_id)
                           .count
@@ -42,6 +39,11 @@ class GroupsController < ApplicationController
       .group(:user_id)
       .distinct
       .count
+
+    respond_to do |format|
+      format.html
+      format.turbo_stream if request.xhr?
+    end
   end
 
   # GET /groups/new
