@@ -2,15 +2,26 @@ class EmailResponseController < ApplicationController
   skip_before_action :verify_authenticity_token
   skip_before_action :authenticate_user!
 
+  REPLY_DELIMITER = "---- Reply Above This Line ----"
+
   def create_from_inbound_hook
     Rails.logger.info "Inbound email params: #{params.inspect}"
 
     from_email = extract_email(params)
     subject    = params['subject']
-    text_body  = params['text'] || params['html'] || ""
 
-    # Extract only the reply part authored by the user.
-    new_content = EmailReplyParser.parse_reply(text_body)
+    # Get the raw text portion.
+    raw_text = params['text'] || params['html'] || ""
+
+    # If present, split at the custom delimiter.
+    new_content = if raw_text.include?(REPLY_DELIMITER)
+                    raw_text.split(REPLY_DELIMITER).first
+                  else
+                    raw_text
+                  end
+
+    # Further process the text to remove common quoting, if needed.
+    new_content = EmailReplyParser.parse_reply(new_content)
 
     Answer.create_from_email(from_email, subject, new_content)
     head :ok, content_type: 'text/html'

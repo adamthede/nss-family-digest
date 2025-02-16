@@ -10,4 +10,6 @@ class ApplicationMailer < ActionMailer::Base
 
   # Add click tracking with a campaign
   track_clicks campaign: -> { "#{mailer_name}-#{action_name}" }
+
+  REPLY_DELIMITER = "---- Reply Above This Line ----"
 end
