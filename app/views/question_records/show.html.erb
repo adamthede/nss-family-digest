@@ -1,79 +1,203 @@
 <% content_for :title, "#{@group.name} - #{truncate(@question.question, length: 50)}" %>
-<div class="container mx-auto px-4 py-8">
-  <div class="mb-8 flex justify-between items-center">
-    <%= link_to "← Back to Group", group_path(@group), class: "text-indigo-600 hover:text-indigo-900 text-sm font-medium" %>
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+  <!-- Navigation Bar -->
+  <div class="flex justify-between items-center mb-8 text-sm">
+    <%= link_to group_path(@group), class: "flex items-center text-gray-600 hover:text-gray-900" do %>
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      Back to <%= @group.name %>
+    <% end %>
 
-    <div class="flex space-x-4">
+    <!-- Weekly Navigation -->
+    <div class="flex items-center space-x-6">
       <% if @previous_digest %>
         <%= link_to question_record_path(@previous_digest),
-            class: "text-indigo-600 hover:text-indigo-900 text-sm font-medium" do %>
-          ← <%= @previous_digest.created_at.strftime("%B %d, %Y") %>
+            class: "flex items-center text-indigo-600 hover:text-indigo-900" do %>
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          <%= @previous_digest.created_at.strftime("%B %d, %Y") %>
         <% end %>
       <% end %>
 
       <% if @next_digest %>
         <%= link_to question_record_path(@next_digest),
-            class: "text-indigo-600 hover:text-indigo-900 text-sm font-medium" do %>
-          <%= @next_digest.created_at.strftime("%B %d, %Y") %> →
+            class: "flex items-center text-indigo-600 hover:text-indigo-900" do %>
+          <%= @next_digest.created_at.strftime("%B %d, %Y") %>
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
         <% end %>
       <% end %>
     </div>
   </div>
 
-  <% if notice.present? %>
-    <div id="notice" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
-      <%= notice %>
+  <!-- Main Content -->
+  <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+    <!-- Header Section -->
+    <div class="bg-indigo-600 px-8 py-6">
+      <div class="flex flex-col">
+        <span class="text-sm text-indigo-100 mb-2">Weekly Digest</span>
+        <h1 class="text-3xl font-bold mb-4 text-white"><%= @group.name %></h1>
+        <div class="flex items-center justify-between">
+          <div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+            <span class="text-white"><%= @question_record.created_at.strftime("Week of %B %d, %Y") %></span>
+          </div>
+          <div class="text-sm text-white">
+            <span class="text-white"><%= pluralize(@answers.count, 'response') %> from <%= pluralize(@group.users.count, 'member') %></span>
+          </div>
+        </div>
+      </div>
     </div>
-  <% end %>
 
-  <div class="bg-white shadow rounded-lg p-6 mt-8">
-    <h1 class="text-2xl font-bold mb-4"><%= @group.name %></h1>
-    <h4 class="text-xl mb-4"><%= @question.question %></h4>
-    <% if @question_record.created_at %>
-      <h4 class="text-gray-600 mb-6"><%= @question_record.created_at.strftime("%B %d, %Y") %></h4>
-    <% end %>
+    <!-- Question Section -->
+    <div class="border-b px-8 py-8 bg-gray-50">
+      <div class="max-w-3xl">
+        <div class="text-sm text-gray-500 uppercase tracking-wide font-semibold mb-3">This Week's Question</div>
+        <h2 class="text-2xl font-medium text-gray-900 leading-relaxed">
+          "<%= @question.question %>"
+        </h2>
+        <div class="mt-4 flex items-center">
+          <div class="flex-shrink-0">
+            <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+              <svg class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm text-gray-500">
+              Responses are due by <%= (@question_record.created_at + 5.days).strftime("%B %d, %Y") %>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <tbody class="bg-white divide-y divide-gray-200">
-          <% @group.users.each do |user| %>
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <% if user.profile_image_url(:thumb) %>
-                    <%= image_tag user.profile_image_url(:thumb).to_s, class: "h-10 w-10 rounded-full" %>
-                  <% else %>
-                    <%= image_tag user.gravatar_url, class: "h-10 w-10 rounded-full" %>
+    <!-- Responses Section -->
+    <div class="divide-y">
+      <% @group.users.sort_by { |user|
+          answer = @answers.find { |a| a.user_id == user.id }
+          answer ? answer.created_at : Time.new(9999) # Push users without answers to the end
+        }.each do |user| %>
+        <% user_answer = @answers.find { |a| a.user_id == user.id } %>
+
+        <div class="px-8 py-6 <%= user_answer ? 'bg-white' : 'bg-gray-50' %>">
+          <div class="flex items-start space-x-4">
+            <!-- User Avatar -->
+            <div class="flex-shrink-0">
+              <% if user.profile_image_url(:thumb) %>
+                <%= image_tag user.profile_image_url(:thumb).to_s,
+                    class: "h-12 w-12 rounded-full #{'opacity-50' unless user_answer}" %>
+              <% else %>
+                <%= image_tag user.gravatar_url,
+                    class: "h-12 w-12 rounded-full #{'opacity-50' unless user_answer}" %>
+              <% end %>
+            </div>
+
+            <!-- Answer Content -->
+            <div class="flex-1">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center space-x-2">
+                  <h3 class="font-medium text-gray-900"><%= user.email %></h3>
+                  <% if user == @group.leader %>
+                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">Leader</span>
                   <% end %>
-                  <span class="ml-4"><%= user.email %></span>
                 </div>
-              </td>
+                <% if user_answer %>
+                  <span class="text-sm text-gray-500">
+                    Answered <%= user_answer.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+                  </span>
+                <% end %>
+              </div>
 
-              <td class="px-6 py-4">
-                <% if @answers.empty? && current_user.id == user.id %>
+              <% if DateTime.now > (@question_record.created_at + 5.days) %>
+                <% if user_answer %>
+                  <div class="prose prose-sm max-w-none text-gray-700">
+                    <%= user_answer.answer %>
+                  </div>
+                <% else %>
+                  <div class="text-gray-400 italic">No response this week</div>
+                <% end %>
+              <% else %>
+                <% if current_user.id == user.id && @answers.empty? %>
                   <%= form_tag('/answer', method: 'post', class: "space-y-4") do %>
                     <div class="form-group">
-                      <%= label_tag :answer, "Answer this question:", class: "block text-sm font-medium text-gray-700" %>
-                      <%= text_area_tag :answer, nil, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50" %>
+                      <%= text_area_tag :answer, nil,
+                          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50",
+                          placeholder: "Share your thoughts..." %>
                       <%= hidden_field_tag :user_id, user.id %>
                       <%= hidden_field_tag :question_record_id, @question_record.id %>
                     </div>
-                    <%= submit_tag "Submit Answer", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+                    <%= submit_tag "Submit Response",
+                        class: "bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-md" %>
                   <% end %>
+                <% else %>
+                  <div class="text-gray-400 italic">
+                    Responses will be visible after <%= (@question_record.created_at + 5.days).strftime("%B %d, %Y") %>
+                  </div>
                 <% end %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
 
-                <% if DateTime.now > (@question_record.created_at + 5.days) %>
-                  <% @answers.each do |answer| %>
-                    <% if user.id == answer.user_id %>
-                      <div class="prose max-w-none"><%= answer.answer %></div>
-                    <% end %>
-                  <% end %>
-                <% end %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
+  <!-- Response Statistics -->
+  <div class="mt-8 bg-white rounded-xl shadow-sm overflow-hidden">
+    <div class="px-8 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-6">
+          <div class="flex-shrink-0">
+            <div class="bg-green-100 rounded-lg w-12 h-12 flex items-center justify-center">
+              <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Response Rate</div>
+            <div class="mt-1 text-xl font-semibold text-gray-900">
+              <%= number_to_percentage(@answers.count.to_f / @group.users.count * 100, precision: 0) %>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-6">
+          <div class="flex-shrink-0">
+            <div class="bg-blue-100 rounded-lg w-12 h-12 flex items-center justify-center">
+              <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Average Length</div>
+            <div class="mt-1 text-xl font-semibold text-gray-900">
+              <%= @answers.any? ? @answers.map { |a| a.answer.length }.sum / @answers.count : 0 %> chars
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-6">
+          <div class="flex-shrink-0">
+            <div class="bg-indigo-100 rounded-lg w-12 h-12 flex items-center justify-center">
+              <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">First Response</div>
+            <div class="mt-1 text-xl font-semibold text-gray-900">
+              <%= @answers.minimum(:created_at)&.strftime("%b %d") || "N/A" %>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
