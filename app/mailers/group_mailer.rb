@@ -1,5 +1,5 @@
 class GroupMailer < ApplicationMailer
-  default reply_to: ENV['POSTMARK_INBOUND']
+  default reply_to: ENV['SENDGRID_INBOUND']
   layout 'mail_layout'
 
   def invite_email(email, group_id)

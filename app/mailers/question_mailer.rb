@@ -1,5 +1,5 @@
 class QuestionMailer < ApplicationMailer
-  default reply_to: ENV['POSTMARK_INBOUND']
+  default reply_to: ENV['SENDGRID_INBOUND']
   layout 'mail_layout'
 
   def send_questions(user, group, question)
