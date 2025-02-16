@@ -27,6 +27,7 @@ gem 'device_detector', '~> 1.1'
 gem "chartkick", "~> 5.0"
 gem "groupdate", "~> 6.4"
 gem 'sendgrid-ruby'
+gem 'email_reply_parser', '~> 0.5.11'
 
 group :development do
   gem 'bootsnap', require: false

@@ -151,6 +151,7 @@ GEM
       dotenv (= 3.1.7)
       railties (>= 6.1)
     drb (2.2.1)
+    email_reply_parser (0.5.11)
     email_spec (2.3.0)
       htmlentities (~> 4.3.3)
       launchy (>= 2.1, < 4.0)
@@ -404,6 +405,7 @@ DEPENDENCIES
   device_detector (~> 1.1)
   devise
   dotenv-rails
+  email_reply_parser (~> 0.5.11)
   email_spec
   fabrication
   geocoder (~> 1.8.2)
