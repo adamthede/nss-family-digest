@@ -5,15 +5,25 @@ class EmailResponseController < ApplicationController
   def create_from_inbound_hook
     Rails.logger.info "Inbound email params: #{params.inspect}"
 
-    from = params['from']
+    from_param = params['from']
+    from_email = extract_email(from_param)
     subject = params['subject']
-    # Use 'text' field; use 'html' as a fallback if needed
-    text_body = params['text'] || params['html']
+    text_body = params['text'] || params['html'] || ""
 
-    # Process the email (existing method call, update as needed)
-    Answer.create_from_email(from, subject, text_body)
+    # Process the email with the cleaned email address.
+    Answer.create_from_email(from_email, subject, text_body)
 
     head :ok, content_type: 'text/html'
   end
 
+  private
+
+  def extract_email(string)
+    # Extracts the email address if present in angle brackets.
+    if string =~ /<(.+?)>/
+      Regexp.last_match(1)
+    else
+      string
+    end
+  end
 end
