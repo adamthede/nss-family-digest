@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_16_211356) do
+ActiveRecord::Schema[8.0].define(version: 2025_02_17_210346) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -123,6 +123,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_16_211356) do
     t.datetime "updated_at", precision: nil
   end
 
+  create_table "group_question_tags", force: :cascade do |t|
+    t.bigint "group_id", null: false
+    t.bigint "question_id", null: false
+    t.bigint "tag_id", null: false
+    t.bigint "created_by_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_group_question_tags_on_created_by_id"
+    t.index ["group_id", "question_id", "tag_id"], name: "idx_group_question_tags_unique", unique: true
+    t.index ["group_id"], name: "index_group_question_tags_on_group_id"
+    t.index ["question_id"], name: "index_group_question_tags_on_question_id"
+    t.index ["tag_id"], name: "index_group_question_tags_on_tag_id"
+  end
+
   create_table "group_question_votes", force: :cascade do |t|
     t.bigint "group_question_id", null: false
     t.bigint "user_id", null: false
@@ -210,6 +224,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_16_211356) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "group_question_tags", "groups"
+  add_foreign_key "group_question_tags", "questions"
+  add_foreign_key "group_question_tags", "tags"
+  add_foreign_key "group_question_tags", "users", column: "created_by_id"
   add_foreign_key "group_question_votes", "group_questions"
   add_foreign_key "group_question_votes", "users"
   add_foreign_key "group_questions", "groups"

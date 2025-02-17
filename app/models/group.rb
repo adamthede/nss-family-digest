@@ -12,6 +12,9 @@ class Group < ApplicationRecord
   has_many :questions, through: :question_records  # Original association
   has_many :recorded_questions, through: :question_records, source: :question  # Alias for clarity
 
+  has_many :group_question_tags, dependent: :destroy
+  has_many :tags, through: :group_question_tags
+
   validates_presence_of :leader
 
   def self.add_question_to_group(group, question)

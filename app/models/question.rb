@@ -5,7 +5,10 @@ class Question < ApplicationRecord
 
   # Tag associations
   has_many :question_tags, dependent: :destroy
-  has_many :tags, through: :question_tags
+  has_many :tags, through: :question_tags  # These are the global tags
+
+  has_many :group_question_tags, dependent: :destroy
+  has_many :group_tags, through: :group_question_tags, source: :tag  # These are the group-specific tags
 
   validates_presence_of :question
   validates_presence_of :user

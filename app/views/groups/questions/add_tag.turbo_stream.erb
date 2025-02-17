@@ -1,0 +1,5 @@
+<%= turbo_stream.update "question_tags" do %>
+  <%= render partial: "groups/questions/tags", locals: { question: @question, group: @group } %>
+<% end %>
+
+<%= turbo_stream.update_all "form input[type='text']", "" %>

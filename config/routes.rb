@@ -12,8 +12,21 @@ Rails.application.routes.draw do
       get 'questions'
     end
     resources :members, only: [:show], controller: 'group_members'
+    scope module: :groups do
+      resources :questions, only: [:show] do
+        member do
+          post 'vote'
+          post 'add_tag'
+          delete 'remove_tag'
+        end
+      end
+    end
   end
-  resources :questions
+  resources :questions do
+    member do
+      post 'send', to: 'questions#send_to_group', as: 'send'
+    end
+  end
   resources :question_records
   resources :answers
   resources :users
