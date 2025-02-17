@@ -71,6 +71,58 @@ module Groups
       end
     end
 
+    def vote
+      @group_question = @group.group_questions.find_or_create_by!(question: @question)
+
+      if @group_question.voted_by?(current_user)
+        redirect_back(fallback_location: group_question_path(@group, @question), alert: "You have already voted for this question")
+        return
+      end
+
+      vote = @group_question.group_question_votes.build(user: current_user)
+
+      if vote.save
+        respond_to do |format|
+          format.turbo_stream {
+            render turbo_stream: [
+              turbo_stream.replace("vote-button-area-#{@group_question.id}",
+                partial: 'groups/questions/vote_button_area',
+                locals: { group: @group, question: @question, group_question: @group_question }
+              ),
+              turbo_stream.replace_all(".question-#{@question.id}-vote-count",
+                @group_question.vote_count.to_s)
+            ]
+          }
+          format.html { redirect_back(fallback_location: group_question_path(@group, @question), notice: "Vote recorded") }
+        end
+      else
+        redirect_back(fallback_location: group_question_path(@group, @question), alert: vote.errors.full_messages.to_sentence)
+      end
+    end
+
+    def unvote
+      @group_question = @group.group_questions.find_by!(question: @question)
+      vote = @group_question.group_question_votes.find_by(user: current_user)
+
+      if vote&.destroy
+        respond_to do |format|
+          format.turbo_stream {
+            render turbo_stream: [
+              turbo_stream.replace("vote-button-area-#{@group_question.id}",
+                partial: 'groups/questions/vote_button_area',
+                locals: { group: @group, question: @question, group_question: @group_question }
+              ),
+              turbo_stream.replace_all(".question-#{@question.id}-vote-count",
+                @group_question.vote_count.to_s)
+            ]
+          }
+          format.html { redirect_back(fallback_location: group_question_path(@group, @question), notice: "Vote removed") }
+        end
+      else
+        redirect_back(fallback_location: group_question_path(@group, @question), alert: "Unable to remove vote")
+      end
+    end
+
     private
 
     def set_group

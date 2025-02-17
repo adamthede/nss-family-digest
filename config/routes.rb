@@ -18,6 +18,7 @@ Rails.application.routes.draw do
           post 'vote'
           post 'add_tag'
           delete 'remove_tag'
+          delete 'unvote'
         end
       end
     end
