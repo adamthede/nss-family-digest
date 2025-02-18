@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_17_210346) do
+ActiveRecord::Schema[8.0].define(version: 2025_02_17_214912) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -121,6 +121,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_17_210346) do
     t.integer "user_id"
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
+    t.index ["question_record_id", "user_id"], name: "index_answers_on_question_record_id_and_user_id"
   end
 
   create_table "group_question_tags", force: :cascade do |t|
@@ -132,6 +133,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_17_210346) do
     t.datetime "updated_at", null: false
     t.index ["created_by_id"], name: "index_group_question_tags_on_created_by_id"
     t.index ["group_id", "question_id", "tag_id"], name: "idx_group_question_tags_unique", unique: true
+    t.index ["group_id", "tag_id"], name: "index_group_question_tags_on_group_id_and_tag_id"
     t.index ["group_id"], name: "index_group_question_tags_on_group_id"
     t.index ["question_id"], name: "index_group_question_tags_on_question_id"
     t.index ["tag_id"], name: "index_group_question_tags_on_tag_id"
@@ -174,6 +176,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_17_210346) do
     t.integer "group_id"
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
+    t.index ["group_id", "question_id"], name: "index_question_records_on_group_id_and_question_id"
   end
 
   create_table "question_tags", force: :cascade do |t|

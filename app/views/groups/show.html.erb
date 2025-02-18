@@ -150,19 +150,31 @@
                 </div>
 
                 <!-- Questions List -->
-                <div class="space-y-4">
-                  <% if @questions.any? %>
-                    <% @questions.each do |question| %>
-                      <%= render 'question_card',
-                          question: question,
-                          usage_count: @question_usage_counts[question.id] || 0,
-                          group_question: @group_questions_by_question[question.id],
-                          current_user: current_user,
-                          group: @group %>
-                    <% end %>
-                  <% else %>
-                    <p class="text-sm text-gray-500">No questions found matching your criteria.</p>
-                  <% end %>
+                <div class="mt-8 flow-root">
+                  <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                    <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                      <div class="overflow-hidden">
+                        <% if @questions.any? %>
+                          <div class="grid gap-4">
+                            <% @questions.each do |question| %>
+                              <%= render 'question_card',
+                                  question: question,
+                                  usage_count: @question_usage_counts[question.id] || 0,
+                                  group_question: @group_questions_by_id[question.id],
+                                  current_user: current_user,
+                                  group: @group %>
+                            <% end %>
+                          </div>
+                        <% else %>
+                          <!-- Empty state -->
+                          <div class="text-center py-12">
+                            <h3 class="mt-2 text-sm font-semibold text-gray-900">No questions found</h3>
+                            <p class="mt-1 text-sm text-gray-500">Get started by adding some questions to your group.</p>
+                          </div>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             <% else %>

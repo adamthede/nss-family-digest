@@ -20,18 +20,17 @@ class GroupsController < ApplicationController
       .count
 
     if params[:tab] == 'questions'
-      # Load all questions with their tags
-      @questions = Question.includes(:tags, :group_question_tags)
+      # Load questions with all necessary associations
+      @questions = Question.includes(:tags, group_question_tags: [:tag, :created_by])
 
-      # Calculate how many times each question has been used in this group
+      # Get voting information for questions in this group
+      @group_questions = @group.group_questions.includes(:group_question_votes)
+      @group_questions_by_id = @group_questions.index_by(&:question_id)
+
+      # Calculate usage counts
       @question_usage_counts = @group.question_records
         .group(:question_id)
         .count
-
-      # Get voting information for questions in this group
-      @group_questions_by_question = @group.group_questions
-        .includes(:group_question_votes)
-        .index_by(&:question_id)
 
       # Apply filters
       if params[:filter] == 'used'
@@ -40,7 +39,7 @@ class GroupsController < ApplicationController
         @questions = @questions.where.not(id: @question_usage_counts.keys)
       end
 
-      # Apply tag filtering if present
+      # Apply tag filtering
       if params[:tag].present?
         tag_id = params[:tag]
         @questions = @questions.where(
@@ -53,46 +52,44 @@ class GroupsController < ApplicationController
       # Apply sorting
       @questions = case params[:sort]
       when 'votes'
-        @questions.sort_by { |q| -(@group_questions_by_question[q.id]&.vote_count || 0) }
+        @questions.sort_by { |q| -(@group_questions_by_id[q.id]&.vote_count || 0) }
       when 'usage'
         @questions.sort_by { |q| -(@question_usage_counts[q.id] || 0) }
       else # 'newest' or default
         @questions.order(created_at: :desc)
       end
     else
-      # Existing digest tab logic
-      @questions = Question.where(id: @group.question_records.pluck(:question_id)).index_by(&:id)
+      # Q&A Digests tab
+      base_query = @group.question_records
+        .includes(:question, :answers)
 
-      # Get question records without initial ordering
-      @question_records = @group.question_records
-
-      # Get answer counts first
-      @answer_counts = Answer.where(question_record_id: @question_records.pluck(:id))
-                            .group(:question_record_id)
-                            .count
-
-      # Calculate how many times each question has been asked
-      @question_usage_counts = @group.question_records
-        .group(:question_id)
-        .count
-
-      # Then apply sorting
-      case params[:sort]
-      when 'answers_desc'
-        @question_records = @question_records.sort_by { |record| -(@answer_counts[record.id] || 0) }
-      when 'answers_asc'
-        @question_records = @question_records.sort_by { |record| @answer_counts[record.id] || 0 }
+      # Apply sorting for Q&A Digests
+      @question_records = case params[:sort]
       when 'date_asc'
-        @question_records = @question_records.order(created_at: :asc)
-      when 'date_desc'
-        @question_records = @question_records.order(created_at: :desc)
-      else # date_desc by default
-        @question_records = @question_records.order(created_at: :desc)
+        base_query.order(created_at: :asc)
+      when 'answers_desc'
+        base_query
+          .select('question_records.*, COUNT(DISTINCT answers.id) as answers_count')
+          .left_joins(:answers)
+          .group('question_records.id')
+          .order(Arel.sql('COUNT(DISTINCT answers.id) DESC, question_records.created_at DESC'))
+      when 'answers_asc'
+        base_query
+          .select('question_records.*, COUNT(DISTINCT answers.id) as answers_count')
+          .left_joins(:answers)
+          .group('question_records.id')
+          .order(Arel.sql('COUNT(DISTINCT answers.id) ASC, question_records.created_at DESC'))
+      else # 'date_desc' or default
+        base_query.order(created_at: :desc)
       end
 
-      # Preload questions to avoid N+1 queries
-      @questions = Question.where(id: @question_records.pluck(:question_id))
-                          .index_by(&:id)
+      # Load questions for display
+      @questions = Question.where(id: @question_records.pluck(:question_id)).index_by(&:id)
+
+      # Get answer counts
+      @answer_counts = Answer.where(question_record_id: @question_records.pluck(:id))
+        .group(:question_record_id)
+        .count
     end
 
     respond_to do |format|
