@@ -1,6 +1,10 @@
 class QuestionRecord < ApplicationRecord
-  belongs_to :question
   belongs_to :group
+  belongs_to :question
+  has_many :answers, dependent: :destroy
+
+  validates :group_id, presence: true
+  validates :question_id, presence: true
 
   def next_digest
     group.question_records

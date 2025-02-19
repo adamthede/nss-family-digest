@@ -12,36 +12,90 @@ class GroupsController < ApplicationController
   def show
     @group = Group.find(params[:id])
 
-    # Get base query for question records
-    @question_records = QuestionRecord.where(group_id: @group.id)
-
-    # Get answer counts for sorting
-    @answer_counts = Answer.where(question_record_id: @question_records.pluck(:id))
-                          .group(:question_record_id)
-                          .count
-
-    # Apply sorting
-    case params[:sort]
-    when 'answers_desc'
-      @question_records = @question_records.sort_by { |record| -(@answer_counts[record.id] || 0) }
-    when 'answers_asc'
-      @question_records = @question_records.sort_by { |record| @answer_counts[record.id] || 0 }
-    when 'date_asc'
-      @question_records = @question_records.order(created_at: :asc)
-    else # date_desc by default
-      @question_records = @question_records.order(created_at: :desc)
-    end
-
-    # Preload questions to avoid N+1 queries
-    @questions = Question.where(id: @question_records.pluck(:question_id))
-                        .index_by(&:id)
-
-    # Calculate participation counts for each user
+    # Calculate participation counts for each user (needed for both tabs)
     @participation_counts = Answer.joins(:question_record)
       .where(question_records: { group_id: @group.id })
       .group(:user_id)
       .distinct
       .count
+
+    if params[:tab] == 'questions'
+      # Load questions with all necessary associations
+      @questions = Question.includes(:tags, group_question_tags: [:tag, :created_by])
+
+      # Get voting information for questions in this group
+      @group_questions = @group.group_questions.includes(:group_question_votes)
+      @group_questions_by_id = @group_questions.index_by(&:question_id)
+
+      # Calculate usage counts
+      @question_usage_counts = @group.question_records
+        .group(:question_id)
+        .count
+
+      # Apply filters
+      if params[:filter] == 'used'
+        @questions = @questions.where(id: @question_usage_counts.keys)
+      elsif params[:filter] == 'unused'
+        @questions = @questions.where.not(id: @question_usage_counts.keys)
+      end
+
+      # Apply tag filtering
+      if params[:tag].present?
+        tag_id = params[:tag]
+        @questions = @questions.where(
+          'questions.id IN (SELECT question_id FROM question_tags WHERE tag_id = ?) OR ' \
+          'questions.id IN (SELECT question_id FROM group_question_tags WHERE tag_id = ? AND group_id = ?)',
+          tag_id, tag_id, @group.id
+        )
+      end
+
+      # Apply sorting
+      @questions = case params[:sort]
+      when 'votes'
+        @questions.sort_by { |q| -(@group_questions_by_id[q.id]&.vote_count || 0) }
+      when 'usage'
+        @questions.sort_by { |q| -(@question_usage_counts[q.id] || 0) }
+      else # 'newest' or default
+        @questions.order(created_at: :desc)
+      end
+    else
+      # Q&A Digests tab
+      base_query = @group.question_records
+        .includes(:question, :answers)
+
+      # Apply sorting for Q&A Digests
+      @question_records = case params[:sort]
+      when 'date_asc'
+        base_query.order(created_at: :asc)
+      when 'answers_desc'
+        base_query
+          .select('question_records.*, COUNT(DISTINCT answers.id) as answers_count')
+          .left_joins(:answers)
+          .group('question_records.id')
+          .order(Arel.sql('COUNT(DISTINCT answers.id) DESC, question_records.created_at DESC'))
+      when 'answers_asc'
+        base_query
+          .select('question_records.*, COUNT(DISTINCT answers.id) as answers_count')
+          .left_joins(:answers)
+          .group('question_records.id')
+          .order(Arel.sql('COUNT(DISTINCT answers.id) ASC, question_records.created_at DESC'))
+      else # 'date_desc' or default
+        base_query.order(created_at: :desc)
+      end
+
+      # Load questions for display
+      @questions = Question.where(id: @question_records.pluck(:question_id)).index_by(&:id)
+
+      # Get answer counts
+      @answer_counts = Answer.where(question_record_id: @question_records.pluck(:id))
+        .group(:question_record_id)
+        .count
+    end
+
+    respond_to do |format|
+      format.html
+      format.turbo_stream if request.xhr?
+    end
   end
 
   # GET /groups/new

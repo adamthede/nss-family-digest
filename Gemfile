@@ -28,6 +28,7 @@ gem "chartkick", "~> 5.0"
 gem "groupdate", "~> 6.4"
 gem 'sendgrid-ruby'
 gem 'email_reply_parser', '~> 0.5.11'
+gem "image_processing", "~> 1.13"
 
 group :development do
   gem 'bootsnap', require: false

@@ -410,6 +410,7 @@ DEPENDENCIES
   fabrication
   geocoder (~> 1.8.2)
   groupdate (~> 6.4)
+  image_processing (~> 1.13)
   importmap-rails
   jbuilder
   jquery-rails

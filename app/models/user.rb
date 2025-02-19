@@ -15,6 +15,8 @@ class User < ApplicationRecord
   has_many :visits, class_name: 'Ahoy::Visit'
   has_many :events, class_name: 'Ahoy::Event'
   has_many :messages, class_name: 'Ahoy::Message'
+  has_many :answers, dependent: :destroy
+  has_many :question_records, through: :answers
 
   validates_presence_of :email
 

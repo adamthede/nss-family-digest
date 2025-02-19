@@ -114,7 +114,13 @@
           </div>
 
           <div class="prose prose-sm max-w-none text-gray-700">
-            <%= answer.answer %>
+            <% if answer.answer.is_a?(ActionText::RichText) && answer.answer.body.present? %>
+              <%= answer.answer %>
+            <% elsif answer.read_attribute(:answer).present? %>
+              <%= simple_format(answer.read_attribute(:answer).gsub(/\r\n/, "\n")) %>
+            <% else %>
+              <%= simple_format(answer.answer.to_s.gsub(/\r\n/, "\n")) %>
+            <% end %>
           </div>
 
           <div class="mt-4 text-sm text-gray-500">

@@ -4,6 +4,8 @@ import { Application } from "@hotwired/stimulus"
 import "ahoy.js"
 import "chartkick"
 import "Chart.bundle"
+import "trix"
+import "@rails/actiontext"
 
 // Initialize Stimulus before importing controllers
 const application = Application.start()
