@@ -3,7 +3,7 @@ class Group < ApplicationRecord
   has_many :memberships, dependent: :destroy
   has_many :users, through: :memberships
 
-  # Primary association for bank/available questions through group_questions
+  # Primary association for library/available questions through group_questions
   has_many :group_questions, dependent: :destroy
   has_many :available_questions, through: :group_questions, source: :question
 
