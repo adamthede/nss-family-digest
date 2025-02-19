@@ -115,15 +115,6 @@
               <% if DateTime.now > (@question_record.created_at + 5.days) %>
                 <% if user_answer %>
                   <div class="prose prose-sm max-w-none text-gray-700">
-                    <!-- Debug information -->
-                    <% if Rails.env.development? %>
-                      <div class="text-xs text-gray-500 mb-2">
-                        Type: <%= user_answer.answer.class.name %>
-                        Has Rich Text: <%= user_answer.answer.is_a?(ActionText::RichText) %>
-                        Raw Answer: <%= user_answer.read_attribute(:answer).present? %>
-                      </div>
-                    <% end %>
-
                     <% if user_answer.answer.is_a?(ActionText::RichText) && user_answer.answer.body.present? %>
                       <%= user_answer.answer %>
                     <% elsif user_answer.read_attribute(:answer).present? %>
