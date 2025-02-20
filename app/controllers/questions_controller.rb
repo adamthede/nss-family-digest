@@ -63,12 +63,32 @@ class QuestionsController < ApplicationController
 
   def send_random_question
     group = Group.find(params[:group_id])
-    question = Question.select_random_question
+
+    # Get active users first
+    active_users = group.active_users
+
+    if active_users.empty?
+      redirect_to group_path(group), alert: "No active members to send to"
+      return
+    end
+
+    # Get a random question specific to this group
+    question = Question.select_random_question(group)
+
+    unless question
+      redirect_to group_path(group), alert: "No questions available to send"
+      return
+    end
+
     Group.add_question_to_group(group, question)
-    group.users.each do |user|
+
+    # Only send to active users
+    active_users.each do |user|
       QuestionMailer.send_questions(user, group, question.question).deliver
     end
-    redirect_to group_path(params[:group_id]), notice: "Random question sent!"
+
+    redirect_to group_path(group),
+      notice: "Random question sent to #{active_users.count} active members!"
   end
 
   private

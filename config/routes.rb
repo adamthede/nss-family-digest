@@ -10,7 +10,10 @@ Rails.application.routes.draw do
     member do
       get 'digests'
       get 'questions'
+      post 'send_invite'
+      post 'toggle_member_status/:member_id', to: 'groups#toggle_member_status', as: 'toggle_member_status'
     end
+    get 'accept_invitation', on: :collection
     resources :members, only: [:show], controller: 'group_members'
     scope module: :groups do
       resources :questions, only: [:show] do
@@ -33,7 +36,6 @@ Rails.application.routes.draw do
   resources :users
 
   # Custom Actions
-  post 'invite', to: 'groups#send_invite'
   post 'send_random', to: 'questions#send_random_question'
   post 'inbound', to: 'email_response#create_from_inbound_hook'
   post 'answer', to: 'answers#create_from_form'

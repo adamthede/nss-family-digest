@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_17_214912) do
+ActiveRecord::Schema[8.0].define(version: 2025_02_20_025000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -119,8 +119,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_17_214912) do
     t.text "answer"
     t.integer "question_record_id"
     t.integer "user_id"
-    t.datetime "created_at", precision: nil
-    t.datetime "updated_at", precision: nil
+    t.datetime "created_at"
+    t.datetime "updated_at"
     t.index ["question_record_id", "user_id"], name: "index_answers_on_question_record_id_and_user_id"
   end
 
@@ -161,21 +161,29 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_17_214912) do
 
   create_table "groups", id: :serial, force: :cascade do |t|
     t.string "name", limit: 255
-    t.datetime "created_at", precision: nil
-    t.datetime "updated_at", precision: nil
+    t.datetime "created_at"
+    t.datetime "updated_at"
     t.integer "user_id"
   end
 
   create_table "memberships", id: :serial, force: :cascade do |t|
     t.integer "user_id"
     t.integer "group_id"
+    t.boolean "active", default: false, null: false
+    t.datetime "invitation_accepted_at"
+    t.string "invitation_token"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_memberships_on_active"
+    t.index ["invitation_token"], name: "index_memberships_on_invitation_token", unique: true
+    t.index ["user_id", "group_id"], name: "index_memberships_on_user_id_and_group_id", unique: true
   end
 
   create_table "question_records", id: :serial, force: :cascade do |t|
     t.integer "question_id"
     t.integer "group_id"
-    t.datetime "created_at", precision: nil
-    t.datetime "updated_at", precision: nil
+    t.datetime "created_at"
+    t.datetime "updated_at"
     t.index ["group_id", "question_id"], name: "index_question_records_on_group_id_and_question_id"
   end
 
@@ -191,8 +199,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_17_214912) do
 
   create_table "questions", id: :serial, force: :cascade do |t|
     t.string "question", limit: 255
-    t.datetime "created_at", precision: nil
-    t.datetime "updated_at", precision: nil
+    t.datetime "created_at"
+    t.datetime "updated_at"
     t.integer "user_id"
     t.boolean "global", default: false, null: false
     t.string "category"
