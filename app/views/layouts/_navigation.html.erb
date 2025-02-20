@@ -51,7 +51,12 @@
 </div>
 
 <%= javascript_tag do %>
-  document.getElementById('mobile-menu-button').addEventListener('click', function() {
-    document.getElementById('mobile-menu').classList.toggle('hidden');
+  document.addEventListener("turbo:load", () => {
+    const button = document.getElementById('mobile-menu-button');
+    if (button) {
+      button.addEventListener('click', function() {
+        document.getElementById('mobile-menu').classList.toggle('hidden');
+      });
+    }
   });
 <% end %>

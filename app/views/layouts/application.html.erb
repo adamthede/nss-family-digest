@@ -6,16 +6,16 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <%# Make sure Tailwind loads before application.css %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
-    <%= stylesheet_link_tag "application", "actiontext", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "actiontext", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags "main" %>
-    <%= tag :meta, name: 'canonical', content: url_for(protocol: 'https') %>
     <%= javascript_include_tag "https://www.gstatic.com/charts/loader.js" %>
     <script>
-      google.charts.load('current', {
-        'packages': ['geochart']
-      });
+      google.charts.load('current', { 'packages': ['geochart'] });
     </script>
+    <%# Add defer to ensure DOM is loaded before scripts run %>
+    <%= yield :head %>
   </head>
 
   <body class="min-h-screen bg-white flex flex-col">

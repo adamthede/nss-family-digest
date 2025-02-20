@@ -24,4 +24,4 @@ export default class DropdownController extends Controller {
       this.menuTarget.classList.add("hidden")
     }
   }
-}
+};
