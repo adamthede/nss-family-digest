@@ -172,7 +172,7 @@ class GroupsController < ApplicationController
             invitation_token: SecureRandom.urlsafe_base64(32),
             invitation_accepted_at: nil
           )
-          GroupMailer.invite_email(user.email, @group.id, existing_membership.invitation_token).deliver_later
+          GroupMailer.invite_email(user.email, @group.id, existing_membership.invitation_token).deliver
           successful_invites << email
         end
         next
@@ -184,7 +184,7 @@ class GroupsController < ApplicationController
           user: user,
           active: false
         )
-        GroupMailer.invite_email(user.email, @group.id, membership.invitation_token).deliver_later
+        GroupMailer.invite_email(user.email, @group.id, membership.invitation_token).deliver
         successful_invites << email
       rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => e
         failed_invites << "#{email} could not be invited (#{e.message})"

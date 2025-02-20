@@ -47,17 +47,59 @@ class Question < ApplicationRecord
   }
 
   def self.send_question
-    question = Question.select_random_question
-    Group.all.each do |group|
+    Group.find_each do |group|
+      # Skip groups with no active users
+      active_users = group.active_users
+      next if active_users.empty?
+
+      # Get a random question specific to this group
+      question = Question.select_random_question(group)
+      next unless question # Skip if no questions available
+
       Group.add_question_to_group(group, question)
-      group.users.each do |user|
+
+      # Only send to active users
+      active_users.each do |user|
         QuestionMailer.weekly_question(user, group, question).deliver
       end
     end
   end
 
-  def self.select_random_question
-    Question.offset(rand(Question.count)).first
+  def self.select_random_question(group = nil)
+    base_query = Question.all
+
+    if group
+      # Start with questions available to this group
+      available = group.available_questions
+
+      # Exclude questions that have been used in this group
+      unused = available.where.not(id: group.recorded_questions.pluck(:id))
+
+      if unused.exists?
+        # Prioritize unused questions
+        base_query = unused
+      else
+        # If all questions have been used, reset and use all available questions
+        base_query = available
+      end
+    end
+
+    # Ensure we have questions to choose from
+    return nil unless base_query.exists?
+
+    # Add some randomization logic
+    # First try questions that haven't been used much
+    less_used = base_query
+      .left_joins(:question_records)
+      .group('questions.id')
+      .having('COUNT(question_records.id) <= 3')
+
+    if less_used.exists?
+      less_used.order('RANDOM()').first
+    else
+      # Fall back to completely random if all questions have been used a lot
+      base_query.order('RANDOM()').first
+    end
   end
 
 end
