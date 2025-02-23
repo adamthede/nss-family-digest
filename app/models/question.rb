@@ -46,25 +46,6 @@ class Question < ApplicationRecord
     end
   }
 
-  def self.send_question
-    Group.find_each do |group|
-      # Skip groups with no active users
-      active_users = group.active_users
-      next if active_users.empty?
-
-      # Get a random question specific to this group
-      question = Question.select_random_question(group)
-      next unless question # Skip if no questions available
-
-      Group.add_question_to_group(group, question)
-
-      # Only send to active users
-      active_users.each do |user|
-        QuestionMailer.weekly_question(user, group, question).deliver
-      end
-    end
-  end
-
   def self.select_random_question(group = nil)
     base_query = Question.all
 
