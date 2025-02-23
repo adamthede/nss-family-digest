@@ -6,22 +6,32 @@
   <body>
     <div class="header">
       <h1>Welcome to Answers 2 Answers!</h1>
-      <p>You've been invited to join a group</p>
+      <h2>You've been invited to join <%= @group.name %></h2>
     </div>
 
     <div class="content">
-      <p>
-        If you are already a member of Answers 2 Answers, follow the link below to login and check out the group.
-      </p>
+      <% if @user.encrypted_password.present? %>
+        <%# Existing user flow %>
+        <p>Click the link below to accept the invitation and join the group:</p>
+        <p><%= link_to 'Accept Invitation', @accept_url, class: 'button' %></p>
+      <% else %>
+        <%# New user flow %>
+        <p>To join <%= @group.name %>, you'll need to set up your account first:</p>
 
-      <p>
-        If you aren't yet a member, <%= link_to 'click here', new_user_password_url, class: 'button' %>
-        to set a password for this email address: <%= @email %>
-      </p>
+        <p>
+          <%= link_to 'Set Up Your Account',
+              new_user_password_url(
+                email: @user.email,
+                invitation_token: @invitation_token
+              ),
+              class: 'button'
+          %>
+        </p>
 
-      <p>
-        <%= link_to 'View Group', group_url(@group_id), class: 'button' %>
-      </p>
+        <p>After setting your password, you'll automatically be added to the group.</p>
+      <% end %>
+
+      <p>If you didn't expect this invitation, you can safely ignore this email.</p>
     </div>
 
     <div class="footer">

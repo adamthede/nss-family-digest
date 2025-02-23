@@ -21,4 +21,57 @@ class Group < ApplicationRecord
     group.group_questions.create!(question: question)
   end
 
+  def active_memberships
+    memberships.active
+  end
+
+  def active_users
+    users.joins(:memberships).where(memberships: { group_id: id, active: true })
+  end
+
+  def inactive_memberships
+    memberships.inactive
+  end
+
+  def inactive_users
+    users.joins(:memberships).where(memberships: { group_id: id, active: false })
+  end
+
+  def activate_user!(user)
+    memberships.find_by!(user: user).activate!
+  end
+
+  def deactivate_user!(user)
+    memberships.find_by!(user: user).deactivate!
+  end
+
+  def leader?(user)
+    leader == user
+  end
+
+  def can_manage_members?(user)
+    leader?(user)
+  end
+
+  def toggle_member_status!(user, active_status, current_user)
+    raise "Not authorized to manage members" unless can_manage_members?(current_user)
+    membership = memberships.find_by!(user: user)
+    active_status ? membership.activate! : membership.deactivate!
+  end
+
+  # Returns users ordered by active status and email
+  # @param include_leader [Boolean] whether to include the group leader in the results
+  # @return [ActiveRecord::Relation] ordered list of users with their membership status
+  def ordered_group_members(include_leader: true)
+    scope = users
+      .select('users.*, memberships.active as membership_active')
+      .joins(:memberships)
+      .where(memberships: { group_id: id })
+      .order('memberships.active DESC, users.email ASC')
+      .distinct
+
+    scope = scope.where.not(id: user_id) unless include_leader
+    scope
+  end
+
 end

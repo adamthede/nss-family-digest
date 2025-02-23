@@ -149,16 +149,105 @@ class GroupsController < ApplicationController
 
   def send_invite
     @group = Group.find(params[:group_id])
+    emails = params[:emails].split(',').map(&:strip)
 
-    emails = params[:emails].split(',').map!{ |e| e.strip }
+    successful_invites = []
+    failed_invites = []
 
     emails.each do |email|
       user = User.find_or_create_by_email(email)
-      GroupMailer.invite_email(user.email, @group.id).deliver
-      @group.users << user
+
+      # Check if membership already exists
+      existing_membership = @group.memberships.find_by(user: user)
+
+      if existing_membership
+        if existing_membership.active?
+          failed_invites << "#{email} is already an active member"
+        elsif existing_membership.pending?
+          failed_invites << "#{email} already has a pending invitation"
+        else
+          # Reactivate and resend invitation for inactive memberships
+          existing_membership.update!(
+            active: false,
+            invitation_token: SecureRandom.urlsafe_base64(32),
+            invitation_accepted_at: nil
+          )
+          GroupMailer.invite_email(user.email, @group.id, existing_membership.invitation_token).deliver
+          successful_invites << email
+        end
+        next
+      end
+
+      # Create new membership
+      begin
+        membership = @group.memberships.create!(
+          user: user,
+          active: false
+        )
+        GroupMailer.invite_email(user.email, @group.id, membership.invitation_token).deliver
+        successful_invites << email
+      rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid => e
+        failed_invites << "#{email} could not be invited (#{e.message})"
+      end
     end
 
-    redirect_to group_path(@group.id), notice: "Your invites have been sent!"
+    # Set flash messages
+    if successful_invites.any?
+      flash[:notice] = "Invitations sent to: #{successful_invites.join(', ')}"
+    end
+
+    if failed_invites.any?
+      flash[:alert] = failed_invites.join(', ')
+    end
+
+    redirect_to group_path(@group)
+  end
+
+  # Add new method to handle invitation acceptance
+  def accept_invitation
+    membership = Membership.find_by!(invitation_token: params[:token])
+
+    # Check if user is signed in
+    unless current_user
+      # Store invitation token in session for post-login processing
+      session[:pending_invitation_token] = params[:token]
+
+      # Redirect to sign in with a return path
+      return redirect_to new_user_session_path,
+        notice: "Please sign in or set up your account to accept the invitation"
+    end
+
+    # Ensure the invitation belongs to the current user
+    unless membership.user == current_user
+      return redirect_to root_path,
+        alert: "This invitation was sent to a different email address"
+    end
+
+    if membership.pending?
+      membership.accept_invitation!
+      flash[:notice] = "Welcome to #{membership.group.name}!"
+    else
+      flash[:alert] = "This invitation is no longer valid"
+    end
+
+    redirect_to group_path(membership.group)
+  end
+
+  def toggle_member_status
+    @group = Group.find(params[:id])
+    @member = User.find(params[:member_id])
+
+    if @group.leader?(current_user)
+      active_status = params[:active].to_s == 'true'
+      @group.toggle_member_status!(@member, active_status, current_user)
+
+      action = active_status ? "activated" : "deactivated"
+      flash[:notice] = "Member #{@member.email} has been #{action}"
+    else
+      flash[:alert] = "Only group leaders can manage member status"
+    end
+
+    redirect_to group_path(@group)
   end
 
   private
