@@ -54,7 +54,7 @@
 
             <!-- Other Members Section -->
             <h3 class="text-sm font-medium text-gray-500 mb-3">Members</h3>
-            <% @group.ordered_members.each do |user| %>
+            <% @group.ordered_group_members(include_leader: false).each do |user| %>
               <div class="bg-gray-50 p-3 rounded-lg">
                 <div class="space-y-3">
                   <!-- User Info Line -->

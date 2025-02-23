@@ -59,23 +59,19 @@ class Group < ApplicationRecord
     active_status ? membership.activate! : membership.deactivate!
   end
 
-  def ordered_users
-    users
+  # Returns users ordered by active status and email
+  # @param include_leader [Boolean] whether to include the group leader in the results
+  # @return [ActiveRecord::Relation] ordered list of users with their membership status
+  def ordered_group_members(include_leader: true)
+    scope = users
       .select('users.*, memberships.active as membership_active')
       .joins(:memberships)
       .where(memberships: { group_id: id })
       .order('memberships.active DESC, users.email ASC')
       .distinct
-  end
 
-  def ordered_members
-    users
-      .select('users.*, memberships.active as membership_active')
-      .joins(:memberships)
-      .where(memberships: { group_id: id })
-      .where.not(id: user_id)  # Changed from leader_id to user_id
-      .order('memberships.active DESC, users.email ASC')
-      .distinct
+    scope = scope.where.not(id: user_id) unless include_leader
+    scope
   end
 
 end
