@@ -1,0 +1,13 @@
+<div class="border-b border-gray-200">
+  <nav class="flex space-x-8 px-6" aria-label="Tabs">
+    <%= link_to digests_group_path(@group),
+        class: "#{controller.action_name == 'digests' ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500'} whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm hover:text-gray-700 hover:border-gray-300" do %>
+      Q&A Digests
+    <% end %>
+
+    <%= link_to questions_group_path(@group),
+        class: "#{controller.action_name == 'questions' ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500'} whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm hover:text-gray-700 hover:border-gray-300" do %>
+      Question Library
+    <% end %>
+  </nav>
+</div>

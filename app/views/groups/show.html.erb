@@ -3,260 +3,27 @@
 <div class="min-h-screen bg-gray-50">
   <div class="container mx-auto px-4 py-8 max-w-7xl">
     <!-- Header Section -->
-    <div class="bg-indigo-600 rounded-xl shadow-sm overflow-hidden mb-8">
-      <div class="px-8 py-6">
-        <div class="flex flex-col">
-          <span class="text-sm text-indigo-100 mb-2">Group Overview</span>
-          <h1 class="text-3xl font-bold mb-4 text-white"><%= @group.name %></h1>
-          <div class="flex items-center justify-between">
-            <div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
-              <span class="text-white"><%= pluralize(@group.users.count, 'member') %></span>
-            </div>
-            <% if current_user == @group.leader %>
-              <%= link_to 'Edit Group Name', edit_group_path(@group),
-                  class: "text-sm text-white bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors" %>
-            <% end %>
-          </div>
-        </div>
-      </div>
-    </div>
+    <%= render 'header' %>
 
     <!-- Main Content Layout -->
     <div class="flex gap-8">
       <!-- Members Section (Always Visible) -->
       <div class="w-80 flex-shrink-0">
-        <div class="bg-white shadow-sm rounded-xl overflow-hidden sticky top-4">
-          <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-xl font-bold text-gray-900">Members</h2>
-          </div>
-
-          <!-- Members List -->
-          <div class="px-6 py-4 space-y-4">
-            <!-- Leader Section -->
-            <div class="mb-6">
-              <h3 class="text-sm font-medium text-gray-500 mb-3">Group Leader</h3>
-              <div class="bg-gray-50 p-3 rounded-lg">
-                <div class="space-y-3">
-                  <div class="flex items-center">
-                    <%= image_tag @group.leader.gravatar_url, class: "h-8 w-8 rounded-full" %>
-                    <div class="ml-3 flex items-center space-x-2">
-                      <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">Leader</span>
-                      <%= link_to @group.leader.email, group_member_path(@group, @group.leader),
-                          class: "text-sm text-gray-700 font-medium hover:text-indigo-600" %>
-                    </div>
-                  </div>
-                  <div class="text-sm text-gray-500 pl-11">
-                    Participated in <%= pluralize(@participation_counts[@group.leader.id] || 0, 'digest') %>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Other Members Section -->
-            <h3 class="text-sm font-medium text-gray-500 mb-3">Members</h3>
-            <% @group.ordered_group_members(include_leader: false).each do |user| %>
-              <div class="bg-gray-50 p-3 rounded-lg">
-                <div class="space-y-3">
-                  <!-- User Info Line -->
-                  <div class="flex items-center">
-                    <%= image_tag user.gravatar_url, class: "h-8 w-8 rounded-full" %>
-                    <div class="ml-3 flex items-center space-x-2">
-                      <% if user == @group.leader %>
-                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">Leader</span>
-                      <% end %>
-                      <%= link_to user.email, group_member_path(@group, user),
-                          class: "text-sm text-gray-700 font-medium hover:text-indigo-600" %>
-                    </div>
-                  </div>
-
-                  <!-- Participation Info Line -->
-                  <div class="text-sm text-gray-500 pl-11">
-                    Participated in <%= pluralize(@participation_counts[user.id] || 0, 'digest') %>
-                  </div>
-
-                  <!-- Toggle Line (if leader) -->
-                  <% if current_user == @group.leader && user != @group.leader %>
-                    <div class="pl-11 flex items-center">
-                      <%= form_tag toggle_member_status_group_path(@group, user), method: :post, class: "flex items-center" do %>
-                        <%= hidden_field_tag :active, !user.active_in_group?(@group) %>
-                        <button type="submit"
-                          class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 <%= user.active_in_group?(@group) ? 'bg-green-100 text-green-800 hover:bg-green-200 focus:ring-green-500' : 'bg-gray-100 text-gray-800 hover:bg-gray-200 focus:ring-gray-500' %>"
-                        >
-                          <% if user.active_in_group?(@group) %>
-                            <svg class="w-4 h-4 mr-1.5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                            Active
-                          <% else %>
-                            <svg class="w-4 h-4 mr-1.5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                            </svg>
-                            Inactive
-                          <% end %>
-                        </button>
-                      <% end %>
-                    </div>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
-          </div>
-
-          <!-- Add Members Form (for leader) -->
-          <%= render 'shared/add_members_form' if current_user == @group.leader %>
-        </div>
+        <%= render 'members' %>
       </div>
 
       <!-- Main Content Area with Tabs -->
       <div class="flex-1">
         <div class="bg-white shadow-sm rounded-xl overflow-hidden">
           <!-- Tab Navigation -->
-          <div class="border-b border-gray-200">
-            <nav class="flex space-x-8 px-6" aria-label="Tabs">
-              <%= link_to group_path(@group),
-                  class: "#{!params[:tab] ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500'} whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm hover:text-gray-700 hover:border-gray-300" do %>
-                Q&A Digests
-              <% end %>
-
-              <%= link_to group_path(@group, tab: 'questions'),
-                  class: "#{params[:tab] == 'questions' ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500'} whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm hover:text-gray-700 hover:border-gray-300" do %>
-                Question Library
-              <% end %>
-            </nav>
-          </div>
+          <%= render 'tab_navigation' %>
 
           <!-- Tab Content -->
           <div class="p-6">
-            <% if params[:tab] == 'questions' %>
-              <!-- Question Library Content -->
-              <div class="space-y-6">
-                <!-- Sorting and Filtering Controls -->
-                <div class="flex justify-between items-center mb-6">
-                  <div class="flex items-center space-x-4">
-                    <!-- Status Filter -->
-                    <div class="flex items-center space-x-2 text-sm">
-                      <%= link_to 'All Questions', group_path(@group, tab: 'questions'),
-                          class: "#{params[:filter].nil? ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
-                      <%= link_to 'Previously Asked', group_path(@group, tab: 'questions', filter: 'used'),
-                          class: "#{params[:filter] == 'used' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
-                      <%= link_to 'Not Yet Asked', group_path(@group, tab: 'questions', filter: 'unused'),
-                          class: "#{params[:filter] == 'unused' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
-                    </div>
-
-                    <!-- Tag Filter -->
-                    <div class="relative">
-                      <select onchange="window.location.href=this.value" class="pl-3 pr-10 py-2 text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="<%= group_path(@group, tab: 'questions', filter: params[:filter], sort: params[:sort]) %>">All Tags</option>
-
-                        <!-- Global Tags -->
-                        <optgroup label="Global Tags">
-                          <% Tag.joins(:questions)
-                                .where(questions: { id: @questions.pluck(:id) })
-                                .where.not(id: GroupQuestionTag.where(group: @group).select(:tag_id))
-                                .distinct
-                                .each do |tag| %>
-                            <option value="<%= group_path(@group, tab: 'questions', tag: tag.id, filter: params[:filter], sort: params[:sort]) %>"
-                                    <%= 'selected' if params[:tag].to_i == tag.id %>>
-                              <%= tag.name %>
-                            </option>
-                          <% end %>
-                        </optgroup>
-
-                        <!-- Group Tags -->
-                        <optgroup label="Group Tags">
-                          <% @group.group_question_tags
-                                .includes(:tag)
-                                .map(&:tag)
-                                .uniq
-                                .each do |tag| %>
-                            <option value="<%= group_path(@group, tab: 'questions', tag: tag.id, filter: params[:filter], sort: params[:sort]) %>"
-                                    <%= 'selected' if params[:tag].to_i == tag.id %>>
-                              <%= tag.name %>
-                            </option>
-                          <% end %>
-                        </optgroup>
-                      </select>
-                    </div>
-
-                    <!-- Sort Options -->
-                    <div class="flex items-center space-x-2 text-sm text-gray-500">
-                      <span>Sort by:</span>
-                      <%= link_to 'Most Used', group_path(@group, tab: 'questions', sort: 'usage', filter: params[:filter]),
-                          class: "#{params[:sort] == 'usage' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
-                      <%= link_to 'Most Voted', group_path(@group, tab: 'questions', sort: 'votes', filter: params[:filter]),
-                          class: "#{params[:sort] == 'votes' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
-                      <%= link_to 'Newest', group_path(@group, tab: 'questions', sort: 'newest', filter: params[:filter]),
-                          class: "#{params[:sort] == 'newest' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Questions List -->
-                <div class="mt-8 flow-root">
-                  <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                    <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                      <div class="overflow-hidden">
-                        <% if @questions.any? %>
-                          <div class="grid gap-4">
-                            <% @questions.each do |question| %>
-                              <%= render 'question_card',
-                                  question: question,
-                                  usage_count: @question_usage_counts[question.id] || 0,
-                                  group_question: @group_questions_by_id[question.id],
-                                  current_user: current_user,
-                                  group: @group %>
-                            <% end %>
-                          </div>
-                        <% else %>
-                          <!-- Empty state -->
-                          <div class="text-center py-12">
-                            <h3 class="mt-2 text-sm font-semibold text-gray-900">No questions found</h3>
-                            <p class="mt-1 text-sm text-gray-500">Get started by adding some questions to your group.</p>
-                          </div>
-                        <% end %>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <% if controller.action_name == 'questions' %>
+              <%= render 'questions' %>
             <% else %>
-              <!-- Q&A Digests Content -->
-              <div class="space-y-6">
-                <!-- Sorting Options -->
-                <div class="flex justify-end space-x-4 mb-4">
-                  <span class="text-sm text-gray-500">Sort by:</span>
-                  <%= link_to 'Most Answers', group_path(@group, sort: 'answers_desc'),
-                      class: "text-sm #{params[:sort] == 'answers_desc' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
-                  <%= link_to 'Least Answers', group_path(@group, sort: 'answers_asc'),
-                      class: "text-sm #{params[:sort] == 'answers_asc' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
-                  <%= link_to 'Newest', group_path(@group, sort: 'date_desc'),
-                      class: "text-sm #{params[:sort] == 'date_desc' || !params[:sort] ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
-                  <%= link_to 'Oldest', group_path(@group, sort: 'date_asc'),
-                      class: "text-sm #{params[:sort] == 'date_asc' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
-                </div>
-
-                <% @question_records.each do |record| %>
-                  <div class="bg-gray-50 p-6 rounded-lg">
-                    <div class="flex items-center justify-between">
-                      <div class="flex-1">
-                        <h4 class="text-lg font-medium text-gray-900 mb-2">
-                          <%= @questions[record.question_id].question %>
-                        </h4>
-                        <p class="text-sm text-gray-500">
-                          Week of <%= record.created_at.strftime("%B %d, %Y") %>
-                        </p>
-                      </div>
-                      <div class="ml-6 flex items-center space-x-4">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= @answer_counts[record.id].to_i > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
-                          <%= pluralize(@answer_counts[record.id].to_i, 'answer') %>
-                        </span>
-                        <%= link_to 'View Digest', question_record_path(record),
-                            class: "inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700" %>
-                      </div>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
+              <%= render 'digests' %>
             <% end %>
           </div>
         </div>

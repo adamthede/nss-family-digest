@@ -1,0 +1,91 @@
+<!-- Question Library Content -->
+<div class="space-y-6">
+  <!-- Sorting and Filtering Controls -->
+  <div class="flex justify-between items-center mb-6">
+    <div class="flex items-center space-x-4">
+      <!-- Status Filter -->
+      <div class="flex items-center space-x-2 text-sm">
+        <%= link_to 'All Questions', questions_group_path(@group),
+            class: "#{params[:filter].nil? ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
+        <%= link_to 'Previously Asked', questions_group_path(@group, filter: 'used'),
+            class: "#{params[:filter] == 'used' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
+        <%= link_to 'Not Yet Asked', questions_group_path(@group, filter: 'unused'),
+            class: "#{params[:filter] == 'unused' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
+      </div>
+
+      <!-- Tag Filter -->
+      <div class="relative">
+        <select onchange="window.location.href=this.value" class="pl-3 pr-10 py-2 text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+          <option value="<%= questions_group_path(@group, filter: params[:filter], sort: params[:sort]) %>">All Tags</option>
+
+          <!-- Global Tags -->
+          <optgroup label="Global Tags">
+            <% Tag.joins(:questions)
+                  .where(questions: { id: @questions.pluck(:id) })
+                  .where.not(id: GroupQuestionTag.where(group: @group).select(:tag_id))
+                  .distinct
+                  .each do |tag| %>
+              <option value="<%= questions_group_path(@group, tag: tag.id, filter: params[:filter], sort: params[:sort]) %>"
+                      <%= 'selected' if params[:tag].to_i == tag.id %>>
+                <%= tag.name %>
+              </option>
+            <% end %>
+          </optgroup>
+
+          <!-- Group Tags -->
+          <optgroup label="Group Tags">
+            <% @group.group_question_tags
+                  .includes(:tag)
+                  .map(&:tag)
+                  .uniq
+                  .each do |tag| %>
+              <option value="<%= questions_group_path(@group, tag: tag.id, filter: params[:filter], sort: params[:sort]) %>"
+                      <%= 'selected' if params[:tag].to_i == tag.id %>>
+                <%= tag.name %>
+              </option>
+            <% end %>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- Sort Options -->
+      <div class="flex items-center space-x-2 text-sm text-gray-500">
+        <span>Sort by:</span>
+        <%= link_to 'Most Used', questions_group_path(@group, sort: 'usage', filter: params[:filter]),
+            class: "#{params[:sort] == 'usage' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
+        <%= link_to 'Most Voted', questions_group_path(@group, sort: 'votes', filter: params[:filter]),
+            class: "#{params[:sort] == 'votes' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
+        <%= link_to 'Newest', questions_group_path(@group, sort: 'newest', filter: params[:filter]),
+            class: "#{params[:sort] == 'newest' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Questions List -->
+  <div class="mt-8 flow-root">
+    <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+        <div class="overflow-hidden">
+          <% if @questions.any? %>
+            <div class="grid gap-4">
+              <% @questions.each do |question| %>
+                <%= render 'question_card',
+                    question: question,
+                    usage_count: @question_usage_counts[question.id] || 0,
+                    group_question: @group_questions_by_id[question.id],
+                    current_user: current_user,
+                    group: @group %>
+              <% end %>
+            </div>
+          <% else %>
+            <!-- Empty state -->
+            <div class="text-center py-12">
+              <h3 class="mt-2 text-sm font-semibold text-gray-900">No questions found</h3>
+              <p class="mt-1 text-sm text-gray-500">Get started by adding some questions to your group.</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
