@@ -1,27 +1,35 @@
 <% content_for :title, "Edit Profile" %>
-<div class="max-w-7xl mx-auto px-4 py-8">
-  <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+<div class="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
+  <div class="bg-white rounded-xl shadow-sm overflow-hidden">
     <!-- Header -->
-    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 px-8 py-6">
-      <h1 class="text-2xl font-bold text-white">Edit Profile</h1>
-      <p class="text-indigo-100 mt-2">Update your profile information</p>
+    <div class="bg-indigo-600 px-4 sm:px-8 py-4 sm:py-6">
+      <div class="flex flex-col">
+        <span class="text-sm text-indigo-100 mb-2">User Settings</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white">Edit Profile</h1>
+        <p class="text-indigo-100 mt-2 text-sm sm:text-base">Update your profile information</p>
+      </div>
     </div>
 
     <!-- Form Section -->
-    <div class="p-8">
+    <div class="px-4 sm:px-8 py-4 sm:py-6">
       <%= render 'form' %>
 
       <!-- Navigation Links -->
-      <div class="mt-8 mb-4 flex items-center space-x-4">
+      <div class="mt-6 sm:mt-8 flex flex-wrap items-center gap-3">
         <%= link_to user_path(current_user),
-            class: "text-indigo-600 hover:text-indigo-800 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200" do %>
-          <i class="fas fa-arrow-left mr-1"></i>
+            class: "inline-flex items-center px-3 py-1.5 text-indigo-600 hover:text-indigo-800 text-sm font-medium transition-colors duration-200" do %>
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
           Back to Profile
         <% end %>
 
         <%= link_to user_path(current_user),
-            class: "bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors duration-200" do %>
-          <i class="fas fa-eye mr-1"></i>
+            class: "inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors duration-200" do %>
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
           View Profile
         <% end %>
       </div>

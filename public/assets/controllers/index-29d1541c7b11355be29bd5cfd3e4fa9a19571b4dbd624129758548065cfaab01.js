@@ -23,4 +23,4 @@ import AlertController from "./alert_controller"
 application.register("alert", AlertController)
 
 import TagsController from "./tags_controller"
-application.register("tags", TagsController)
+application.register("tags", TagsController);

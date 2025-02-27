@@ -1,5 +1,26 @@
 <div class="space-y-1 px-2">
   <% if user_signed_in? %>
+    <!-- Groups Section -->
+    <div class="mb-2 border-b border-indigo-500 pb-2">
+      <div class="text-indigo-100 px-3 py-2 text-base font-medium">
+        <i class="fas fa-users mr-1"></i>
+        Groups
+      </div>
+
+      <div class="pl-3 space-y-1 mt-1">
+        <% current_user.memberships.each do |membership| %>
+          <%= link_to membership.group.name,
+              group_path(membership.group),
+              class: "text-indigo-100 hover:text-white hover:bg-indigo-500 block px-3 py-2 rounded-md text-sm font-medium transition-all duration-200" %>
+        <% end %>
+
+        <%= link_to new_group_path,
+            class: "text-indigo-100 hover:text-white hover:bg-indigo-500 block px-3 py-2 rounded-md text-sm font-medium transition-all duration-200" do %>
+          <i class="fas fa-plus mr-1"></i>New Group
+        <% end %>
+      </div>
+    </div>
+
     <%= link_to questions_path,
         class: "text-indigo-100 hover:text-white hover:bg-indigo-500 block px-3 py-2 rounded-md text-base font-medium transition-all duration-200" do %>
       <i class="fas fa-question-circle mr-1"></i>
