@@ -15,19 +15,19 @@
 
   <% @question_records.each do |record| %>
     <div class="bg-gray-50 p-6 rounded-lg">
-      <div class="flex items-center justify-between">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div class="flex-1">
           <h4 class="text-lg font-medium text-gray-900 mb-2">
             <%= @questions[record.question_id].question %>
           </h4>
-          <p class="text-sm text-gray-500">
+          <p class="text-sm text-gray-500 flex items-center">
             Week of <%= record.created_at.strftime("%B %d, %Y") %>
+            <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= @answer_counts[record.id].to_i > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+              <%= pluralize(@answer_counts[record.id].to_i, 'answer') %>
+            </span>
           </p>
         </div>
-        <div class="ml-6 flex items-center space-x-4">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= @answer_counts[record.id].to_i > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
-            <%= pluralize(@answer_counts[record.id].to_i, 'answer') %>
-          </span>
+        <div class="mt-4 sm:mt-0 sm:ml-6 flex">
           <%= link_to 'View Digest', question_record_path(record),
               class: "inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700" %>
         </div>

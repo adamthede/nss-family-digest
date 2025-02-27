@@ -1,6 +1,6 @@
-<div class="container mx-auto px-4 py-8 max-w-4xl">
-  <!-- Navigation -->
-  <div class="mb-8">
+<div class="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
+  <!-- Navigation - Made more compact -->
+  <div class="mb-6 sm:mb-8">
     <%= link_to group_path(@group), class: "flex items-center text-gray-600 hover:text-gray-900" do %>
       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -9,20 +9,20 @@
     <% end %>
   </div>
 
-  <!-- Header -->
-  <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
-    <div class="bg-indigo-600 px-8 py-6">
-      <div class="flex items-center space-x-4">
-        <div class="flex-shrink-0">
+  <!-- Header - Adjusted for mobile -->
+  <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6 sm:mb-8">
+    <div class="bg-indigo-600 px-4 sm:px-8 py-4 sm:py-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+        <div class="flex-shrink-0 mb-4 sm:mb-0 flex justify-center sm:justify-start">
           <% if @member.profile_image_url(:thumb) %>
-            <%= image_tag @member.profile_image_url(:thumb).to_s, class: "h-16 w-16 rounded-full" %>
+            <%= image_tag @member.profile_image_url(:thumb).to_s, class: "h-14 w-14 sm:h-16 sm:w-16 rounded-full" %>
           <% else %>
-            <%= image_tag @member.gravatar_url, class: "h-16 w-16 rounded-full" %>
+            <%= image_tag @member.gravatar_url, class: "h-14 w-14 sm:h-16 sm:w-16 rounded-full" %>
           <% end %>
         </div>
-        <div>
-          <h1 class="text-2xl font-bold text-white"><%= @member.email %></h1>
-          <div class="flex items-center mt-2 space-x-3">
+        <div class="text-center sm:text-left">
+          <h1 class="text-xl sm:text-2xl font-bold text-white"><%= @member.email %></h1>
+          <div class="flex flex-col sm:flex-row items-center mt-2 space-y-2 sm:space-y-0 sm:space-x-3">
             <% if @member == @group.leader %>
               <span class="bg-white/20 text-white text-sm px-2.5 py-0.5 rounded-full">Group Leader</span>
             <% end %>
@@ -34,50 +34,50 @@
       </div>
     </div>
 
-    <!-- Stats -->
-    <div class="px-8 py-4 bg-gray-50 border-t border-gray-200">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-6">
+    <!-- Stats - Stacked on mobile -->
+    <div class="px-4 sm:px-8 py-4 bg-gray-50 border-t border-gray-200">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+        <div class="flex items-center space-x-4">
           <div class="flex-shrink-0">
-            <div class="bg-indigo-100 rounded-lg w-12 h-12 flex items-center justify-center">
-              <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-indigo-100 rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
               </svg>
             </div>
           </div>
           <div>
-            <div class="text-sm text-gray-500">Total Responses</div>
-            <div class="mt-1 text-xl font-semibold text-gray-900"><%= @answers.count %></div>
+            <div class="text-xs sm:text-sm text-gray-500">Total Responses</div>
+            <div class="mt-1 text-lg sm:text-xl font-semibold text-gray-900"><%= @answers.count %></div>
           </div>
         </div>
 
-        <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-4">
           <div class="flex-shrink-0">
-            <div class="bg-green-100 rounded-lg w-12 h-12 flex items-center justify-center">
-              <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-green-100 rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
           <div>
-            <div class="text-sm text-gray-500">Response Rate</div>
-            <div class="mt-1 text-xl font-semibold text-gray-900">
+            <div class="text-xs sm:text-sm text-gray-500">Response Rate</div>
+            <div class="mt-1 text-lg sm:text-xl font-semibold text-gray-900">
               <%= number_to_percentage(@answers.count.to_f / @group.question_records.count * 100, precision: 0) %>
             </div>
           </div>
         </div>
 
-        <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-4">
           <div class="flex-shrink-0">
-            <div class="bg-blue-100 rounded-lg w-12 h-12 flex items-center justify-center">
-              <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-blue-100 rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
             </div>
           </div>
           <div>
-            <div class="text-sm text-gray-500">Avg. Response Length</div>
-            <div class="mt-1 text-xl font-semibold text-gray-900">
+            <div class="text-xs sm:text-sm text-gray-500">Avg. Response Length</div>
+            <div class="mt-1 text-lg sm:text-xl font-semibold text-gray-900">
               <%= @answers.average('LENGTH(answer)').to_i %> chars
             </div>
           </div>
@@ -86,18 +86,18 @@
     </div>
   </div>
 
-  <!-- Answers Timeline -->
+  <!-- Answers Timeline - Adjusted for mobile -->
   <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-    <div class="px-8 py-6 border-b border-gray-200">
-      <h2 class="text-xl font-bold text-gray-900">Response History</h2>
+    <div class="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-200">
+      <h2 class="text-lg sm:text-xl font-bold text-gray-900">Response History</h2>
     </div>
 
     <div class="divide-y divide-gray-200">
       <% @answers.each do |answer| %>
-        <div class="px-8 py-6">
+        <div class="px-4 sm:px-8 py-4 sm:py-6">
           <div class="mb-4">
-            <div class="flex items-center justify-between mb-1">
-              <div class="text-sm text-gray-500">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 sm:mb-1">
+              <div class="text-sm text-gray-500 mb-2 sm:mb-0">
                 Week of <%= answer.question_record.created_at.strftime("%B %d, %Y") %>
               </div>
               <%= link_to question_record_path(answer.question_record),
@@ -108,7 +108,7 @@
                 </svg>
               <% end %>
             </div>
-            <h3 class="text-lg font-medium text-gray-900">
+            <h3 class="text-base sm:text-lg font-medium text-gray-900">
               <%= @questions[answer.question_record.question_id].question %>
             </h3>
           </div>
@@ -123,14 +123,14 @@
             <% end %>
           </div>
 
-          <div class="mt-4 text-sm text-gray-500">
+          <div class="mt-4 text-xs sm:text-sm text-gray-500">
             Answered <%= answer.created_at.strftime("%B %d, %Y at %I:%M %p") %>
           </div>
         </div>
       <% end %>
 
       <% if @answers.empty? %>
-        <div class="px-8 py-12 text-center">
+        <div class="px-4 sm:px-8 py-8 sm:py-12 text-center">
           <div class="text-gray-400 italic">No responses yet</div>
         </div>
       <% end %>

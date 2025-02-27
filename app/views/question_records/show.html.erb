@@ -1,16 +1,16 @@
 <% content_for :title, "#{@group.name} - #{truncate(@question.question, length: 50)}" %>
-<div class="container mx-auto px-4 py-8 max-w-4xl">
-  <!-- Navigation Bar -->
-  <div class="flex justify-between items-center mb-8 text-sm">
-    <%= link_to group_path(@group), class: "flex items-center text-gray-600 hover:text-gray-900" do %>
+<div class="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
+  <!-- Navigation Bar - Made more compact on mobile -->
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 text-sm">
+    <%= link_to group_path(@group), class: "flex items-center text-gray-600 hover:text-gray-900 mb-4 sm:mb-0" do %>
       <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
       </svg>
       Back to <%= @group.name %>
     <% end %>
 
-    <!-- Weekly Navigation -->
-    <div class="flex items-center space-x-6">
+    <!-- Weekly Navigation - Centered on mobile -->
+    <div class="flex items-center justify-center sm:justify-end space-x-6">
       <% if @previous_digest %>
         <%= link_to question_record_path(@previous_digest),
             class: "flex items-center text-indigo-600 hover:text-indigo-900" do %>
@@ -35,12 +35,12 @@
 
   <!-- Main Content -->
   <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-    <!-- Header Section -->
-    <div class="bg-indigo-600 px-8 py-6">
+    <!-- Header Section - Reduced padding on mobile -->
+    <div class="bg-indigo-600 px-4 sm:px-8 py-4 sm:py-6">
       <div class="flex flex-col">
         <span class="text-sm text-indigo-100 mb-2">Weekly Digest</span>
-        <h1 class="text-3xl font-bold mb-4 text-white"><%= @group.name %></h1>
-        <div class="flex items-center justify-between">
+        <h1 class="text-2xl sm:text-3xl font-bold mb-4 text-white"><%= @group.name %></h1>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
           <div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
             <span class="text-white"><%= @question_record.created_at.strftime("Week of %B %d, %Y") %></span>
           </div>
@@ -51,11 +51,11 @@
       </div>
     </div>
 
-    <!-- Question Section -->
-    <div class="border-b px-8 py-8 bg-gray-50">
+    <!-- Question Section - Reduced padding on mobile -->
+    <div class="border-b px-4 sm:px-8 py-6 sm:py-8 bg-gray-50">
       <div class="max-w-3xl">
         <div class="text-sm text-gray-500 uppercase tracking-wide font-semibold mb-3">This Week's Question</div>
-        <h2 class="text-2xl font-medium text-gray-900 leading-relaxed">
+        <h2 class="text-xl sm:text-2xl font-medium text-gray-900 leading-relaxed">
           "<%= @question.question %>"
         </h2>
         <div class="mt-4 flex items-center">
@@ -75,7 +75,7 @@
       </div>
     </div>
 
-    <!-- Responses Section -->
+    <!-- Responses Section - Reduced padding on mobile -->
     <div class="divide-y">
       <% @group.users.sort_by { |user|
           answer = @answers.find { |a| a.user_id == user.id }
@@ -83,30 +83,30 @@
         }.each do |user| %>
         <% user_answer = @answers.find { |a| a.user_id == user.id } %>
 
-        <div class="px-8 py-6 <%= user_answer ? 'bg-white' : 'bg-gray-50' %>">
-          <div class="flex items-start space-x-4">
+        <div class="px-4 sm:px-8 py-4 sm:py-6 <%= user_answer ? 'bg-white' : 'bg-gray-50' %>">
+          <div class="flex items-start space-x-3 sm:space-x-4">
             <!-- User Avatar -->
             <div class="flex-shrink-0">
               <% if user.profile_image_url(:thumb) %>
                 <%= image_tag user.profile_image_url(:thumb).to_s,
-                    class: "h-12 w-12 rounded-full #{'opacity-50' unless user_answer}" %>
+                    class: "h-10 w-10 sm:h-12 sm:w-12 rounded-full #{'opacity-50' unless user_answer}" %>
               <% else %>
                 <%= image_tag user.gravatar_url,
-                    class: "h-12 w-12 rounded-full #{'opacity-50' unless user_answer}" %>
+                    class: "h-10 w-10 sm:h-12 sm:w-12 rounded-full #{'opacity-50' unless user_answer}" %>
               <% end %>
             </div>
 
             <!-- Answer Content -->
-            <div class="flex-1">
-              <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center space-x-2">
-                  <h3 class="font-medium text-gray-900"><%= user.email %></h3>
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
+                <div class="flex items-center space-x-2 mb-1 sm:mb-0">
+                  <h3 class="font-medium text-gray-900 text-sm sm:text-base"><%= user.email %></h3>
                   <% if user == @group.leader %>
                     <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">Leader</span>
                   <% end %>
                 </div>
                 <% if user_answer %>
-                  <span class="text-sm text-gray-500">
+                  <span class="text-xs sm:text-sm text-gray-500">
                     Answered <%= user_answer.created_at.strftime("%B %d, %Y at %I:%M %p") %>
                   </span>
                 <% end %>
@@ -152,53 +152,53 @@
     </div>
   </div>
 
-  <!-- Response Statistics -->
-  <div class="mt-8 bg-white rounded-xl shadow-sm overflow-hidden">
-    <div class="px-8 py-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-6">
+  <!-- Response Statistics - Made responsive with stacking on mobile -->
+  <div class="mt-6 sm:mt-8 bg-white rounded-xl shadow-sm overflow-hidden">
+    <div class="px-4 sm:px-8 py-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+        <div class="flex items-center space-x-4">
           <div class="flex-shrink-0">
-            <div class="bg-green-100 rounded-lg w-12 h-12 flex items-center justify-center">
-              <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-green-100 rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
           <div>
-            <div class="text-sm text-gray-500">Response Rate</div>
-            <div class="mt-1 text-xl font-semibold text-gray-900">
+            <div class="text-xs sm:text-sm text-gray-500">Response Rate</div>
+            <div class="mt-1 text-lg sm:text-xl font-semibold text-gray-900">
               <%= number_to_percentage(@answers.count.to_f / @group.users.count * 100, precision: 0) %>
             </div>
           </div>
         </div>
 
-        <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-4">
           <div class="flex-shrink-0">
-            <div class="bg-blue-100 rounded-lg w-12 h-12 flex items-center justify-center">
-              <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-blue-100 rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
             </div>
           </div>
           <div>
-            <div class="text-sm text-gray-500">Average Length</div>
-            <div class="mt-1 text-xl font-semibold text-gray-900">
+            <div class="text-xs sm:text-sm text-gray-500">Average Length</div>
+            <div class="mt-1 text-lg sm:text-xl font-semibold text-gray-900">
               <%= @answers.any? ? @answers.map { |a| a.answer.to_plain_text.length }.sum / @answers.count : 0 %> chars
             </div>
           </div>
         </div>
 
-        <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-4">
           <div class="flex-shrink-0">
-            <div class="bg-indigo-100 rounded-lg w-12 h-12 flex items-center justify-center">
-              <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="bg-indigo-100 rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
           <div>
-            <div class="text-sm text-gray-500">First Response</div>
-            <div class="mt-1 text-xl font-semibold text-gray-900">
+            <div class="text-xs sm:text-sm text-gray-500">First Response</div>
+            <div class="mt-1 text-lg sm:text-xl font-semibold text-gray-900">
               <%= @answers.minimum(:created_at)&.strftime("%b %d") || "N/A" %>
             </div>
           </div>

@@ -1,51 +1,57 @@
 <div class="mt-4">
-  <div class="space-y-2">
+  <div class="space-y-3">
     <!-- Global Tags -->
-    <div class="flex items-center space-x-2">
-      <span class="text-xs font-medium text-gray-500">Global Tags:</span>
-      <% @question.tags.each do |tag| %>
-        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-          <%= tag.name %>
-        </span>
-      <% end %>
+    <div class="flex flex-wrap items-start gap-2">
+      <span class="text-xs font-medium text-gray-500 mr-1">Global Tags:</span>
+      <div class="flex flex-wrap gap-2">
+        <% @question.tags.each do |tag| %>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            <%= tag.name %>
+          </span>
+        <% end %>
+      </div>
     </div>
 
     <!-- Group Tags -->
-    <div class="flex items-center space-x-2 flex-wrap gap-2">
-      <span class="text-xs font-medium text-gray-500">Group Tags:</span>
-      <% @question.group_question_tags.where(group: @group).includes(:tag, :created_by).each do |group_tag| %>
-        <div class="inline-flex items-center bg-indigo-100 rounded-full">
-          <span class="px-2.5 py-0.5 text-xs font-medium text-indigo-800">
-            <%= group_tag.tag.name %>
-            <span class="text-xs text-indigo-600 ml-1" title="Added by <%= group_tag.created_by.email %>">
-              (<%= group_tag.created_by.email.split('@').first %>)
+    <div class="flex flex-wrap items-start gap-2">
+      <span class="text-xs font-medium text-gray-500 mr-1">Group Tags:</span>
+      <div class="flex flex-wrap gap-2">
+        <% @question.group_question_tags.where(group: @group).includes(:tag, :created_by).each do |group_tag| %>
+          <div class="inline-flex items-center bg-indigo-100 rounded-full">
+            <span class="px-2.5 py-0.5 text-xs font-medium text-indigo-800">
+              <%= group_tag.tag.name %>
+              <span class="text-xs text-indigo-600 ml-1" title="Added by <%= group_tag.created_by.email %>">
+                (<%= group_tag.created_by.email.split('@').first %>)
+              </span>
             </span>
-          </span>
-          <% if current_user == @group.leader %>
-            <%= button_to remove_tag_group_question_path(@group, @question, tag_id: group_tag.tag.id),
-                method: :delete,
-                class: "p-1 ml-1 mr-1 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-200 rounded-full",
-                title: "Remove this tag",
-                form: { data: { turbo: true, turbo_confirm: "Are you sure you want to remove this tag?" } } do %>
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+            <% if current_user == @group.leader %>
+              <%= button_to remove_tag_group_question_path(@group, @question, tag_id: group_tag.tag.id),
+                  method: :delete,
+                  class: "p-1 ml-1 mr-1 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-200 rounded-full",
+                  title: "Remove this tag",
+                  form: { data: { turbo: true, turbo_confirm: "Are you sure you want to remove this tag?" } } do %>
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              <% end %>
             <% end %>
-          <% end %>
-        </div>
-      <% end %>
+          </div>
+        <% end %>
+      </div>
 
       <!-- Tag Input Form -->
-      <%= form_with url: add_tag_group_question_path(@group, @question),
-          class: "inline-flex items-center",
-          data: { controller: "tags", action: "turbo:submit-end->tags#reset" } do |f| %>
-        <%= f.text_field :tag_name,
-            class: "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md",
-            placeholder: "Add a group tag...",
-            data: { tags_target: "input" } %>
-        <%= f.submit "Add",
-            class: "ml-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
-      <% end %>
+      <div class="w-full mt-2">
+        <%= form_with url: add_tag_group_question_path(@group, @question),
+            class: "flex flex-wrap gap-2 items-center",
+            data: { controller: "tags", action: "turbo:submit-end->tags#reset" } do |f| %>
+          <%= f.text_field :tag_name,
+              class: "shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md w-full sm:w-auto",
+              placeholder: "Add a group tag...",
+              data: { tags_target: "input" } %>
+          <%= f.submit "Add",
+              class: "mt-2 sm:mt-0 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+        <% end %>
+      </div>
     </div>
   </div>
 </div>

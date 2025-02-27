@@ -1,5 +1,5 @@
 <div class="px-6 py-4 hover:bg-gray-50">
-  <div class="flex items-center justify-between">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
     <div class="flex-1">
       <p class="text-base font-medium text-gray-900 mb-1">
         <%= question.question %>
@@ -8,12 +8,12 @@
         Week of <%= record.created_at.strftime("%B %d, %Y") %>
       </p>
     </div>
-    <div class="ml-4 flex items-center space-x-3">
-      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= answer_count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+    <div class="mt-4 sm:mt-0 sm:ml-4 flex flex-col sm:flex-row sm:items-center sm:space-x-3">
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mb-2 sm:mb-0 <%= answer_count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
         <%= pluralize(answer_count, 'answer') %>
       </span>
       <%= link_to 'View Digest', question_record_path(record.id),
-          class: "inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200" %>
+          class: "inline-flex items-center justify-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200" %>
     </div>
   </div>
 </div>

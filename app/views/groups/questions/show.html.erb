@@ -1,15 +1,17 @@
-<div class="min-h-screen bg-gray-50 py-8">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<% content_for :title, "#{@group.name} - #{truncate(@question.question, length: 50)}" %>
+<div class="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
+  <!-- Navigation Bar -->
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 text-sm">
     <!-- Group Context -->
-    <div class="mb-4">
-      <span class="text-sm text-gray-500">Viewing in group:</span>
-      <span class="ml-2 inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+    <div class="mb-4 sm:mb-0">
+      <span class="text-xs sm:text-sm text-gray-500">Viewing in group:</span>
+      <span class="ml-2 inline-flex items-center px-2 sm:px-3 py-0.5 rounded-full text-xs sm:text-sm font-medium bg-indigo-100 text-indigo-800">
         <%= @group.name %>
       </span>
     </div>
 
     <!-- Breadcrumb -->
-    <div class="mb-8">
+    <div>
       <%= link_to questions_group_path(@group), class: "flex items-center text-gray-600 hover:text-gray-900" do %>
         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -17,124 +19,125 @@
         Back to Question Library
       <% end %>
     </div>
+  </div>
 
-    <!-- Main Content -->
-    <div class="bg-white shadow-sm rounded-xl overflow-hidden">
-      <!-- Question Header -->
-      <div class="px-6 py-4 border-b border-gray-200">
-        <div class="flex items-start justify-between">
-          <div class="flex-1">
-            <h1 class="text-xl font-medium text-gray-900"><%= @question.question %></h1>
+  <!-- Main Content -->
+  <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+    <!-- Question Header -->
+    <div class="bg-indigo-600 px-4 sm:px-8 py-4 sm:py-6">
+      <div class="flex flex-col">
+        <span class="text-sm text-indigo-100 mb-2">Question Details</span>
+        <h1 class="text-xl sm:text-2xl font-bold text-white mb-4"><%= @question.question %></h1>
 
-            <!-- Tags -->
-            <div id="question_tags">
-              <%= render "tags" %>
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap items-center gap-3 mt-2">
+          <% if @group_question %>
+            <%= button_to vote_group_question_path(@group, @group_question),
+                method: :post,
+                class: "inline-flex items-center px-3 py-1.5 border #{@group_question.group_question_votes.exists?(user: current_user) ? 'border-indigo-200 bg-indigo-700 text-white' : 'border-white/30 bg-white/10 text-white'} rounded-md text-sm font-medium hover:bg-indigo-700" do %>
+              <span class="mr-2"><%= @voter_count %></span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+              </svg>
+            <% end %>
+          <% end %>
+
+          <% if current_user == @group.leader %>
+            <%= link_to 'Send Now', send_question_path(@question, group_id: @group.id),
+                method: :post,
+                class: "inline-flex items-center px-3 py-1.5 border border-white/30 text-sm font-medium rounded-md text-white bg-white/10 hover:bg-white/20" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tags Section -->
+    <div class="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-200 bg-gray-50">
+      <div id="question_tags">
+        <%= render "tags" %>
+      </div>
+    </div>
+
+    <!-- Statistics Grid -->
+    <div class="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-200">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+        <!-- Times Asked -->
+        <div class="flex items-center space-x-3 sm:space-x-4">
+          <div class="flex-shrink-0">
+            <div class="bg-indigo-100 rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
           </div>
+          <div>
+            <div class="text-xs sm:text-sm text-gray-500">Times Asked</div>
+            <div class="mt-1 text-lg sm:text-xl font-semibold text-gray-900"><%= @usage_count %></div>
+          </div>
+        </div>
 
-          <!-- Action Buttons -->
-          <div class="ml-6 flex items-center space-x-4">
-            <% if @group_question %>
-              <%= button_to vote_group_question_path(@group, @group_question),
-                  method: :post,
-                  class: "inline-flex items-center px-3 py-1.5 border #{@group_question.group_question_votes.exists?(user: current_user) ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-300 bg-white text-gray-700'} rounded-md text-sm font-medium hover:bg-gray-50" do %>
-                <span class="mr-2"><%= @voter_count %></span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-                </svg>
-              <% end %>
-            <% end %>
+        <!-- Total Responses -->
+        <div class="flex items-center space-x-3 sm:space-x-4">
+          <div class="flex-shrink-0">
+            <div class="bg-green-100 rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="text-xs sm:text-sm text-gray-500">Total Responses</div>
+            <div class="mt-1 text-lg sm:text-xl font-semibold text-gray-900"><%= @total_answers %></div>
+          </div>
+        </div>
 
-            <% if current_user == @group.leader %>
-              <%= link_to 'Send Now', send_question_path(@question, group_id: @group.id),
-                  method: :post,
-                  class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700" %>
-            <% end %>
+        <!-- Member Votes -->
+        <div class="flex items-center space-x-3 sm:space-x-4">
+          <div class="flex-shrink-0">
+            <div class="bg-blue-100 rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="text-xs sm:text-sm text-gray-500">Member Votes</div>
+            <div class="mt-1 text-lg sm:text-xl font-semibold text-gray-900"><%= @voter_count %></div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Statistics Grid -->
-      <div class="px-8 py-4 bg-gray-50 border-t border-gray-200">
-        <div class="flex items-center justify-between">
-          <!-- Times Asked -->
-          <div class="flex items-center space-x-6">
-            <div class="flex-shrink-0">
-              <div class="bg-indigo-100 rounded-lg w-12 h-12 flex items-center justify-center">
-                <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+    <!-- Question Records -->
+    <div class="px-4 sm:px-8 py-4 sm:py-6 border-b border-gray-200">
+      <h2 class="text-base sm:text-lg font-medium text-gray-900 mb-4">Usage History</h2>
+      <div class="space-y-3 sm:space-y-4">
+        <% @question_records.each do |record| %>
+          <div class="border-l-4 border-indigo-200 pl-3 sm:pl-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs sm:text-sm text-gray-900">Sent on <%= record.created_at.strftime("%B %d, %Y") %></p>
               </div>
             </div>
-            <div>
-              <div class="text-sm text-gray-500">Times Asked</div>
-              <div class="mt-1 text-xl font-semibold text-gray-900"><%= @usage_count %></div>
-            </div>
           </div>
-
-          <!-- Total Responses -->
-          <div class="flex items-center space-x-6">
-            <div class="flex-shrink-0">
-              <div class="bg-green-100 rounded-lg w-12 h-12 flex items-center justify-center">
-                <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                </svg>
-              </div>
-            </div>
-            <div>
-              <div class="text-sm text-gray-500">Total Responses</div>
-              <div class="mt-1 text-xl font-semibold text-gray-900"><%= @total_answers %></div>
-            </div>
-          </div>
-
-          <!-- Member Votes -->
-          <div class="flex items-center space-x-6">
-            <div class="flex-shrink-0">
-              <div class="bg-blue-100 rounded-lg w-12 h-12 flex items-center justify-center">
-                <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
-                </svg>
-              </div>
-            </div>
-            <div>
-              <div class="text-sm text-gray-500">Member Votes</div>
-              <div class="mt-1 text-xl font-semibold text-gray-900"><%= @voter_count %></div>
-            </div>
-          </div>
-        </div>
+        <% end %>
       </div>
+    </div>
 
-      <!-- Question Records -->
-      <div class="px-6 py-4">
-        <h2 class="text-lg font-medium text-gray-900 mb-4">Usage History</h2>
-        <div class="space-y-4">
-          <% @question_records.each do |record| %>
-            <div class="border-l-4 border-indigo-200 pl-4">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm text-gray-900">Sent on <%= record.created_at.strftime("%B %d, %Y") %></p>
-                </div>
-              </div>
+    <!-- Similar Questions -->
+    <% if @similar_questions.any? %>
+      <div class="px-4 sm:px-8 py-4 sm:py-6">
+        <h2 class="text-base sm:text-lg font-medium text-gray-900 mb-4">Similar Questions</h2>
+        <div class="space-y-3 sm:space-y-4">
+          <% @similar_questions.each do |question| %>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <p class="text-xs sm:text-sm text-gray-900 mb-2 sm:mb-0"><%= question.question %></p>
+              <%= link_to 'View Details', group_question_path(@group, question),
+                  class: "text-xs sm:text-sm text-indigo-600 hover:text-indigo-900" %>
             </div>
           <% end %>
         </div>
       </div>
-
-      <!-- Similar Questions -->
-      <% if @similar_questions.any? %>
-        <div class="px-6 py-4 border-t border-gray-200">
-          <h2 class="text-lg font-medium text-gray-900 mb-4">Similar Questions</h2>
-          <div class="space-y-4">
-            <% @similar_questions.each do |question| %>
-              <div class="flex items-center justify-between">
-                <p class="text-sm text-gray-900"><%= question.question %></p>
-                <%= link_to 'View Details', group_question_path(@group, question),
-                    class: "text-sm text-indigo-600 hover:text-indigo-900" %>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
-    </div>
+    <% end %>
   </div>
 </div>

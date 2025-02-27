@@ -1,14 +1,14 @@
 <% content_for :title, @group.name %>
 
 <div class="min-h-screen bg-gray-50">
-  <div class="container mx-auto px-4 py-8 max-w-7xl">
+  <div class="container mx-auto px-4 py-6 sm:py-8 max-w-7xl">
     <!-- Header Section -->
     <%= render 'header' %>
 
     <!-- Main Content Layout -->
-    <div class="flex gap-8">
+    <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 md:gap-8">
       <!-- Members Section (Always Visible) -->
-      <div class="w-80 flex-shrink-0">
+      <div class="sm:w-48 md:w-56 lg:w-64 sm:flex-shrink-0 mb-4 sm:mb-0">
         <%= render 'members' %>
       </div>
 
@@ -19,7 +19,7 @@
           <%= render 'tab_navigation' %>
 
           <!-- Tab Content -->
-          <div class="p-6">
+          <div class="p-4 sm:p-6 md:p-8">
             <% if controller.action_name == 'questions' %>
               <%= render 'questions' %>
             <% else %>
@@ -32,7 +32,7 @@
 
     <!-- Delete Group Button (for leader) -->
     <% if current_user == @group.leader %>
-      <div class="mt-8 border-t pt-8">
+      <div class="mt-6 sm:mt-8 border-t pt-6 sm:pt-8">
         <%= button_to 'Delete This Group',
             group_path(@group),
             method: :delete,
