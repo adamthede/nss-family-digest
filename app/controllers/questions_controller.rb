@@ -84,11 +84,38 @@ class QuestionsController < ApplicationController
 
     # Only send to active users
     active_users.each do |user|
-      QuestionMailer.send_questions(user, group, question.question).deliver
+      QuestionMailer.send_questions(user, group, question.question).deliver_now
     end
 
     redirect_to group_path(group),
       notice: "Random question sent to #{active_users.count} active members!"
+  end
+
+  # Send a specific question to a group
+  def send_to_group
+    @question = Question.find(params[:id])
+    group = Group.find(params[:group_id])
+
+    # Get active users
+    active_users = group.active_users
+
+    if active_users.empty?
+      redirect_to group_path(group), alert: "No active members to send to"
+      return
+    end
+
+    Group.add_question_to_group(group, @question)
+
+    # Send to all active users
+    active_users.each do |user|
+      QuestionMailer.send_questions(user, group, @question.question).deliver_now
+    end
+
+    # Redirect back to the appropriate page
+    redirect_back(
+      fallback_location: group_path(group),
+      notice: "Question sent to #{active_users.count} active members!"
+    )
   end
 
   private
