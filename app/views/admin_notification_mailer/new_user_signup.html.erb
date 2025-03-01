@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background-color: #4F46E5;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 5px 5px 0 0;
+    }
+    .content {
+      padding: 20px;
+      border: 1px solid #e5e7eb;
+      border-top: none;
+      border-radius: 0 0 5px 5px;
+    }
+    .user-info {
+      background-color: #f9fafb;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    .user-info table {
+      width: 100%;
+    }
+    .user-info td {
+      padding: 8px 0;
+    }
+    .user-info td:first-child {
+      font-weight: bold;
+      width: 140px;
+    }
+    .button {
+      display: inline-block;
+      background-color: #4F46E5;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-top: 15px;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 12px;
+      color: #6b7280;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 style="margin: 0; font-size: 24px;">New User Signup</h1>
+  </div>
+
+  <div class="content">
+    <p>A new user has just signed up for your application.</p>
+
+    <div class="user-info">
+      <table>
+        <tr>
+          <td>User ID:</td>
+          <td><%= @user.id %></td>
+        </tr>
+        <% if @user.respond_to?(:name) && @user.name.present? %>
+        <tr>
+          <td>Name:</td>
+          <td><%= @user.name %></td>
+        </tr>
+        <% end %>
+        <tr>
+          <td>Email:</td>
+          <td><%= @user.email %></td>
+        </tr>
+        <tr>
+          <td>Signup Time:</td>
+          <td><%= @user.created_at.strftime("%B %d, %Y at %I:%M %p") %></td>
+        </tr>
+      </table>
+    </div>
+
+    <p>You may want to review this account to ensure it meets your application's requirements.</p>
+
+    <a href="<%= admin_dashboard_user_details_url(id: @user.id) %>" class="button">View User Details</a>
+  </div>
+
+  <div class="footer">
+    <p>This is an automated notification from your application's admin system.</p>
+  </div>
+</body>
+</html>

@@ -60,6 +60,11 @@ Rails.application.routes.draw do
     get 'dashboard/regions_data', to: 'dashboard#regions_data'
     get 'dashboard/cities_data', to: 'dashboard#cities_data'
     get 'dashboard/user_activity_data', to: 'dashboard#user_activity_data'
+
+    get 'recent_signups', to: 'dashboard#recent_signups'
+
+    get 'dashboard/groups', to: 'dashboard#groups'
+    get 'dashboard/group_details/:id', to: 'dashboard#group_details', as: 'group_details'
   end
 
   # Development Tools

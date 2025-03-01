@@ -19,6 +19,9 @@
 
         <%= link_to "User Statistics", admin_dashboard_users_path,
             class: "#{current_page?(admin_dashboard_users_path) ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500'} whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm hover:text-gray-700 hover:border-gray-300" %>
+
+        <%= link_to "Groups", admin_dashboard_groups_path,
+            class: "#{current_page?(admin_dashboard_groups_path) ? 'border-indigo-500 text-gray-900' : 'border-transparent text-gray-500'} whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm hover:text-gray-700 hover:border-gray-300" %>
       </div>
     </div>
   </div>

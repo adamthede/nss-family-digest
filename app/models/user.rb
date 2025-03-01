@@ -23,7 +23,7 @@ class User < ApplicationRecord
   # Ensures only one user can have global_admin true
   validates :global_admin, uniqueness: true, if: :global_admin?
 
-  after_create :send_welcome_email
+  after_create :send_welcome_email, :notify_admin
   # after_update :send_confirmation_email
 
   # Add attr_accessor for invitation token
@@ -87,5 +87,9 @@ class User < ApplicationRecord
     if (membership = Membership.find_by(invitation_token: invitation_token))
       membership.accept_invitation! if membership.pending?
     end
+  end
+
+  def notify_admin
+    AdminNotificationMailer.new_user_signup(self).deliver
   end
 end
