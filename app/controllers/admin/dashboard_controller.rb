@@ -140,7 +140,6 @@ class Admin::DashboardController < ApplicationController
       groups_created_this_month: Group.where('created_at >= ?', 30.days.ago).count,
       groups_by_size: group_size_distribution,
       recent_groups: Group.order(created_at: :desc).limit(10),
-      # total_group_emails: calculate_total_group_emails
     }
 
     # For the groups table without pagination
@@ -302,13 +301,5 @@ class Admin::DashboardController < ApplicationController
       total_emails: total_emails,
       last_30_days: last_30_days
     }
-  end
-
-  def calculate_total_group_emails
-    # Get all user IDs that are in groups
-    user_ids = Membership.pluck(:user_id).uniq
-
-    # Count emails sent to these users
-    Ahoy::Message.where(user_id: user_ids).count
   end
 end
