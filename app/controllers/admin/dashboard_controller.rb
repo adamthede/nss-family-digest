@@ -133,26 +133,14 @@ class Admin::DashboardController < ApplicationController
   end
 
   def groups
-    @stats = {
-      total_groups: Group.count,
-      active_groups: Group.where('last_activity_at >= ?', 30.days.ago).count,
-      avg_members_per_group: Group.joins(:memberships).group('groups.id').count.values.sum.to_f / [Group.count, 1].max,
-      groups_created_this_month: Group.where('created_at >= ?', 30.days.ago).count,
-      groups_by_size: group_size_distribution,
-      recent_groups: Group.order(created_at: :desc).limit(10),
-    }
+    @stats = AnalyticsService.group_analytics.merge({
+      recent_groups: Group.order(created_at: :desc).limit(10)
+    })
 
     # For the groups table without pagination
     @groups = Group.includes(:memberships)
                   .order(created_at: :desc)
                   .limit(50)
-
-    # Calculate email counts for each group
-    @group_email_counts = {}
-    @groups.each do |group|
-      user_ids = group.users.pluck(:id)
-      @group_email_counts[group.id] = Ahoy::Message.where(user_id: user_ids).count
-    end
   end
 
   def group_details
@@ -176,9 +164,18 @@ class Admin::DashboardController < ApplicationController
       created_at: @group.created_at,
       leader: @group.leader,
       total_emails_sent: @email_stats[:total_emails],
-      emails_last_30_days: @email_stats[:last_30_days],
-      email_open_rate: @email_stats[:open_rate]
+      emails_last_30_days: @email_stats[:last_30_days]
     }
+  end
+
+  def group_activity_data
+    # Check if GroupActivity exists before trying to use it
+    if defined?(GroupActivity)
+      render json: GroupActivity.group_by_day(:created_at, last: 30).count
+    else
+      # Fallback to memberships as a proxy for group activity
+      render json: Membership.group_by_day(:created_at, last: 30).count
+    end
   end
 
   private
@@ -233,17 +230,11 @@ class Admin::DashboardController < ApplicationController
   end
 
   def most_active_hour
-    # Alternative approach using raw SQL
-    sql = "SELECT EXTRACT(HOUR FROM time) AS hour_of_day, COUNT(*) AS event_count
-           FROM ahoy_events
-           GROUP BY hour_of_day
-           ORDER BY event_count DESC
-           LIMIT 1"
+    # Replace raw SQL with Groupdate
+    result = Ahoy::Event.group_by_hour_of_day(:time).count.max_by { |_, count| count }
 
-    result = ActiveRecord::Base.connection.execute(sql).first
-
-    if result && result["hour_of_day"]
-      hour = result["hour_of_day"].to_i
+    if result
+      hour = result[0].to_i
       meridian = hour >= 12 ? "PM" : "AM"
       display_hour = hour % 12
       display_hour = 12 if display_hour == 0
@@ -282,6 +273,10 @@ class Admin::DashboardController < ApplicationController
       end
     end
 
+    # Add group creation trends using Groupdate
+    distribution[:creation_by_month] = Group.group_by_month(:created_at, last: 12).count
+    distribution[:creation_by_week] = Group.group_by_week(:created_at, last: 8).count
+
     distribution
   end
 
@@ -296,10 +291,18 @@ class Admin::DashboardController < ApplicationController
     total_emails = emails.count
     last_30_days = emails.where('sent_at >= ?', 30.days.ago).count
 
+    # Add email trends using Groupdate
+    email_trends = {
+      by_day: emails.group_by_day(:sent_at, last: 14).count,
+      by_week: emails.group_by_week(:sent_at, last: 8).count,
+      by_hour: emails.group_by_hour_of_day(:sent_at, format: "%l %P").count
+    }
+
     # Return a hash of statistics
     {
       total_emails: total_emails,
-      last_30_days: last_30_days
+      last_30_days: last_30_days,
+      trends: email_trends
     }
   end
 end

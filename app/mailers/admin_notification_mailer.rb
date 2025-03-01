@@ -2,7 +2,7 @@ class AdminNotificationMailer < ApplicationMailer
   def new_user_signup(user)
     @user = user
     mail(
-      to: "your-email@example.com",
+      to: ENV['DEFAULT_MAILER_FROM'],
       subject: "New User Signup: #{@user.email}"
     )
   end
