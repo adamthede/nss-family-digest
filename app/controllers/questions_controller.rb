@@ -80,15 +80,28 @@ class QuestionsController < ApplicationController
       return
     end
 
-    Group.add_question_to_group(group, question)
+    begin
+      # Ensure the question is in the group's library
+      Group.add_question_to_group(group, question)
 
-    # Only send to active users
-    active_users.each do |user|
-      QuestionMailer.send_questions(user, group, question.question).deliver_now
+      # Create a question record for this sending event
+      question_record = QuestionRecord.create!(
+        group: group,
+        question: question
+      )
+
+      # Only send to active users
+      active_users.each do |user|
+        QuestionMailer.send_questions(user, group, question.question).deliver_now
+      end
+
+      redirect_to group_path(group),
+        notice: "Random question sent to #{active_users.count} active members!"
+    rescue => e
+      Rails.logger.error("Error sending random question: #{e.message}")
+      redirect_to group_path(group),
+        alert: "There was an error sending the question. Please try again later."
     end
-
-    redirect_to group_path(group),
-      notice: "Random question sent to #{active_users.count} active members!"
   end
 
   # Send a specific question to a group
@@ -104,18 +117,69 @@ class QuestionsController < ApplicationController
       return
     end
 
-    Group.add_question_to_group(group, @question)
+    begin
+      # Ensure the question is in the group's library (this is optional)
+      # This will return the existing association if it exists
+      Group.add_question_to_group(group, @question)
 
-    # Send to all active users
-    active_users.each do |user|
-      QuestionMailer.send_questions(user, group, @question.question).deliver_now
+      # Create a new question record for this sending event
+      # This allows the same question to be sent multiple times
+      question_record = QuestionRecord.create!(
+        group: group,
+        question: @question
+      )
+
+      # Send to all active users
+      active_users.each do |user|
+        QuestionMailer.send_questions(user, group, @question.question).deliver_now
+      end
+
+      # Redirect back to the appropriate page
+      redirect_back(
+        fallback_location: group_path(group),
+        notice: "Question sent to #{active_users.count} active members!"
+      )
+    rescue ActiveRecord::RecordInvalid => e
+      if e.message.include?("Question has already been taken")
+        # If the error is because the question is already in the library,
+        # we can still create a question record and send the emails
+        begin
+          question_record = QuestionRecord.create!(
+            group: group,
+            question: @question
+          )
+
+          active_users.each do |user|
+            QuestionMailer.send_questions(user, group, @question.question).deliver_now
+          end
+
+          redirect_back(
+            fallback_location: group_path(group),
+            notice: "Question sent to #{active_users.count} active members!"
+          )
+        rescue => inner_e
+          Rails.logger.error("Error creating question record: #{inner_e.message}")
+          redirect_back(
+            fallback_location: group_path(group),
+            alert: "There was an error sending the question. Please try again later."
+          )
+        end
+      else
+        # For other validation errors
+        Rails.logger.error("Error sending question: #{e.message}")
+        redirect_back(
+          fallback_location: group_path(group),
+          alert: "There was an error sending the question. Please try again later."
+        )
+      end
+    rescue => e
+      # Log the error and show a friendly message
+      Rails.logger.error("Error sending question: #{e.message}")
+      redirect_back(
+        fallback_location: group_path(group),
+        alert: "There was an error sending the question. Please try again later."
+      )
     end
-
-    # Redirect back to the appropriate page
-    redirect_back(
-      fallback_location: group_path(group),
-      notice: "Question sent to #{active_users.count} active members!"
-    )
   end
 
   private

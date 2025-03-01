@@ -18,6 +18,11 @@ class Group < ApplicationRecord
   validates_presence_of :leader
 
   def self.add_question_to_group(group, question)
+    # First check if the association already exists
+    existing = group.group_questions.find_by(question: question)
+    return existing if existing
+
+    # If not, create a new association
     group.group_questions.create!(question: question)
   end
 
