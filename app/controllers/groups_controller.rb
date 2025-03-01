@@ -141,7 +141,9 @@ class GroupsController < ApplicationController
     @group = current_user.groups.build(group_params)
     respond_to do |format|
       if @group.save
-        @group.users << current_user
+        # Create an active membership for the group leader
+        @group.memberships.create!(user: current_user, active: true)
+
         format.html { redirect_to @group, notice: 'Group was successfully created.' }
         format.json { render :show, status: :created, location: @group }
       else

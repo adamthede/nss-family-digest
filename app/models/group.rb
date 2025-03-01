@@ -31,7 +31,7 @@ class Group < ApplicationRecord
   end
 
   def active_users
-    users.joins(:memberships).where(memberships: { group_id: id, active: true })
+    users.joins(:memberships).where(memberships: { group_id: id, active: true }).distinct
   end
 
   def inactive_memberships
@@ -39,7 +39,7 @@ class Group < ApplicationRecord
   end
 
   def inactive_users
-    users.joins(:memberships).where(memberships: { group_id: id, active: false })
+    users.joins(:memberships).where(memberships: { group_id: id, active: false }).distinct
   end
 
   def activate_user!(user)
