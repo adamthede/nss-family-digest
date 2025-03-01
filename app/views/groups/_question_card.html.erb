@@ -21,9 +21,11 @@
         </span>
 
         <% if current_user == group.leader %>
-          <%= link_to 'Send Now', send_question_path(question, group_id: group.id),
+          <%= button_to send_question_path(question, group_id: group.id),
               method: :post,
-              class: "text-indigo-600 hover:text-indigo-900 font-medium" %>
+              class: "text-indigo-600 hover:text-indigo-900 font-medium" do %>
+              Send Now
+          <% end %>
         <% end %>
       </div>
 

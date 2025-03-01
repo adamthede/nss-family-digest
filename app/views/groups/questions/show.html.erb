@@ -43,9 +43,11 @@
           <% end %>
 
           <% if current_user == @group.leader %>
-            <%= link_to 'Send Now', send_question_path(@question, group_id: @group.id),
+            <%= button_to send_question_path(@question, group_id: @group.id),
                 method: :post,
-                class: "inline-flex items-center px-3 py-1.5 border border-white/30 text-sm font-medium rounded-md text-white bg-white/10 hover:bg-white/20" %>
+                class: "inline-flex items-center px-3 py-1.5 border border-white/30 text-sm font-medium rounded-md text-white bg-white/10 hover:bg-white/20" do %>
+                Send Now
+            <% end %>
           <% end %>
         </div>
       </div>
