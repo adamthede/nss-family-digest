@@ -14,7 +14,15 @@ class Admin::DashboardController < ApplicationController
       end,
       recent_events: AnalyticsService.recent_events,
       top_users: User.top_users,
-      most_common_user_actions: AnalyticsService.most_common_user_actions
+      most_common_user_actions: AnalyticsService.most_common_user_actions,
+      signups_this_week: User.where('created_at >= ?', 7.days.ago).count,
+      active_users_today: Ahoy::Event.where('time >= ?', 24.hours.ago).distinct.count(:user_id),
+      page_views_per_visit: calculate_page_views_per_visit,
+      top_browser: top_browser,
+      top_device_type: top_device_type,
+      events_per_day: events_per_day,
+      new_visitors_percentage: new_visitors_percentage,
+      most_active_hour: most_active_hour
     }
   end
 
@@ -31,7 +39,18 @@ class Admin::DashboardController < ApplicationController
   end
 
   def users
-    @stats = AnalyticsService.users_dashboard_statistics
+    @stats = AnalyticsService.users_dashboard_statistics.merge({
+      recent_signups: User.order(created_at: :desc).limit(10).map do |user|
+        {
+          id: user.id,
+          email: user.email,
+          name: user.respond_to?(:name) ? user.name : nil,
+          created_at: user.created_at
+        }
+      end,
+      signups_today: User.where('created_at >= ?', 24.hours.ago).count,
+      signups_this_week: User.where('created_at >= ?', 7.days.ago).count
+    })
   end
 
   def daily_visits_data
@@ -109,6 +128,56 @@ class Admin::DashboardController < ApplicationController
     @stats = AnalyticsService.user_statistics(@user.id)
   end
 
+  def recent_signups
+    @recent_signups = User.order(created_at: :desc).paginate(page: params[:page], per_page: 20)
+  end
+
+  def groups
+    @stats = AnalyticsService.group_analytics.merge({
+      recent_groups: Group.order(created_at: :desc).limit(10)
+    })
+
+    # For the groups table without pagination
+    @groups = Group.includes(:memberships)
+                  .order(created_at: :desc)
+                  .limit(50)
+  end
+
+  def group_details
+    @group = Group.find(params[:id])
+    @members = @group.memberships.includes(:user).select { |m| m.user.present? }
+
+    # Get email statistics for this group
+    @email_stats = calculate_group_email_stats(@group)
+
+    # Check if GroupActivity exists before trying to use it
+    if defined?(GroupActivity)
+      @activity = GroupActivity.where(group_id: @group.id).order(created_at: :desc).limit(50)
+    else
+      @activity = []
+    end
+
+    @stats = {
+      member_count: @members.count,
+      active_members: @members.respond_to?(:where) && @members.first.respond_to?(:last_active_at) ?
+                      @members.where('last_active_at >= ?', 30.days.ago).count : 0,
+      created_at: @group.created_at,
+      leader: @group.leader,
+      total_emails_sent: @email_stats[:total_emails],
+      emails_last_30_days: @email_stats[:last_30_days]
+    }
+  end
+
+  def group_activity_data
+    # Check if GroupActivity exists before trying to use it
+    if defined?(GroupActivity)
+      render json: GroupActivity.group_by_day(:created_at, last: 30).count
+    else
+      # Fallback to memberships as a proxy for group activity
+      render json: Membership.group_by_day(:created_at, last: 30).count
+    end
+  end
+
   private
 
   def set_common_stats
@@ -122,5 +191,118 @@ class Admin::DashboardController < ApplicationController
     unless current_user&.global_admin?
       redirect_to root_path, alert: "Access denied."
     end
+  end
+
+  def calculate_page_views_per_visit
+    total_events = Ahoy::Event.count
+    total_visits = Ahoy::Visit.count
+
+    if total_visits > 0
+      avg = (total_events.to_f / total_visits).round(1)
+      avg.to_s
+    else
+      "0"
+    end
+  end
+
+  def top_browser
+    Ahoy::Visit.group(:browser).order('count_id DESC').count(:id).first&.first || 'Unknown'
+  end
+
+  def top_device_type
+    Ahoy::Visit.group(:device_type).order('count_id DESC').count(:id).first&.first || 'Unknown'
+  end
+
+  def events_per_day
+    events_count = Ahoy::Event.where('time >= ?', 7.days.ago).count
+    days = 7
+    avg = (events_count.to_f / days).round
+    avg.to_s
+  end
+
+  def new_visitors_percentage
+    total_visits = Ahoy::Visit.count
+    return "0%" if total_visits == 0
+
+    new_visits = Ahoy::Visit.select(:visitor_token).distinct.count
+    percentage = ((new_visits.to_f / total_visits) * 100).round
+    "#{percentage}%"
+  end
+
+  def most_active_hour
+    # Replace raw SQL with Groupdate
+    result = Ahoy::Event.group_by_hour_of_day(:time).count.max_by { |_, count| count }
+
+    if result
+      hour = result[0].to_i
+      meridian = hour >= 12 ? "PM" : "AM"
+      display_hour = hour % 12
+      display_hour = 12 if display_hour == 0
+      "#{display_hour} #{meridian}"
+    else
+      "N/A"
+    end
+  end
+
+  def group_size_distribution
+    # Returns distribution of groups by member count
+    counts = Group.joins(:memberships)
+                 .group('groups.id')
+                 .count
+
+    distribution = {
+      '1-5 members': 0,
+      '6-10 members': 0,
+      '11-20 members': 0,
+      '21-50 members': 0,
+      '51+ members': 0
+    }
+
+    counts.each do |_, count|
+      case count
+      when 1..5
+        distribution[:'1-5 members'] += 1
+      when 6..10
+        distribution[:'6-10 members'] += 1
+      when 11..20
+        distribution[:'11-20 members'] += 1
+      when 21..50
+        distribution[:'21-50 members'] += 1
+      else
+        distribution[:'51+ members'] += 1
+      end
+    end
+
+    # Add group creation trends using Groupdate
+    distribution[:creation_by_month] = Group.group_by_month(:created_at, last: 12).count
+    distribution[:creation_by_week] = Group.group_by_week(:created_at, last: 8).count
+
+    distribution
+  end
+
+  def calculate_group_email_stats(group)
+    # Get all user IDs in this group
+    user_ids = group.users.pluck(:id)
+
+    # Query Ahoy::Message for emails sent to these users
+    emails = Ahoy::Message.where(user_id: user_ids)
+
+    # Calculate statistics
+    total_emails = emails.count
+    last_30_days = emails.where('sent_at >= ?', 30.days.ago).count
+
+    # Add email trends using Groupdate
+    email_trends = {
+      by_day: emails.group_by_day(:sent_at, last: 14).count,
+      by_week: emails.group_by_week(:sent_at, last: 8).count,
+      by_hour: emails.group_by_hour_of_day(:sent_at, format: "%l %P").count
+    }
+
+    # Return a hash of statistics
+    {
+      total_emails: total_emails,
+      last_30_days: last_30_days,
+      trends: email_trends
+    }
   end
 end

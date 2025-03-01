@@ -1,0 +1,18 @@
+NEW USER SIGNUP
+
+A new user has just signed up for your application.
+
+USER DETAILS:
+User ID: <%= @user.id %>
+<% if @user.respond_to?(:name) && @user.name.present? %>
+Name: <%= @user.name %>
+<% end %>
+Email: <%= @user.email %>
+Signup Time: <%= @user.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+
+You may want to review this account to ensure it meets your application's requirements.
+
+View User Details: <%= admin_dashboard_user_details_url(id: @user.id) %>
+
+---
+This is an automated notification from your application's admin system.

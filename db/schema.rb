@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_20_025000) do
+ActiveRecord::Schema[8.0].define(version: 2025_02_28_173819) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -164,6 +164,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_20_025000) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer "user_id"
+    t.datetime "last_activity_at", precision: nil
+    t.string "plan", default: "free"
+    t.integer "storage_used", default: 0
   end
 
   create_table "memberships", id: :serial, force: :cascade do |t|
@@ -174,6 +177,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_20_025000) do
     t.string "invitation_token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "last_active_at", precision: nil
     t.index ["active"], name: "index_memberships_on_active"
     t.index ["invitation_token"], name: "index_memberships_on_invitation_token", unique: true
     t.index ["user_id", "group_id"], name: "index_memberships_on_user_id_and_group_id", unique: true

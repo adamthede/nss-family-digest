@@ -2,6 +2,64 @@
 
 <div class="p-6">
   <div class="space-y-8">
+    <!-- Recent Signups Section -->
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-800">Recent Signups</h2>
+
+        <!-- Signup Statistics -->
+        <div class="flex space-x-4">
+          <div class="text-sm">
+            <span class="font-medium text-gray-500">Today:</span>
+            <% signups_today = @stats[:signups_today] || 0 %>
+            <span class="ml-1 font-semibold <%= signups_today > 0 ? 'text-green-600' : 'text-gray-700' %>">
+              <%= signups_today %>
+            </span>
+          </div>
+          <div class="text-sm">
+            <span class="font-medium text-gray-500">This Week:</span>
+            <span class="ml-1 font-semibold text-gray-700"><%= @stats[:signups_this_week] || 0 %></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th class="py-3 text-left text-sm font-medium text-gray-500">User</th>
+              <th class="py-3 text-left text-sm font-medium text-gray-500">Email</th>
+              <th class="py-3 text-left text-sm font-medium text-gray-500">Signup Date</th>
+              <th class="py-3 text-left text-sm font-medium text-gray-500">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <% if @stats[:recent_signups].present? %>
+              <% @stats[:recent_signups].each do |user| %>
+                <tr class="hover:bg-gray-50 <%= user[:created_at] >= 24.hours.ago ? 'bg-green-50' : '' %>">
+                  <td class="py-3 text-sm text-gray-900"><%= user[:name] || "User ##{user[:id]}" %></td>
+                  <td class="py-3 text-sm text-gray-600"><%= user[:email] %></td>
+                  <td class="py-3 text-sm text-gray-500">
+                    <%= user[:created_at].strftime("%Y-%m-%d %H:%M") %>
+                    <% if user[:created_at] >= 24.hours.ago %>
+                      <span class="ml-2 px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-medium">New</span>
+                    <% end %>
+                  </td>
+                  <td class="py-3 text-sm">
+                    <%= link_to "View Details", admin_dashboard_user_details_path(id: user[:id]), class: "text-indigo-600 hover:text-indigo-800" %>
+                  </td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="4" class="py-3 text-sm text-gray-500 text-center">No recent signups</td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- User Analytics Section -->
     <div class="bg-white rounded-lg shadow p-6">
       <h2 class="text-xl font-semibold text-gray-800 mb-4">User Analytics</h2>
