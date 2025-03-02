@@ -1,5 +1,5 @@
 class GroupsController < ApplicationController
-  before_action :set_group, only: [:show, :edit, :update, :destroy, :questions, :digests]
+  before_action :set_group, only: [:show, :edit, :update, :destroy, :questions, :digests, :migrate_legacy_digests]
 
   # GET /groups
   # GET /groups.json
@@ -34,42 +34,49 @@ class GroupsController < ApplicationController
       .distinct
       .count
 
-    # Q&A Digests tab
-    base_query = @group.question_records
-      .includes(:question, :answers)
+    # Get question digests for this group with sorting
+    base_query = @group.question_digests
 
-    # Apply sorting for Q&A Digests
-    @question_records = case params[:sort]
+    # Apply sorting
+    @question_digests = case params[:sort]
     when 'date_asc'
-      base_query.order(created_at: :asc)
+      base_query.order(start_date: :asc)
+    when 'questions_desc'
+      base_query
+        .left_joins(:question_records)
+        .group('question_digests.id')
+        .select('question_digests.*, COUNT(question_records.id) as question_count')
+        .order(Arel.sql('COUNT(question_records.id) DESC, question_digests.start_date DESC'))
+    when 'questions_asc'
+      base_query
+        .left_joins(:question_records)
+        .group('question_digests.id')
+        .select('question_digests.*, COUNT(question_records.id) as question_count')
+        .order(Arel.sql('COUNT(question_records.id) ASC, question_digests.start_date DESC'))
     when 'answers_desc'
       base_query
-        .select('question_records.*, COUNT(DISTINCT answers.id) as answers_count')
-        .left_joins(:answers)
-        .group('question_records.id')
-        .order(Arel.sql('COUNT(DISTINCT answers.id) DESC, question_records.created_at DESC'))
+        .left_joins(question_records: :answers)
+        .group('question_digests.id')
+        .select('question_digests.*, COUNT(DISTINCT answers.id) as answers_count')
+        .order(Arel.sql('COUNT(DISTINCT answers.id) DESC, question_digests.start_date DESC'))
     when 'answers_asc'
       base_query
-        .select('question_records.*, COUNT(DISTINCT answers.id) as answers_count')
-        .left_joins(:answers)
-        .group('question_records.id')
-        .order(Arel.sql('COUNT(DISTINCT answers.id) ASC, question_records.created_at DESC'))
+        .left_joins(question_records: :answers)
+        .group('question_digests.id')
+        .select('question_digests.*, COUNT(DISTINCT answers.id) as answers_count')
+        .order(Arel.sql('COUNT(DISTINCT answers.id) ASC, question_digests.start_date DESC'))
     else # 'date_desc' or default
-      base_query.order(created_at: :desc)
+      base_query.order(start_date: :desc)
     end
 
-    # Load questions for display
-    @questions = Question.where(id: @question_records.pluck(:question_id)).index_by(&:id)
+    # For backward compatibility, check if there are any legacy question records
+    @has_legacy_records = @group.question_records.where(question_digest_id: nil).exists?
 
-    # Get answer counts
-    @answer_counts = Answer.where(question_record_id: @question_records.pluck(:id))
-      .group(:question_record_id)
-      .count
+    # Debug logging
+    Rails.logger.debug "Group #{@group.id} has legacy records: #{@has_legacy_records}"
+    Rails.logger.debug "Legacy record count: #{@group.question_records.where(question_digest_id: nil).count}"
 
-    respond_to do |format|
-      format.html { render :show }
-      format.turbo_stream if request.xhr?
-    end
+    render 'show'
   end
 
   # GET /groups/1/questions
@@ -280,6 +287,18 @@ class GroupsController < ApplicationController
     redirect_to group_path(@group)
   end
 
+  def migrate_legacy_digests
+    authorize_group_leader
+
+    service = LegacyDigestMigrationService.new(@group)
+
+    if service.migrate
+      redirect_to digests_group_path(@group), notice: "Legacy question records have been successfully migrated to the new digest format."
+    else
+      redirect_to digests_group_path(@group), alert: "Migration failed: #{service.errors.join(', ')}"
+    end
+  end
+
   private
 
   # Use callbacks to share common setup or constraints between actions.
@@ -290,5 +309,12 @@ class GroupsController < ApplicationController
   # Never trust parameters from the scary internet, only allow the white list through.
   def group_params
     params.require(:group).permit(:name, :id)
+  end
+
+  def authorize_group_leader
+    unless current_user == @group.leader
+      flash[:alert] = "Only the group leader can perform this action."
+      redirect_to group_path(@group)
+    end
   end
 end

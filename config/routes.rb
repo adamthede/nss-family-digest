@@ -12,6 +12,7 @@ Rails.application.routes.draw do
       get 'questions'
       post 'send_invite'
       post 'toggle_member_status/:member_id', to: 'groups#toggle_member_status', as: 'toggle_member_status'
+      post 'migrate_legacy_digests'
     end
     get 'accept_invitation', on: :collection
     resources :members, only: [:show], controller: 'group_members'
@@ -23,6 +24,11 @@ Rails.application.routes.draw do
           delete 'remove_tag'
           delete 'unvote'
         end
+      end
+    end
+    resources :question_digests, only: [:index, :show, :new, :create, :destroy] do
+      member do
+        post :send_digest
       end
     end
   end
