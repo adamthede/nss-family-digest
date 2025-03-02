@@ -1,0 +1,109 @@
+<% content_for :title, "#{@group.name} - New Digest" %>
+
+<div class="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
+  <!-- Navigation Bar - Made more compact on mobile -->
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 text-sm">
+    <%= link_to group_question_digests_path(@group), class: "flex items-center text-gray-600 hover:text-gray-900 mb-4 sm:mb-0" do %>
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      Back to Digests
+    <% end %>
+  </div>
+
+  <!-- Main Content -->
+  <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+    <!-- Header Section - Reduced padding on mobile -->
+    <div class="bg-indigo-600 px-4 sm:px-8 py-4 sm:py-6">
+      <div class="flex flex-col">
+        <span class="text-sm text-indigo-100 mb-2">New Digest</span>
+        <h1 class="text-2xl sm:text-3xl font-bold mb-4 text-white"><%= @group.name %></h1>
+        <div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 inline-block">
+          <span class="text-white">Select a date range to create a digest</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Content -->
+    <div class="px-6 sm:px-10 py-8 sm:py-10">
+      <%= form_with(model: [@group, @digest], url: group_question_digests_path(@group), local: true, class: "space-y-8 max-w-3xl") do |form| %>
+        <% if flash[:alert].present? %>
+          <div class="rounded-md bg-red-50 p-4 mb-6">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">
+                  <%= flash[:alert] %>
+                </h3>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <div class="text-base text-gray-500 uppercase tracking-wide font-semibold mb-6">
+          DATE RANGE SELECTION
+        </div>
+
+        <div class="grid grid-cols-1 gap-y-8 gap-x-8 sm:grid-cols-2">
+          <div>
+            <%= form.label :start_date, "Start Date", class: "block text-lg font-medium text-gray-700 mb-2" %>
+            <div class="relative rounded-md shadow-sm">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <%= form.date_field :start_date, class: "pl-10 py-3 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-base border-gray-300 rounded-md", required: true, value: 1.month.ago.to_date %>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">Select the first day of the digest period</p>
+          </div>
+
+          <div>
+            <%= form.label :end_date, "End Date", class: "block text-lg font-medium text-gray-700 mb-2" %>
+            <div class="relative rounded-md shadow-sm">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <%= form.date_field :end_date, class: "pl-10 py-3 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full text-base border-gray-300 rounded-md", required: true, value: Date.today %>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">Select the last day of the digest period</p>
+          </div>
+        </div>
+
+        <div class="mt-10 pt-6 border-t border-gray-200">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6">
+            <div class="text-sm text-gray-500">
+              <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                  <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <p class="text-base">This will create a digest containing all questions sent during the selected period.</p>
+                </div>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <%= link_to "Cancel", group_question_digests_path(@group), class: "inline-flex items-center px-6 py-3 border border-gray-300 rounded-md shadow-sm text-base font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+              <%= form.button type: "submit", class: "inline-flex items-center px-6 py-3 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" do %>
+                <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Create Digest
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

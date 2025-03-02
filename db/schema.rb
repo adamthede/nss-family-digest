@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_28_173819) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_01_194934) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -183,12 +183,25 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_28_173819) do
     t.index ["user_id", "group_id"], name: "index_memberships_on_user_id_and_group_id", unique: true
   end
 
+  create_table "question_digests", force: :cascade do |t|
+    t.bigint "group_id", null: false
+    t.date "start_date"
+    t.date "end_date"
+    t.string "status"
+    t.datetime "sent_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["group_id"], name: "index_question_digests_on_group_id"
+  end
+
   create_table "question_records", id: :serial, force: :cascade do |t|
     t.integer "question_id"
     t.integer "group_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.bigint "question_digest_id"
     t.index ["group_id", "question_id"], name: "index_question_records_on_group_id_and_question_id"
+    t.index ["question_digest_id"], name: "index_question_records_on_question_digest_id"
   end
 
   create_table "question_tags", force: :cascade do |t|
@@ -247,6 +260,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_28_173819) do
   add_foreign_key "group_question_votes", "users"
   add_foreign_key "group_questions", "groups"
   add_foreign_key "group_questions", "questions"
+  add_foreign_key "question_digests", "groups"
+  add_foreign_key "question_records", "question_digests"
   add_foreign_key "question_tags", "questions"
   add_foreign_key "question_tags", "tags"
 end

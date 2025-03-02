@@ -1,6 +1,6 @@
 class GroupMembersController < ApplicationController
   before_action :set_group
-  before_action :set_member
+  before_action :set_member, only: [:show]
 
   def show
     @answers = Answer.joins(:question_record)
