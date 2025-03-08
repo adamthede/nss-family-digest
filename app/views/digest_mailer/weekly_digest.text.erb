@@ -1,0 +1,33 @@
+<%= @group.name %> - Weekly Digest
+Questions from <%= @digest.start_date.strftime("%b %d, %Y") %> to <%= @digest.end_date.strftime("%b %d, %Y") %>
+
+Hello <%= @user.name %>,
+
+Here's a summary of the questions and answers shared in your group this week:
+
+<% if @question_records.empty? %>
+No questions were sent during this period.
+<% else %>
+<% @question_records.each do |record| %>
+QUESTION: <%= record.question.content %>
+Sent on <%= record.created_at.strftime("%b %d, %Y") %>
+
+<% if record.answers.any? %>
+Answers:
+<% record.answers.each do |answer| %>
+- <%= answer.user.name %> (<%= answer.created_at.strftime("%b %d, %Y at %I:%M %p") %>):
+  <%= answer.content %>
+
+<% end %>
+<% else %>
+No answers yet for this question.
+
+<% end %>
+----------------------------------------
+<% end %>
+<% end %>
+
+View Group: <%= group_url(@group) %>
+
+You're receiving this email because you're a member of <%= @group.name %>.
+If you no longer wish to receive these digests, you can leave the group or contact the group leader.

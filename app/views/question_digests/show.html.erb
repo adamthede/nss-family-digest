@@ -1,0 +1,253 @@
+<% content_for :title, "#{@group.name} - Digest ##{@digest.id}" %>
+<div class="container mx-auto px-4 py-6 sm:py-8 max-w-4xl">
+  <!-- Navigation Bar - Made more compact on mobile -->
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 sm:mb-8 text-sm">
+    <%= link_to group_path(@group), class: "flex items-center text-gray-600 hover:text-gray-900 mb-4 sm:mb-0" do %>
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      Back to <%= @group.name %>
+    <% end %>
+
+    <!-- Weekly Navigation - Centered on mobile -->
+    <div class="flex items-center justify-center sm:justify-end space-x-6">
+      <% previous_digest = @group.question_digests.where('start_date < ?', @digest.start_date).order(start_date: :desc).first %>
+      <% next_digest = @group.question_digests.where('start_date > ?', @digest.start_date).order(start_date: :asc).first %>
+
+      <% if previous_digest %>
+        <%= link_to group_question_digest_path(@group, previous_digest),
+            class: "flex items-center text-indigo-600 hover:text-indigo-900" do %>
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          <%= previous_digest.start_date.strftime("%B %d, %Y") %>
+        <% end %>
+      <% end %>
+
+      <% if next_digest %>
+        <%= link_to group_question_digest_path(@group, next_digest),
+            class: "flex items-center text-indigo-600 hover:text-indigo-900" do %>
+          <%= next_digest.start_date.strftime("%B %d, %Y") %>
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+    <!-- Header Section - Reduced padding on mobile -->
+    <div class="bg-indigo-600 px-4 sm:px-8 py-4 sm:py-6">
+      <div class="flex flex-col">
+        <span class="text-sm text-indigo-100 mb-2">Weekly Digest</span>
+        <h1 class="text-2xl sm:text-3xl font-bold mb-4 text-white"><%= @group.name %></h1>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+          <div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
+            <span class="text-white"><%= @digest.start_date.strftime("Week of %B %d, %Y") %></span>
+          </div>
+          <div class="text-sm text-white">
+            <span class="text-white"><%= pluralize(@question_records.map { |qr| qr.answers.count }.sum, 'response') %> from <%= pluralize(@group.users.count, 'member') %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Questions Section -->
+    <% @question_records.each_with_index do |record, index| %>
+      <div class="border-b px-4 sm:px-8 py-6 sm:py-8 <%= index.even? ? 'bg-gray-50' : 'bg-white' %>">
+        <div class="max-w-3xl">
+          <div class="text-sm text-gray-500 uppercase tracking-wide font-semibold mb-3">
+            Question <%= index + 1 %> of <%= @question_records.count %>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-medium text-gray-900 leading-relaxed">
+            "<%= record.question.question %>"
+          </h2>
+          <div class="mt-4 flex items-center">
+            <div class="flex-shrink-0">
+              <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                <svg class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm text-gray-500">
+                Sent on <%= record.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+              </p>
+            </div>
+          </div>
+
+          <!-- Answers for this question -->
+          <% if record.answers.any? %>
+            <div class="mt-6 space-y-6">
+              <h3 class="text-lg font-medium text-gray-900">Responses</h3>
+              <div class="divide-y">
+                <% record.answers.sort_by(&:created_at).each do |answer| %>
+                  <div class="py-4">
+                    <div class="flex items-start space-x-3 sm:space-x-4">
+                      <!-- User Avatar with Gravatar -->
+                      <div class="flex-shrink-0">
+                        <% email_digest = Digest::MD5.hexdigest(answer.user.email.downcase) %>
+                        <img class="h-10 w-10 sm:h-12 sm:w-12 rounded-full"
+                             src="https://www.gravatar.com/avatar/<%= email_digest %>?d=identicon&s=48"
+                             alt="<%= answer.user.email %>'s avatar">
+                      </div>
+
+                      <!-- Answer Content -->
+                      <div class="flex-1 min-w-0">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
+                          <div class="flex items-center space-x-2 mb-1 sm:mb-0">
+                            <h3 class="font-medium text-gray-900 text-sm sm:text-base"><%= answer.user.email %></h3>
+                            <% if answer.user == @group.leader %>
+                              <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">Leader</span>
+                            <% end %>
+                          </div>
+                          <span class="text-xs sm:text-sm text-gray-500">
+                            Answered <%= answer.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+                          </span>
+                        </div>
+
+                        <div class="prose prose-sm max-w-none text-gray-700">
+                          <% if answer.answer.is_a?(ActionText::RichText) && answer.answer.body.present? %>
+                            <%= answer.answer %>
+                          <% elsif answer.read_attribute(:answer).present? %>
+                            <%= simple_format(answer.read_attribute(:answer).gsub(/\r\n/, "\n")) %>
+                          <% else %>
+                            <%= simple_format(answer.answer.to_s.gsub(/\r\n/, "\n")) %>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% else %>
+            <div class="mt-6">
+              <p class="text-gray-500 italic">No responses for this question.</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Response Statistics - Made responsive with stacking on mobile -->
+  <div class="mt-6 sm:mt-8 bg-white rounded-xl shadow-sm overflow-hidden">
+    <div class="px-4 sm:px-8 py-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+        <div class="flex items-center space-x-4">
+          <div class="flex-shrink-0">
+            <div class="bg-green-100 rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="text-xs sm:text-sm text-gray-500">Response Rate</div>
+            <div class="mt-1 text-lg sm:text-xl font-semibold text-gray-900">
+              <% total_possible_answers = @question_records.count * @group.users.count %>
+              <% total_answers = @question_records.map { |qr| qr.answers.count }.sum %>
+              <%= number_to_percentage(total_possible_answers > 0 ? (total_answers.to_f / total_possible_answers * 100) : 0, precision: 0) %>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <div class="flex-shrink-0">
+            <div class="bg-blue-100 rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="text-xs sm:text-sm text-gray-500">Average Length</div>
+            <div class="mt-1 text-lg sm:text-xl font-semibold text-gray-900">
+              <% all_answers = @question_records.flat_map(&:answers) %>
+              <%= all_answers.any? ? all_answers.map { |a| a.answer.to_s.length }.sum / all_answers.count : 0 %> chars
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <div class="flex-shrink-0">
+            <div class="bg-purple-100 rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="text-xs sm:text-sm text-gray-500">First Response</div>
+            <div class="mt-1 text-lg sm:text-xl font-semibold text-gray-900">
+              <% all_answers = @question_records.flat_map(&:answers) %>
+              <%= all_answers.any? ? all_answers.min_by(&:created_at).created_at.strftime("%b %d") : "N/A" %>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <div class="flex-shrink-0">
+            <div class="bg-indigo-100 rounded-lg w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+              <svg class="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="text-xs sm:text-sm text-gray-500">Status</div>
+            <div class="mt-1 text-lg sm:text-xl font-semibold text-gray-900">
+              <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                <%= case @digest.status
+                    when 'pending' then 'bg-yellow-100 text-yellow-800'
+                    when 'processing' then 'bg-blue-100 text-blue-800'
+                    when 'sent' then 'bg-green-100 text-green-800'
+                    when 'failed' then 'bg-red-100 text-red-800'
+                    end %>">
+                <%= @digest.status.capitalize %>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="mt-6 flex justify-between">
+    <%= link_to digests_group_path(@group), class: "inline-flex items-center text-indigo-600 hover:text-indigo-900" do %>
+      <svg class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      Back to Digests
+    <% end %>
+    <% if current_user == @group.leader %>
+      <div class="flex space-x-3">
+        <% if @digest.pending? %>
+          <%= button_to send_digest_group_question_digest_path(@group, @digest),
+              method: :post,
+              class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500",
+              form: { data: { turbo_confirm: "Are you sure you want to send this digest to all group members?" } } do %>
+            <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            Send Digest Emails
+          <% end %>
+        <% end %>
+        <%= button_to group_question_digest_path(@group, @digest),
+            method: :delete,
+            class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500",
+            form: { data: { turbo_confirm: "Are you sure you want to delete this digest?" } } do %>
+          <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          Delete Digest
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

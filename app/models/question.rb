@@ -83,4 +83,19 @@ class Question < ApplicationRecord
     end
   end
 
+  # Find questions that haven't been sent to this group within the specified period
+  def self.not_sent_to_group_in_period(group, start_date, end_date)
+    sent_question_ids = QuestionRecord.where(group: group)
+                                     .in_period(start_date, end_date)
+                                     .pluck(:question_id)
+
+    where.not(id: sent_question_ids)
+  end
+
+  # Find questions that haven't been sent to this group ever
+  def self.never_sent_to_group(group)
+    sent_question_ids = QuestionRecord.where(group: group).pluck(:question_id)
+    where.not(id: sent_question_ids)
+  end
+
 end

@@ -1,35 +1,151 @@
 <!-- Q&A Digests Content -->
-<div class="space-y-6">
-  <!-- Sorting Options -->
-  <div class="flex justify-end space-x-4 mb-4">
-    <span class="text-sm text-gray-500">Sort by:</span>
-    <%= link_to 'Most Answers', digests_group_path(@group, sort: 'answers_desc'),
-        class: "text-sm #{params[:sort] == 'answers_desc' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
-    <%= link_to 'Least Answers', digests_group_path(@group, sort: 'answers_asc'),
-        class: "text-sm #{params[:sort] == 'answers_asc' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
-    <%= link_to 'Newest', digests_group_path(@group, sort: 'date_desc'),
-        class: "text-sm #{params[:sort] == 'date_desc' || !params[:sort] ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
-    <%= link_to 'Oldest', digests_group_path(@group, sort: 'date_asc'),
-        class: "text-sm #{params[:sort] == 'date_asc' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
+<div class="space-y-6 mb-6">
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+    <!-- Create Digest Button -->
+    <% if current_user == @group.leader %>
+      <div class="flex flex-col gap-3">
+        <div>
+          <%= link_to "Create New Digest", new_group_question_digest_path(@group),
+              class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+        </div>
+
+        <% if @has_legacy_records %>
+          <div class="bg-yellow-100 p-2 rounded-md border-2 border-yellow-400" style="display: block !important;">
+            <p class="text-sm font-bold text-yellow-800 mb-2">Legacy Records Found!</p>
+            <%= form_tag migrate_legacy_digests_group_path(@group), method: :post, data: { turbo_confirm: "This will migrate all legacy question records to the new digest format. This action cannot be undone. Continue?" } do %>
+              <button type="submit"
+                      class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                      style="display: inline-flex !important; background-color: #9333ea !important; color: white !important;">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                Migrate Legacy Records
+              </button>
+            <% end %>
+          </div>
+        <% else %>
+          <!-- No legacy records message -->
+          <div>
+            <span class="text-sm text-gray-500">No legacy records to migrate</span>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <!-- Sorting Options -->
+    <div class="flex items-center space-x-4">
+      <span class="text-sm text-gray-500">Sort by:</span>
+      <%= link_to 'Most Questions', digests_group_path(@group, sort: 'questions_desc'),
+          class: "text-sm #{params[:sort] == 'questions_desc' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
+      <%= link_to 'Most Answers', digests_group_path(@group, sort: 'answers_desc'),
+          class: "text-sm #{params[:sort] == 'answers_desc' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
+      <%= link_to 'Newest', digests_group_path(@group, sort: 'date_desc'),
+          class: "text-sm #{params[:sort] == 'date_desc' || !params[:sort] ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
+      <%= link_to 'Oldest', digests_group_path(@group, sort: 'date_asc'),
+          class: "text-sm #{params[:sort] == 'date_asc' ? 'text-indigo-600 font-medium' : 'text-gray-500 hover:text-gray-700'}" %>
+    </div>
   </div>
 
-  <% @question_records.each do |record| %>
-    <div class="bg-gray-50 p-6 rounded-lg">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div class="flex-1">
-          <h4 class="text-lg font-medium text-gray-900 mb-2">
-            <%= @questions[record.question_id].question %>
-          </h4>
-          <p class="text-sm text-gray-500 flex items-center">
-            Week of <%= record.created_at.strftime("%B %d, %Y") %>
-            <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= @answer_counts[record.id].to_i > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
-              <%= pluralize(@answer_counts[record.id].to_i, 'answer') %>
-            </span>
-          </p>
-        </div>
-        <div class="mt-4 sm:mt-0 sm:ml-6 flex">
-          <%= link_to 'View Digest', question_record_path(record),
-              class: "inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700" %>
+  <!-- Question Digests Section -->
+  <% if @question_digests.present? %>
+    <div class="space-y-4">
+      <% @question_digests.each do |digest| %>
+        <% if digest.question_records.any? %>
+          <% digest.question_records.includes(:question).each do |record| %>
+            <div class="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex-1">
+                  <h4 class="text-lg font-medium text-gray-900 mb-2">
+                    "<%= record.question.question %>"
+                  </h4>
+                  <p class="text-sm text-gray-500 flex items-center">
+                    <span><%= digest.start_date.strftime("%b %d") %> - <%= digest.end_date.strftime("%b %d, %Y") %></span>
+                    <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                      <%= record.answers.count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' %>">
+                      <%= pluralize(record.answers.count, 'answer') %>
+                    </span>
+                    <span class="ml-2 px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full
+                      <%= case digest.status
+                          when 'pending' then 'bg-yellow-100 text-yellow-800'
+                          when 'processing' then 'bg-blue-100 text-blue-800'
+                          when 'sent' then 'bg-green-100 text-green-800'
+                          when 'failed' then 'bg-red-100 text-red-800'
+                          end %>">
+                      <%= digest.status.capitalize %>
+                    </span>
+                  </p>
+                </div>
+                <div class="mt-4 sm:mt-0 sm:ml-6 flex space-x-2">
+                  <%= link_to group_question_digest_path(@group, digest),
+                      class: "inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700" do %>
+                    <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    View Digest
+                  <% end %>
+
+                  <% if current_user == @group.leader && digest.pending? %>
+                    <%= button_to send_digest_group_question_digest_path(@group, digest),
+                        method: :post,
+                        class: "inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700",
+                        form: { data: { turbo_confirm: "Are you sure you want to send this digest to all group members?" } } do %>
+                      <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      Send Digest
+                    <% end %>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <!-- Empty digest card -->
+          <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex-1">
+                <h4 class="text-lg font-medium text-gray-900 mb-2">
+                  Digest for <%= digest.start_date.strftime("%b %d") %> - <%= digest.end_date.strftime("%b %d, %Y") %>
+                </h4>
+                <p class="text-sm text-gray-500 italic">No questions in this digest yet</p>
+              </div>
+              <div class="mt-4 sm:mt-0 sm:ml-6 flex space-x-2">
+                <%= link_to group_question_digest_path(@group, digest),
+                    class: "inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700" do %>
+                  <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  View Digest
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if @question_digests.blank? %>
+    <div class="bg-white rounded-lg border border-gray-200 min-h-[400px] flex items-center justify-center">
+      <div class="py-12 px-8 text-center max-w-sm">
+        <div class="flex flex-col items-center justify-center space-y-8">
+          <div class="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center">
+            <svg class="h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+
+          <div class="space-y-3">
+            <h3 class="text-xl font-medium text-gray-900">No digests yet</h3>
+            <p class="text-gray-500">No digests have been created for this group yet.</p>
+          </div>
+
+          <% if current_user == @group.leader %>
+            <%= link_to "Create Your First Digest", new_group_question_digest_path(@group),
+                class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" %>
+          <% end %>
         </div>
       </div>
     </div>
