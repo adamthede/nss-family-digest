@@ -4,7 +4,7 @@ namespace :digests do
     puts "Generating weekly digests for all groups..."
 
     # Get all active groups
-    active_groups = Group.joins(:memberships).where(memberships: { status: 'active' }).distinct
+    active_groups = Group.joins(:memberships).where(memberships: { active: true }).distinct
 
     # Set date range for the past week
     end_date = Date.today
