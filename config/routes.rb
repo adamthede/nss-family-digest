@@ -13,6 +13,18 @@ Rails.application.routes.draw do
       post 'send_invite'
       post 'toggle_member_status/:member_id', to: 'groups#toggle_member_status', as: 'toggle_member_status'
     end
+
+    # Nested cycles resource
+    resources :cycles, controller: 'group_cycles', only: [:index] do
+      collection do
+        post 'send_manual_question'
+        post 'send_manual_digest/:cycle_id', to: 'group_cycles#send_manual_digest', as: 'send_manual_digest'
+        post 'pause'
+        post 'resume'
+        patch 'update_mode'
+      end
+    end
+
     get 'accept_invitation', on: :collection
     resources :members, only: [:show], controller: 'group_members'
     scope module: :groups do

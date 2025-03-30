@@ -1,33 +1,26 @@
-<% content_for :title, @group.name %>
+<% content_for :title, "#{@group.name} - Manage Cycles" %>
 
 <div class="min-h-screen bg-gray-50">
   <div class="container mx-auto px-4 py-6 sm:py-8 max-w-7xl">
     <!-- Header Section -->
-    <%= render 'header' %>
+    <%= render 'groups/header' %>
 
     <!-- Main Content Layout -->
     <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 md:gap-8">
       <!-- Members Section (Always Visible) -->
       <div class="sm:w-48 md:w-56 lg:w-64 sm:flex-shrink-0 mb-4 sm:mb-0">
-        <%= render 'members' %>
+        <%= render 'groups/members' %>
       </div>
 
       <!-- Main Content Area with Tabs -->
       <div class="flex-1">
         <div class="bg-white shadow-sm rounded-xl overflow-hidden">
           <!-- Tab Navigation -->
-          <%= render 'tab_navigation' %>
+          <%= render 'groups/tab_navigation' %>
 
           <!-- Tab Content -->
           <div class="p-4 sm:p-6 md:p-8">
-            <% case controller.action_name %>
-            <% when 'questions' %>
-              <%= render 'questions' %>
-            <% when 'cycles' %>
-              <%= render 'cycles' if current_user == @group.leader %>
-            <% else %> <!-- 'digests' or fallback -->
-              <%= render 'digests' %>
-            <% end %>
+            <%= render 'groups/cycles' %>
           </div>
         </div>
       </div>

@@ -12,10 +12,63 @@ class Group < ApplicationRecord
   has_many :questions, through: :question_records  # Original association
   has_many :recorded_questions, through: :question_records, source: :question  # Alias for clarity
 
+  # New association for question cycles
+  has_many :question_cycles, dependent: :destroy
+
   has_many :group_question_tags, dependent: :destroy
   has_many :tags, through: :group_question_tags
 
   validates_presence_of :leader
+
+  # Question cycle control constants and validations
+  QUESTION_MODES = ['automatic', 'manual']
+
+  validates :question_mode, inclusion: { in: QUESTION_MODES }, allow_nil: true
+
+  # Question cycle management methods
+  def automatic_mode?
+    question_mode == 'automatic'
+  end
+
+  def manual_mode?
+    question_mode == 'manual'
+  end
+
+  def paused?
+    paused_until.present? && paused_until > Date.current
+  end
+
+  def active_for_automatic_cycles?
+    automatic_mode? && !paused?
+  end
+
+  def pause_until(date)
+    update!(paused_until: date)
+  end
+
+  def resume_now
+    update!(paused_until: nil)
+  end
+
+  def switch_to_manual_mode
+    update!(question_mode: 'manual')
+  end
+
+  def switch_to_automatic_mode
+    update!(question_mode: 'automatic')
+  end
+
+  def current_active_cycle
+    question_cycles.where(status: 1).order(start_date: :desc).first
+  end
+
+  def upcoming_cycles(limit = 3)
+    question_cycles.where(status: 0).order(start_date: :asc).limit(limit)
+  end
+
+  def recent_cycles(limit = 5)
+    question_cycles.where(status: [2, 3]).order(start_date: :desc).limit(limit)
+  end
 
   def self.add_question_to_group(group, question)
     # First check if the association already exists

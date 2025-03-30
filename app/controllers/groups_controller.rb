@@ -20,6 +20,8 @@ class GroupsController < ApplicationController
     # Redirect to the appropriate tab action
     if params[:tab] == 'questions'
       redirect_to questions_group_path(@group, request.query_parameters.except(:tab))
+    elsif params[:tab] == 'cycles' && current_user == @group.leader
+      redirect_to group_cycles_path(@group, request.query_parameters.except(:tab))
     else
       redirect_to digests_group_path(@group, request.query_parameters.except(:tab))
     end
