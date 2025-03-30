@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_02_28_173819) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_30_211028) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_stat_statements"
@@ -167,6 +167,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_28_173819) do
     t.datetime "last_activity_at", precision: nil
     t.string "plan", default: "free"
     t.integer "storage_used", default: 0
+    t.string "question_mode", default: "automatic"
+    t.date "paused_until"
   end
 
   create_table "memberships", id: :serial, force: :cascade do |t|
@@ -181,6 +183,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_28_173819) do
     t.index ["active"], name: "index_memberships_on_active"
     t.index ["invitation_token"], name: "index_memberships_on_invitation_token", unique: true
     t.index ["user_id", "group_id"], name: "index_memberships_on_user_id_and_group_id", unique: true
+  end
+
+  create_table "question_cycles", force: :cascade do |t|
+    t.bigint "group_id", null: false
+    t.bigint "question_id", null: false
+    t.bigint "question_record_id"
+    t.date "start_date"
+    t.date "end_date"
+    t.date "digest_date"
+    t.integer "status", default: 0
+    t.boolean "manual", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["group_id"], name: "index_question_cycles_on_group_id"
+    t.index ["question_id"], name: "index_question_cycles_on_question_id"
+    t.index ["question_record_id"], name: "index_question_cycles_on_question_record_id"
   end
 
   create_table "question_records", id: :serial, force: :cascade do |t|
@@ -247,6 +265,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_02_28_173819) do
   add_foreign_key "group_question_votes", "users"
   add_foreign_key "group_questions", "groups"
   add_foreign_key "group_questions", "questions"
+  add_foreign_key "question_cycles", "groups"
+  add_foreign_key "question_cycles", "question_records"
+  add_foreign_key "question_cycles", "questions"
   add_foreign_key "question_tags", "questions"
   add_foreign_key "question_tags", "tags"
 end

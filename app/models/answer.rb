@@ -8,13 +8,7 @@ class Answer < ApplicationRecord
   validates_presence_of :question_record
 
   validate :answer_present?
-
-  def self.create_from_inbound_hook(message)
-    puts message
-    # self.new(:text => message["TextBody"],
-    #          :user_email => message["From"],
-    #          :discussion_id => message["MailboxHash"])
-  end
+  validate :answer_within_valid_period
 
   def self.create_from_email(from, subject, textbody)
     if (user = User.find_by_email(from.to_s))
@@ -25,31 +19,18 @@ class Answer < ApplicationRecord
       group_id = group.id.to_s
       question_record = QuestionRecord.where(:group_id => group_id, :question_id => question_id).last
       question_record_id = question_record.id.to_s
-      if DateTime.now < question_record.created_at + 5.days
+
+      # Check if question is in an active cycle
+      cycle = QuestionCycle.find_by(question_record_id: question_record_id)
+      if cycle && cycle.status == 'active'
         Answer.create(:answer => textbody,
                       :user_id => user.id,
                       :question_record_id => question_record_id)
       else
-        logger.info("TOO LATE!  Answering has closed for this question.")
+        logger.info("INVALID CYCLE STATUS: Answering has closed for this question.")
       end
     else
       logger.info("No user found with email: #{from.to_s}")
-    end
-  end
-
-  def self.send_answer_digest
-    start_date = 7.days.ago
-    end_date = DateTime.now
-    question_record = QuestionRecord.where(:created_at => start_date..end_date)
-    question_record.each do |record|
-      group_id = record.group_id
-      question_id = record.question_id
-      group = Group.find(group_id)
-      question = Question.find(question_id)
-      answers = Answer.where(question_record_id: record.id)
-      group.users.each do |user|
-        QuestionMailer.weekly_digest(user, group, question, answers, record).deliver
-      end
     end
   end
 
@@ -60,4 +41,12 @@ class Answer < ApplicationRecord
     errors.add(:answer, "can't be blank")
   end
 
+  def answer_within_valid_period
+    # Get the question cycle
+    cycle = QuestionCycle.find_by(question_record_id: question_record_id)
+
+    if cycle && cycle.status != 'active'
+      errors.add(:base, "The question is no longer accepting answers")
+    end
+  end
 end
