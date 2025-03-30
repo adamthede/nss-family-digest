@@ -28,49 +28,63 @@ namespace :question_cycles do
     end
   end
 
-  desc "Send digests for closed questions"
+  desc "Send digests for closed questions (only runs on Fridays)"
   task :digest => :environment do
-    # Send digests for closed cycles on digest date
-    QuestionCycle.digest_today.each do |cycle|
-      answers = cycle.question_record.answers
+    # Only run this task on Fridays
+    if Time.now.friday?
+      puts "It's Friday - running digest task..."
 
-      next if answers.empty?
+      # Send digests for closed cycles on digest date
+      QuestionCycle.digest_today.each do |cycle|
+        answers = cycle.question_record.answers
 
-      cycle.group.active_users.each do |user|
-        QuestionMailer.weekly_digest(user, cycle.group, cycle.question, answers, cycle.question_record).deliver_now
+        next if answers.empty?
+
+        cycle.group.active_users.each do |user|
+          QuestionMailer.weekly_digest(user, cycle.group, cycle.question, answers, cycle.question_record).deliver_later
+        end
+
+        cycle.complete!
       end
-
-      cycle.complete!
+    else
+      puts "Skipping digest task - today is not Friday"
     end
   end
 
-  desc "Schedule upcoming automatic cycles"
+  desc "Schedule upcoming automatic cycles (only runs on Sundays)"
   task :schedule => :environment do
-    Group.where(question_mode: 'automatic')
-         .where('paused_until IS NULL OR paused_until <= ?', Date.current)
-         .find_each do |group|
+    # Only run this task on Sundays
+    if Time.now.sunday?
+      puts "It's Sunday - scheduling upcoming cycles..."
 
-      next if group.active_users.empty?
+      Group.where(question_mode: 'automatic')
+           .where('paused_until IS NULL OR paused_until <= ?', Date.current)
+           .find_each do |group|
 
-      # Check if we already have a future cycle
-      next if group.question_cycles.automatic.where('start_date > ?', Date.current).exists?
+        next if group.active_users.empty?
 
-      # Schedule next Monday
-      next_monday = Date.current.next_occurring(:monday)
+        # Check if we already have a future cycle
+        next if group.question_cycles.automatic.where('start_date > ?', Date.current).exists?
 
-      # Select question
-      question = Question.select_random_question(group)
-      next unless question
+        # Schedule next Monday
+        next_monday = Date.current.next_occurring(:monday)
 
-      # Create cycle
-      group.question_cycles.create!(
-        question: question,
-        start_date: next_monday,
-        end_date: next_monday + 4.days,  # Friday
-        digest_date: next_monday + 5.days, # Saturday
-        status: :scheduled,
-        manual: false
-      )
+        # Select question
+        question = Question.select_random_question(group)
+        next unless question
+
+        # Create cycle
+        group.question_cycles.create!(
+          question: question,
+          start_date: next_monday,
+          end_date: next_monday + 4.days,  # Friday
+          digest_date: next_monday + 5.days, # Saturday
+          status: :scheduled,
+          manual: false
+        )
+      end
+    else
+      puts "Skipping schedule task - today is not Sunday"
     end
   end
 
