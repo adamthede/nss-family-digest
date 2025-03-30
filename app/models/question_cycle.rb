@@ -11,11 +11,10 @@ class QuestionCycle < ApplicationRecord
     case value
     when Integer
       # Compare with integer directly
-      status == value
+      status.to_i == value
     when String, Symbol
-      # Map string/symbol to integer using the enum mapping
-      status_mapping = { "scheduled" => 0, "active" => 1, "closed" => 2, "completed" => 3 }
-      status == status_mapping[value.to_s]
+      # Compare string representation with the status
+      status.to_s == value.to_s
     else
       false
     end

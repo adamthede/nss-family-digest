@@ -35,7 +35,7 @@ class GroupCyclesController < ApplicationController
 
     # Send emails
     @group.active_users.each do |user|
-      QuestionMailer.weekly_question(user, @group, question).deliver_later
+      QuestionMailer.weekly_question(user, @group, question).deliver_now
     end
 
     redirect_to group_cycles_path(@group), notice: 'Question sent successfully'
@@ -59,7 +59,7 @@ class GroupCyclesController < ApplicationController
     end
 
     @group.active_users.each do |user|
-      QuestionMailer.weekly_digest(user, @group, cycle.question, answers, cycle.question_record).deliver_later
+      QuestionMailer.weekly_digest(user, @group, cycle.question, answers, cycle.question_record).deliver_now
     end
 
     cycle.complete!
@@ -109,6 +109,21 @@ class GroupCyclesController < ApplicationController
     end
 
     redirect_to group_cycles_path(@group), notice: notice
+  end
+
+  # POST /groups/:group_id/cycles/:id/close_early
+  def close_early
+    cycle = @group.question_cycles.find(params[:id])
+
+    # Debug the cycle status to see what's happening
+    Rails.logger.debug "Cycle ID: #{cycle.id}, Status: #{cycle.status.inspect}, Is Active?: #{cycle.status == 'active'}"
+
+    if cycle.status == 'active' || cycle.status == 1
+      cycle.close!
+      redirect_to group_cycles_path(@group), notice: 'Question cycle closed early. Answers are no longer being accepted.'
+    else
+      redirect_to group_cycles_path(@group), alert: "Only active cycles can be closed early. This cycle has status: #{cycle.status}"
+    end
   end
 
   private

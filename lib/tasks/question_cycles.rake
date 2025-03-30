@@ -14,7 +14,7 @@ namespace :question_cycles do
 
         # Send emails to active users
         cycle.group.active_users.each do |user|
-          QuestionMailer.weekly_question(user, cycle.group, cycle.question).deliver_later
+          QuestionMailer.weekly_question(user, cycle.group, cycle.question).deliver_now
         end
       end
     end
@@ -37,7 +37,7 @@ namespace :question_cycles do
       next if answers.empty?
 
       cycle.group.active_users.each do |user|
-        QuestionMailer.weekly_digest(user, cycle.group, cycle.question, answers, cycle.question_record).deliver_later
+        QuestionMailer.weekly_digest(user, cycle.group, cycle.question, answers, cycle.question_record).deliver_now
       end
 
       cycle.complete!

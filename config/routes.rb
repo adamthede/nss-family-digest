@@ -16,6 +16,9 @@ Rails.application.routes.draw do
 
     # Nested cycles resource
     resources :cycles, controller: 'group_cycles', only: [:index] do
+      member do
+        post 'close_early'
+      end
       collection do
         post 'send_manual_question'
         post 'send_manual_digest/:cycle_id', to: 'group_cycles#send_manual_digest', as: 'send_manual_digest'

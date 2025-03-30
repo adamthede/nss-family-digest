@@ -22,7 +22,7 @@ class GroupQuestionsController < ApplicationController
 
     # Send emails
     @group.active_users.each do |user|
-      QuestionMailer.weekly_question(user, @group, question).deliver_later
+      QuestionMailer.weekly_question(user, @group, question).deliver_now
     end
 
     redirect_to cycles_group_path(@group), notice: 'Question sent successfully'
@@ -46,7 +46,7 @@ class GroupQuestionsController < ApplicationController
     end
 
     @group.active_users.each do |user|
-      QuestionMailer.weekly_digest(user, @group, cycle.question, answers, cycle.question_record).deliver_later
+      QuestionMailer.weekly_digest(user, @group, cycle.question, answers, cycle.question_record).deliver_now
     end
 
     cycle.complete!
