@@ -1,6 +1,6 @@
 class Ahoy::Store < Ahoy::DatabaseStore
+  # Track all visits including bots
   def track_visit(data)
-    # Track all visits including bots
     super(data)
   end
 end

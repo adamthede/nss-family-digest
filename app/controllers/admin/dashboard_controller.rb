@@ -178,6 +178,59 @@ class Admin::DashboardController < ApplicationController
     end
   end
 
+  def email_reply_stats
+    @time_period = params[:period] || 'week'
+
+    case @time_period
+    when 'day'
+      @start_date = 1.day.ago
+    when 'week'
+      @start_date = 1.week.ago
+    when 'month'
+      @start_date = 1.month.ago
+    else
+      @start_date = 1.month.ago
+    end
+
+    # Get all email reply events
+    @email_events = Ahoy::Event
+      .where("name LIKE 'email_reply.%'")
+      .where('time > ?', @start_date)
+
+    # Get counts for different reply identification methods
+    @identification_methods = @email_events
+      .where(name: 'email_reply.answer_created')
+      .group("properties ->> 'identification_method'")
+      .count
+
+    # Get counts by event type
+    @event_counts = @email_events
+      .group('name')
+      .count
+      .transform_keys { |k| k.gsub('email_reply.', '') }
+
+    # Get success rate
+    @successful_replies = @email_events
+      .where(name: 'email_reply.answer_created')
+      .count
+
+    @all_replies = @email_events.count
+    @success_rate = @all_replies > 0 ? (@successful_replies.to_f / @all_replies * 100).round(2) : 0
+
+    # Return JSON if requested
+    respond_to do |format|
+      format.html # Render HTML view
+      format.json do
+        render json: {
+          identification_methods: @identification_methods,
+          event_counts: @event_counts,
+          success_rate: @success_rate,
+          time_period: @time_period
+        }
+      end
+    end
+  end
+
   private
 
   def set_common_stats

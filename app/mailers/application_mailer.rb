@@ -40,29 +40,11 @@ class ApplicationMailer < ActionMailer::Base
     base_email = ENV['SENDGRID_INBOUND'] || 'reply@answers2answers.app'
     email_parts = base_email.split('@')
 
-    # Generate a signed ID that can be verified when received
-    signed_id = generate_signed_id(record_id)
+    # Generate a signed ID using Rails' built-in message verifier
+    # This is more secure than our custom implementation
+    signed_id = Rails.application.message_verifier('question_record').generate(record_id, expires_in: 30.days)
 
     # Create reply-to in format: reply+signed_id@domain.com
     "#{email_parts[0]}+#{signed_id}@#{email_parts[1]}"
-  end
-
-  private
-
-  # Generate a signed identifier that includes the record ID
-  # but is tamper-proof using ActiveRecord signed_id or similar approach
-  def generate_signed_id(record_id)
-    # We could use Rails' signed GlobalID approach here
-    # But for simplicity, we'll create a custom signed string
-    # In production, consider using Rails' built-in signing mechanisms
-
-    secret = Rails.application.secret_key_base[0..32]
-    expiration = 30.days.from_now.to_i
-    data = "#{record_id}-#{expiration}"
-    signature = OpenSSL::HMAC.hexdigest('SHA256', secret, data)
-
-    # Combine data and signature in a way that can be extracted later
-    # Format: <record_id>-<expiration>-<signature>
-    "#{data}-#{signature}"
   end
 end

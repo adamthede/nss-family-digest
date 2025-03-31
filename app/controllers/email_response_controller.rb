@@ -7,34 +7,13 @@ class EmailResponseController < ApplicationController
   def create_from_inbound_hook
     Rails.logger.info "Inbound email params: #{params.inspect}"
 
-    from_email = extract_email(params)
-    subject    = params['subject']
+    # Process the email reply
+    result = EmailReplyService.process_reply(params)
 
-    # Get the raw text portion.
-    raw_text = params['text'] || params['html'] || ""
+    # Our track_action method in ApplicationController will get called automatically
+    # after this action completes, with no need for custom code
 
-    # If present, split at the custom delimiter.
-    new_content = if raw_text.include?(REPLY_DELIMITER)
-                    raw_text.split(REPLY_DELIMITER).first
-                  else
-                    raw_text
-                  end
-
-    # Further process the text to remove common quoting, if needed.
-    new_content = EmailReplyParser.parse_reply(new_content)
-
-    # Extract the question record ID from the reply-to address if available
-    question_record_id = extract_record_id_from_reply_to(params)
-
-    # If we have a direct question_record_id from reply-to, use it
-    if question_record_id.present?
-      create_answer_from_record_id(from_email, new_content, question_record_id)
-    else
-      # Fall back to headers or subject parsing if no record ID found
-      headers = extract_headers(params)
-      Answer.create_from_email(from_email, subject, new_content, headers)
-    end
-
+    # Always return success to the mail provider
     head :ok, content_type: 'text/html'
   end
 
