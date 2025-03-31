@@ -23,7 +23,11 @@ class EmailResponseController < ApplicationController
     # Further process the text to remove common quoting, if needed.
     new_content = EmailReplyParser.parse_reply(new_content)
 
-    Answer.create_from_email(from_email, subject, new_content)
+    # Extract headers from params
+    headers = extract_headers(params)
+
+    # Pass headers to create_from_email method
+    Answer.create_from_email(from_email, subject, new_content, headers)
     head :ok, content_type: 'text/html'
   end
 
@@ -43,5 +47,41 @@ class EmailResponseController < ApplicationController
     else
       from_header
     end
+  end
+
+  def extract_headers(params)
+    headers = {}
+
+    # Extract all Answers2Answers headers
+    params.each do |key, value|
+      # Handle email provider specific header formats
+      if key.to_s.start_with?('X-Answers2Answers') || key.to_s.start_with?('x-answers2answers')
+        headers[key.to_s] = value
+      end
+    end
+
+    # Extract headers from the References or In-Reply-To headers
+    if params['In-Reply-To'].present?
+      # Try to extract IDs from Message-ID format
+      msg_id = params['In-Reply-To']
+      if msg_id =~ /<question-(\d+)-group-(\d+)-user-(\d+)@/
+        headers['X-Answers2Answers-QuestionId'] = Regexp.last_match(1)
+        headers['X-Answers2Answers-GroupId'] = Regexp.last_match(2)
+      elsif msg_id =~ /<weekly-question-(\d+)-group-(\d+)-user-(\d+)@/
+        headers['X-Answers2Answers-QuestionId'] = Regexp.last_match(1)
+        headers['X-Answers2Answers-GroupId'] = Regexp.last_match(2)
+      end
+    end
+
+    # Check for headers in a headers hash if the email service provides it
+    if params['headers'].is_a?(Hash)
+      params['headers'].each do |key, value|
+        if key.to_s.start_with?('X-Answers2Answers')
+          headers[key.to_s] = value
+        end
+      end
+    end
+
+    headers
   end
 end

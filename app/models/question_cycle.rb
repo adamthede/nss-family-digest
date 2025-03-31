@@ -20,6 +20,23 @@ class QuestionCycle < ApplicationRecord
     end
   end
 
+  # More intuitive status check methods
+  def active?
+    status_active?
+  end
+
+  def closed?
+    status_closed?
+  end
+
+  def scheduled?
+    status_scheduled?
+  end
+
+  def completed?
+    status_completed?
+  end
+
   validates :start_date, :end_date, :digest_date, presence: true
 
   # Ensure proper date sequence
