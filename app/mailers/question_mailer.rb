@@ -1,5 +1,5 @@
 class QuestionMailer < ApplicationMailer
-  default reply_to: ENV['SENDGRID_INBOUND']
+  # Don't set a default reply_to since we'll generate a unique one for each message
   layout 'mail_layout'
 
   def send_questions(user, group, question)
@@ -25,7 +25,14 @@ class QuestionMailer < ApplicationMailer
       user: user.id
     })
 
-    mail(to: email, subject: "#{group.name} - QUESTION: * #{@question} *")
+    # Generate secure reply-to address if we have a question record
+    reply_to = question_record ? secure_reply_to(question_record.id) : ENV['SENDGRID_INBOUND']
+
+    mail(
+      to: email,
+      subject: "#{group.name} - QUESTION: * #{@question} *",
+      reply_to: reply_to
+    )
   end
 
   def weekly_question(user, group, question)
@@ -52,7 +59,14 @@ class QuestionMailer < ApplicationMailer
       user: user.id
     })
 
-    mail(to: email, subject: "#{@group_name} - QUESTION: * #{@question} *")
+    # Generate secure reply-to address if we have a question record
+    reply_to = question_record ? secure_reply_to(question_record.id) : ENV['SENDGRID_INBOUND']
+
+    mail(
+      to: email,
+      subject: "#{@group_name} - QUESTION: * #{@question} *",
+      reply_to: reply_to
+    )
   end
 
   def weekly_digest(user, group, question, answers, record)
