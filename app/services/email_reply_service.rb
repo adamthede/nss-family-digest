@@ -1,70 +1,81 @@
 class EmailReplyService
-  attr_reader :params, :from_email, :subject, :content, :identification_method
+  attr_reader :inbound_email, :params, :from_email, :subject, :content, :identification_method
 
   # Class method for processing an email reply
-  def self.process_reply(params)
-    new(params).process
+  def self.process_reply(inbound_email)
+    new(inbound_email).process
   end
 
-  def initialize(params)
-    @params = params
+  def initialize(inbound_email)
+    @inbound_email = inbound_email
+    # Use symbolized keys for easier access to the payload hash
+    @params = inbound_email.payload.deep_symbolize_keys
     @from_email = extract_email
-    @subject = params['subject'] || ''
-    @raw_content = params['text'] || params['html'] || ""
+    @subject = @params[:subject] || ''
+    @raw_content = @params[:text] || @params[:html] || ""
     @content = extract_content
     @identification_method = nil
   end
 
   def process
+    inbound_email.update(status: 'processing', processor_notes: "Starting processing...")
+
     # Try to find the user first
     user = User.find_by_email(from_email)
-
     unless user
+      error_msg = "No user found with email: #{from_email}"
+      update_inbound_email(status: 'failed', notes: error_msg)
       log_event("no_user_found", { email: from_email })
-      return { success: false, error: "No user found with email: #{from_email}" }
+      return { success: false, error: error_msg }
     end
 
     # Try different methods to identify the question record
     question_record = identify_question_record
-
     unless question_record
+      error_msg = "Could not identify the question record using method: #{identification_method || 'unknown'}"
+      update_inbound_email(status: 'failed', notes: error_msg)
       log_event("question_record_not_found", {
         identification_method: identification_method || "failed",
         email: from_email,
         subject: subject
       })
-      return { success: false, error: "Could not identify the question record" }
+      return { success: false, error: error_msg }
     end
 
     # Verify this email came from the user associated with the question
     unless validate_recipient(user, question_record)
+      error_msg = "Recipient validation failed: Email from #{from_email} is not an active member of group #{question_record.group_id}."
+      update_inbound_email(status: 'failed', notes: error_msg)
       log_event("recipient_validation_failed", {
         user_id: user.id,
         question_record_id: question_record.id
       })
-      return { success: false, error: "The email reply came from a user who was not a recipient of the question" }
+      return { success: false, error: error_msg }
     end
 
     # Check if the question is still in an active cycle
     cycle = QuestionCycle.find_by(question_record_id: question_record.id)
-
     unless cycle&.active?
+      error_msg = "The question (QR: #{question_record.id}) is no longer accepting answers (Cycle: #{cycle&.id}, Status: #{cycle&.status})."
+      update_inbound_email(status: 'failed', notes: error_msg)
       log_event("inactive_cycle", {
         identification_method: identification_method,
         question_record_id: question_record.id,
         cycle_status: cycle&.status
       })
-      return { success: false, error: "The question is no longer accepting answers" }
+      return { success: false, error: error_msg }
     end
 
     # Create the answer
-    answer = Answer.create(
+    answer = Answer.new(
       answer: content,
       user_id: user.id,
       question_record_id: question_record.id
     )
 
-    if answer.persisted?
+    if answer.save
+      notes = "Answer ##{answer.id} created successfully via #{identification_method}."
+      update_inbound_email(status: 'processed', notes: notes, answer_id: answer.id)
       log_event("answer_created", {
         identification_method: identification_method,
         question_record_id: question_record.id,
@@ -73,26 +84,43 @@ class EmailReplyService
       })
       return { success: true, answer: answer }
     else
+      error_msg = "Failed to create answer: #{answer.errors.full_messages.join(', ')}"
+      update_inbound_email(status: 'failed', notes: error_msg)
       log_event("answer_creation_failed", {
         identification_method: identification_method,
         question_record_id: question_record.id,
         user_id: user.id,
         errors: answer.errors.full_messages
       })
-      return { success: false, error: "Failed to create answer: #{answer.errors.full_messages.join(', ')}" }
+      return { success: false, error: error_msg }
     end
+  rescue => e
+    # Catch unexpected errors during processing
+    error_msg = "Unexpected error: #{e.message} - Backtrace: #{e.backtrace.first(5).join("\n")}"
+    update_inbound_email(status: 'failed', notes: error_msg)
+    Rails.logger.error error_msg
+    # Optionally, notify admins (e.g., via Sentry, Airbrake, or email)
+    return { success: false, error: error_msg }
   end
 
   private
 
-  # Extract the sender's email from various possible locations
-  def extract_email
-    if params['envelope']
-      envelope = JSON.parse(params['envelope']) rescue {}
-      return envelope['from'] if envelope['from'].present?
-    end
+  def update_inbound_email(status:, notes:, answer_id: nil)
+    inbound_email.update(
+      status: status,
+      processor_notes: notes,
+      processed_at: Time.current,
+      answer_id: answer_id
+    )
+  end
 
-    from_header = params['from']
+  # Extract the sender's email from various possible locations in the payload
+  def extract_email
+    # Use symbolized keys for the params hash
+    envelope = params[:envelope] || {}
+    return envelope[:from] if envelope[:from].present?
+
+    from_header = params[:from]
     if from_header =~ /<(.+?)>/
       Regexp.last_match(1)
     else
@@ -100,7 +128,7 @@ class EmailReplyService
     end
   end
 
-  # Extract and clean the content from the email
+  # Extract and clean the content from the email payload
   def extract_content
     # Find and split at the reply delimiter if present
     delimiter = ApplicationMailer::REPLY_DELIMITER
@@ -129,9 +157,9 @@ class EmailReplyService
     if headers.present?
       @identification_method = "headers"
 
-      group_id = headers['X-Answers2Answers-GroupId']
-      question_id = headers['X-Answers2Answers-QuestionId']
-      question_record_id = headers['X-Answers2Answers-QuestionRecordId']
+      group_id = headers[:"X-Answers2Answers-GroupId"]
+      question_id = headers[:"X-Answers2Answers-QuestionId"]
+      question_record_id = headers[:"X-Answers2Answers-QuestionRecordId"]
 
       # Try to find by direct record ID first
       if question_record_id.present?
@@ -196,12 +224,11 @@ class EmailReplyService
     nil
   end
 
-  # Extract the signed record ID from the reply-to address
+  # Extract the signed record ID from the reply-to address in the payload
   def extract_record_id_from_reply_to
     # Check various places where the recipient address might be found
-    to_address = params['to'] ||
-                 (params['envelope'] && JSON.parse(params['envelope'])['to']) ||
-                 params['recipient']
+    envelope = params[:envelope] || {}
+    to_address = params[:to] || envelope[:to] || params[:recipient]
 
     return nil unless to_address.present?
 
@@ -223,34 +250,36 @@ class EmailReplyService
     nil
   end
 
-  # Extract email headers from the params
+  # Extract email headers from the payload
   def extract_headers
     headers = {}
+    # Use symbolized keys for params
 
-    # Extract Answers2Answers headers from params
+    # Extract Answers2Answers headers from the root level
     params.each do |key, value|
       if key.to_s.start_with?('X-Answers2Answers') || key.to_s.start_with?('x-answers2answers')
-        headers[key.to_s] = value
+        headers[key] = value
       end
     end
 
-    # Check the In-Reply-To header for Message-ID references
-    if params['In-Reply-To'].present?
-      msg_id = params['In-Reply-To']
-      if msg_id =~ /<question-(\d+)-group-(\d+)-user-(\d+)@/
-        headers['X-Answers2Answers-QuestionId'] = Regexp.last_match(1)
-        headers['X-Answers2Answers-GroupId'] = Regexp.last_match(2)
-      elsif msg_id =~ /<weekly-question-(\d+)-group-(\d+)-user-(\d+)@/
-        headers['X-Answers2Answers-QuestionId'] = Regexp.last_match(1)
-        headers['X-Answers2Answers-GroupId'] = Regexp.last_match(2)
+    # Check the In-Reply-To header
+    in_reply_to = params[:"In-Reply-To"]
+    if in_reply_to.present?
+      if in_reply_to =~ /<question-(\d+)-group-(\d+)-user-(\d+)@/
+        headers[:"X-Answers2Answers-QuestionId"] = Regexp.last_match(1)
+        headers[:"X-Answers2Answers-GroupId"] = Regexp.last_match(2)
+      elsif in_reply_to =~ /<weekly-question-(\d+)-group-(\d+)-user-(\d+)@/
+        headers[:"X-Answers2Answers-QuestionId"] = Regexp.last_match(1)
+        headers[:"X-Answers2Answers-GroupId"] = Regexp.last_match(2)
       end
     end
 
-    # Check for headers in the headers hash
-    if params['headers'].is_a?(Hash)
-      params['headers'].each do |key, value|
+    # Check for headers within a :headers hash
+    param_headers = params[:headers]
+    if param_headers.is_a?(Hash)
+      param_headers.each do |key, value|
         if key.to_s.start_with?('X-Answers2Answers')
-          headers[key.to_s] = value
+          headers[key] = value
         end
       end
     end
@@ -270,32 +299,26 @@ class EmailReplyService
   # Log events for monitoring and metrics
   def log_event(name, properties = {})
     # Add standard properties to all events
-    properties.merge!({
+    event_properties = properties.slice(:identification_method, :question_record_id, :user_id, :answer_id, :cycle_status).merge({
       source: 'email_reply_service',
       subject: subject.truncate(100),
-      timestamp: Time.current
+      timestamp: Time.current,
+      inbound_email_id: inbound_email.id # Link event to the inbound email record
     })
 
     # Log to Rails logger with structured format for easier parsing
-    Rails.logger.info("EmailReplyService: #{name} - #{properties.inspect}")
+    Rails.logger.info("EmailReplyService: #{name} - #{event_properties.inspect}")
 
     # Create an Ahoy event directly
-    # This uses Ahoy's existing configuration without requiring changes to ahoy.rb
-    event_properties = properties.slice(:identification_method, :question_record_id, :user_id, :answer_id, :cycle_status, :source)
-
-    # Find a user if possible for proper tracking association
-    user = properties[:user_id] ? User.find_by(id: properties[:user_id]) : nil
-
-    # Create event with prefixed name to make filtering easier
-    Ahoy::Event.create!(
+    Ahoy::Event.create(
       visit_id: nil,
-      user_id: user&.id,
+      user_id: properties[:user_id],
       name: "email_reply.#{name}",
       properties: event_properties,
       time: Time.current
     )
   rescue => e
     # Ensure logging errors don't disrupt the main flow
-    Rails.logger.error("Error logging email reply event: #{e.message}")
+    Rails.logger.error("Error logging email reply event for InboundEmail ##{inbound_email&.id}: #{e.message}")
   end
 end
