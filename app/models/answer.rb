@@ -30,21 +30,26 @@ class Answer < ApplicationRecord
 
         question_id = question_obj.id.to_s
 
-        # Extract group name from the "Questions with X" format
-        if subject.include?('Questions with ')
-          group_text = subject.scan(/Questions with ([^-]+)/).flatten.first&.strip
-          group = group_text ? Group.find_by_name(group_text) : nil
-        else
-          # Try extracting from the first part of the subject
-          groupname = subject.split('-').first.strip
-          if groupname.start_with?('Re: ')
-            groupname = groupname[4..-1] # Remove 'Re: ' prefix
-          end
-          group = Group.find_by_name(groupname)
+        # Extract group name from the subject before the dash
+        clean_subject = subject
+        if clean_subject.start_with?('Re: ')
+          clean_subject = clean_subject[4..-1] # Remove 'Re: ' prefix
         end
 
+        # Try to get group name (everything before the dash)
+        group_name = nil
+        if clean_subject.include?('-')
+          group_name = clean_subject.split('-').first.strip
+        else
+          # If no dash, try another approach or log error
+          logger.error("Could not parse group name from subject: #{subject}")
+          return
+        end
+
+        group = Group.find_by_name(group_name)
+
         if group.nil?
-          logger.error("Could not find group from subject: #{subject}")
+          logger.error("No group found with name: '#{group_name}' from subject: #{subject}")
           return
         end
 
