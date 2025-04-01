@@ -18,55 +18,49 @@ class EmailReplyService
   end
 
   def process
-    inbound_email.update(status: 'processing', processor_notes: "Starting processing...")
+    update_inbound_email(status: 'processing', notes: "Starting processing...")
 
-    # Try to find the user first
-    user = User.find_by_email(from_email)
-    unless user
-      error_msg = "No user found with email: #{from_email}"
-      update_inbound_email(status: 'failed', notes: error_msg)
-      log_event("no_user_found", { email: from_email })
-      return { success: false, error: error_msg }
-    end
+    user = find_and_validate_user
+    return handle_user_not_found unless user
 
-    # Try different methods to identify the question record
-    question_record = identify_question_record
-    unless question_record
-      error_msg = "Could not identify the question record using method: #{identification_method || 'unknown'}"
-      update_inbound_email(status: 'failed', notes: error_msg)
-      log_event("question_record_not_found", {
-        identification_method: identification_method || "failed",
-        email: from_email,
-        subject: subject
-      })
-      return { success: false, error: error_msg }
-    end
+    question_record = find_and_validate_question_record
+    return handle_question_record_not_found unless question_record
 
-    # Verify this email came from the user associated with the question
-    unless validate_recipient(user, question_record)
-      error_msg = "Recipient validation failed: Email from #{from_email} is not an active member of group #{question_record.group_id}."
-      update_inbound_email(status: 'failed', notes: error_msg)
-      log_event("recipient_validation_failed", {
-        user_id: user.id,
-        question_record_id: question_record.id
-      })
-      return { success: false, error: error_msg }
-    end
+    return handle_recipient_validation_failed(user, question_record) unless verify_recipient(user, question_record)
 
-    # Check if the question is still in an active cycle
+    active_cycle = verify_active_cycle(question_record)
+    return handle_inactive_cycle(question_record, active_cycle) unless active_cycle
+
+    # If all checks pass, attempt to create the answer
+    create_and_save_answer(user, question_record)
+
+  rescue => e
+    handle_unexpected_error(e)
+  end
+
+  private
+
+  # --- Main Process Steps --- #
+
+  def find_and_validate_user
+    User.find_by_email(from_email)
+  end
+
+  def find_and_validate_question_record
+    identify_question_record
+  end
+
+  def verify_recipient(user, question_record)
+    validate_recipient(user, question_record)
+  end
+
+  # Returns the cycle if active, otherwise nil
+  def verify_active_cycle(question_record)
     cycle = QuestionCycle.find_by(question_record_id: question_record.id)
-    unless cycle&.active?
-      error_msg = "The question (QR: #{question_record.id}) is no longer accepting answers (Cycle: #{cycle&.id}, Status: #{cycle&.status})."
-      update_inbound_email(status: 'failed', notes: error_msg)
-      log_event("inactive_cycle", {
-        identification_method: identification_method,
-        question_record_id: question_record.id,
-        cycle_status: cycle&.status
-      })
-      return { success: false, error: error_msg }
-    end
+    cycle if cycle&.active?
+  end
 
-    # Create the answer
+  def create_and_save_answer(user, question_record)
     answer = Answer.new(
       answer: content,
       user_id: user.id,
@@ -82,28 +76,76 @@ class EmailReplyService
         answer_id: answer.id,
         user_id: user.id
       })
-      return { success: true, answer: answer }
+      { success: true, answer: answer }
     else
-      error_msg = "Failed to create answer: #{answer.errors.full_messages.join(', ')}"
-      update_inbound_email(status: 'failed', notes: error_msg)
-      log_event("answer_creation_failed", {
-        identification_method: identification_method,
-        question_record_id: question_record.id,
-        user_id: user.id,
-        errors: answer.errors.full_messages
-      })
-      return { success: false, error: error_msg }
+      handle_answer_creation_failure(answer, user, question_record)
     end
-  rescue => e
-    # Catch unexpected errors during processing
-    error_msg = "Unexpected error: #{e.message} - Backtrace: #{e.backtrace.first(5).join("\n")}"
-    update_inbound_email(status: 'failed', notes: error_msg)
-    Rails.logger.error error_msg
-    # Optionally, notify admins (e.g., via Sentry, Airbrake, or email)
-    return { success: false, error: error_msg }
   end
 
-  private
+  # --- Failure Handling & Response Methods --- #
+
+  def handle_user_not_found
+    error_msg = "No user found with email: #{from_email}"
+    update_inbound_email(status: 'failed', notes: error_msg)
+    log_event("no_user_found", { email: from_email })
+    { success: false, error: error_msg }
+  end
+
+  def handle_question_record_not_found
+    # identification_method is set within identify_question_record
+    error_msg = "Could not identify the question record using method: #{identification_method || 'unknown'}"
+    update_inbound_email(status: 'failed', notes: error_msg)
+    log_event("question_record_not_found", {
+      identification_method: identification_method || "failed",
+      email: from_email,
+      subject: subject
+    })
+    { success: false, error: error_msg }
+  end
+
+  def handle_recipient_validation_failed(user, question_record)
+    error_msg = "Recipient validation failed: Email from #{from_email} is not an active member of group #{question_record.group_id}."
+    update_inbound_email(status: 'failed', notes: error_msg)
+    log_event("recipient_validation_failed", {
+      user_id: user.id,
+      question_record_id: question_record.id
+    })
+    { success: false, error: error_msg }
+  end
+
+  def handle_inactive_cycle(question_record, cycle) # Cycle might be nil
+    error_msg = "The question (QR: #{question_record.id}) is no longer accepting answers (Cycle: #{cycle&.id}, Status: #{cycle&.status})."
+    update_inbound_email(status: 'failed', notes: error_msg)
+    log_event("inactive_cycle", {
+      identification_method: identification_method,
+      question_record_id: question_record.id,
+      cycle_status: cycle&.status
+    })
+    { success: false, error: error_msg }
+  end
+
+  def handle_answer_creation_failure(answer, user, question_record)
+    error_msg = "Failed to create answer: #{answer.errors.full_messages.join(', ')}"
+    update_inbound_email(status: 'failed', notes: error_msg)
+    log_event("answer_creation_failed", {
+      identification_method: identification_method,
+      question_record_id: question_record.id,
+      user_id: user.id,
+      errors: answer.errors.full_messages
+    })
+    { success: false, error: error_msg }
+  end
+
+  def handle_unexpected_error(error)
+    error_msg = "Unexpected error: #{error.message} - Backtrace: #{error.backtrace.first(5).join("\\n")}"
+    # Ensure update happens even if inbound_email is nil, though unlikely
+    update_inbound_email(status: 'failed', notes: error_msg) if @inbound_email
+    Rails.logger.error error_msg
+    # Optionally, notify admins here
+    { success: false, error: error_msg }
+  end
+
+  # --- Existing Private Utility Methods --- #
 
   def update_inbound_email(status:, notes:, answer_id: nil)
     inbound_email.update(
