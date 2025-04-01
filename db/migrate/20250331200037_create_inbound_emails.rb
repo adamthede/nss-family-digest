@@ -5,7 +5,7 @@ class CreateInboundEmails < ActiveRecord::Migration[8.0]
       t.string :status
       t.text :processor_notes
       t.datetime :processed_at
-      t.references :answer, null: false, foreign_key: true
+      t.references :answer, null: true, foreign_key: true
 
       t.timestamps
     end
