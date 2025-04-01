@@ -50,12 +50,18 @@ class Answer < ApplicationRecord
 
           # Extract question text between asterisks
           if subject.include?('*')
-            # Get text between the asterisks
             question_parts = subject.split('*')
             question_text = question_parts[1].strip if question_parts.length > 1
 
-            # Look up the question by text
-            question_obj = question_text ? Question.find_by_question(question_text) : nil
+            # Look up the question by text, normalizing whitespace
+            if question_text
+              normalized_text = question_text.gsub(/\s+/, ' ').strip
+              # Use database function to normalize the 'question' column for comparison
+              # Assumes PostgreSQL - adjust regexp_replace if using MySQL/SQLite
+              question_obj = Question.where("trim(regexp_replace(question, '\\s+', ' ', 'g')) = ?", normalized_text).first
+            else
+              question_obj = nil
+            end
 
             if question_obj.nil?
               logger.error("Could not find question from subject: #{subject}")
