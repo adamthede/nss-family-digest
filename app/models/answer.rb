@@ -10,142 +10,167 @@ class Answer < ApplicationRecord
   validate :answer_present?
   validate :answer_within_valid_period
 
+  # Main entry point for creating an answer from an email
   def self.create_from_email(from, subject, textbody, headers = {})
-    if (user = User.find_by_email(from.to_s))
-      begin
-        question_record = nil
+    user = find_user_by_email(from)
+    return unless user
 
-        # Primary method: Use headers if available
-        if headers.present?
-          group_id = headers['X-Answers2Answers-GroupId']
-          question_id = headers['X-Answers2Answers-QuestionId']
-          question_record_id = headers['X-Answers2Answers-QuestionRecordId']
+    begin
+      # Try finding the record via headers first, then subject as fallback
+      question_record = find_question_record_from_headers(headers) || find_question_record_from_subject(subject)
 
-          # If question_record_id is directly available, use it
-          if question_record_id.present?
-            question_record = QuestionRecord.find_by(id: question_record_id)
-
-            # Check if the record exists but is no longer accepting answers
-            unless QuestionRecord.accepting_answers.exists?(id: question_record_id)
-              logger.info("Question record #{question_record_id} exists but is no longer accepting answers.")
-              # Try to find another active question record for the same group/question
-              if group_id.present? && question_id.present?
-                question_record = QuestionRecord.find_active_record(group_id, question_id)
-              end
-            end
-          elsif group_id.present? && question_id.present?
-            # Look for an active question record
-            question_record = QuestionRecord.find_active_record(group_id, question_id)
-
-            # If no active record, try getting the most recent one
-            if question_record.nil?
-              question_record = QuestionRecord.most_recent_for(group_id, question_id).first
-            end
-          end
-        end
-
-        # Fallback: Parse from subject if headers are not available
-        if question_record.nil?
-          logger.info("Headers not found or invalid, falling back to subject parsing")
-
-          # Extract question text between asterisks
-          if subject.include?('*')
-            question_parts = subject.split('*')
-            question_text = question_parts[1].strip if question_parts.length > 1
-
-            # Look up the question by text, normalizing whitespace
-            if question_text
-              normalized_text = question_text.gsub(/\s+/, ' ').strip
-              # Use database function to normalize the 'question' column for comparison
-              # Assumes PostgreSQL - adjust regexp_replace if using MySQL/SQLite
-              question_obj = Question.where("trim(regexp_replace(question, '\\s+', ' ', 'g')) = ?", normalized_text).first
-            else
-              question_obj = nil
-            end
-
-            if question_obj.nil?
-              logger.error("Could not find question from subject: #{subject}")
-              return
-            end
-
-            question_id = question_obj.id.to_s
-
-            # Extract group name from the subject before the dash
-            clean_subject = subject
-            if clean_subject.start_with?('Re: ')
-              clean_subject = clean_subject[4..-1] # Remove 'Re: ' prefix
-            end
-
-            # Try to get group name (everything before the dash)
-            group_name = nil
-            if clean_subject.include?('-')
-              group_name = clean_subject.split('-').first.strip
-            else
-              # If no dash, try another approach or log error
-              logger.error("Could not parse group name from subject: #{subject}")
-              return
-            end
-
-            group = Group.find_by_name(group_name)
-
-            if group.nil?
-              logger.error("No group found with name: '#{group_name}' from subject: #{subject}")
-              return
-            end
-
-            group_id = group.id.to_s
-
-            # Find an active question record first
-            question_record = QuestionRecord.find_active_record(group_id, question_id)
-
-            # If no active record, fall back to most recent
-            if question_record.nil?
-              question_record = QuestionRecord.most_recent_for(group_id, question_id).first
-            end
-          end
-        end
-
-        if question_record.nil?
-          logger.error("Could not determine question record from email: from=#{from} subject=#{subject}")
-          return
-        end
-
-        # Check if question is in an active cycle
-        cycle = QuestionCycle.find_by(question_record_id: question_record.id)
-        if cycle && cycle.status_active?
-          answer = Answer.create(
-            answer: textbody,
-            user_id: user.id,
-            question_record_id: question_record.id
-          )
-          logger.info("Successfully created answer ##{answer.id} for question record ##{question_record.id}")
-          return answer
-        else
-          logger.info("INVALID CYCLE STATUS: Answering has closed for this question (cycle status: #{cycle&.status}).")
-        end
-      rescue => e
-        logger.error("Error processing email: #{e.message}")
-        logger.error(e.backtrace.join("\n"))
+      unless question_record
+        logger.error("Could not determine question record from email: from=#{from} subject=#{subject}")
+        return
       end
-    else
-      logger.info("No user found with email: #{from.to_s}")
+
+      # Attempt to create the answer if the cycle is active
+      create_answer_if_cycle_active(user, question_record, textbody)
+
+    rescue => e
+      logger.error("Error processing email: #{e.message}")
+      logger.error(e.backtrace.join("\n"))
+      nil # Ensure nil is returned on error
     end
-    nil
   end
 
   private
 
+  # --- User Lookup ---
+
+  def self.find_user_by_email(from)
+    user = User.find_by_email(from.to_s)
+    logger.info("No user found with email: #{from.to_s}") unless user
+    user
+  end
+
+  # --- QuestionRecord Lookup Logic ---
+
+  def self.find_question_record_from_headers(headers)
+    return nil unless headers.present?
+
+    group_id = headers['X-Answers2Answers-GroupId']
+    question_id = headers['X-Answers2Answers-QuestionId']
+    question_record_id = headers['X-Answers2Answers-QuestionRecordId']
+
+    # Priority 1: Direct QuestionRecord ID
+    if question_record_id.present?
+      record = QuestionRecord.find_by(id: question_record_id)
+      # Check if found record is still accepting answers
+      if record && !QuestionRecord.accepting_answers.exists?(id: question_record_id)
+        logger.info("Question record #{question_record_id} from headers exists but is no longer accepting answers.")
+        # Try to find an alternative active record for the same group/question if possible
+        return find_active_or_recent_record(group_id, question_id) if group_id.present? && question_id.present?
+        return nil # No alternative possible or found
+      end
+      return record # Return found (and active) record or nil if not found initially
+    end
+
+    # Priority 2: Group ID and Question ID
+    if group_id.present? && question_id.present?
+      return find_active_or_recent_record(group_id, question_id)
+    end
+
+    nil # Headers present but didn't contain usable IDs
+  end
+
+  def self.find_question_record_from_subject(subject)
+    logger.info("Headers not found or invalid, falling back to subject parsing")
+    parsed_info = parse_subject_info(subject)
+    return nil unless parsed_info
+
+    question = find_question_from_normalized_text(parsed_info[:question_text])
+    return nil unless question
+
+    group = find_group_by_name(parsed_info[:group_name], subject) # Pass subject for logging
+    return nil unless group
+
+    find_active_or_recent_record(group.id.to_s, question.id.to_s)
+  end
+
+  # Finds an active record, falling back to the most recent if no active one exists
+  def self.find_active_or_recent_record(group_id, question_id)
+    QuestionRecord.find_active_record(group_id, question_id) ||
+      QuestionRecord.most_recent_for(group_id, question_id).first
+  end
+
+  # --- Subject Parsing Helpers ---
+
+  def self.parse_subject_info(subject)
+    return nil unless subject.include?('*')
+
+    question_parts = subject.split('*')
+    question_text = question_parts[1]&.strip
+
+    return nil unless question_text # No text between asterisks
+
+    # Extract group name
+    clean_subject = subject.sub(/^Re:\s*/, '') # Remove 'Re: ' prefix
+    group_name = clean_subject.split('-').first&.strip
+
+    unless group_name
+      logger.error("Could not parse group name from subject: #{subject}")
+      return nil
+    end
+
+    { question_text: question_text, group_name: group_name }
+  end
+
+  def self.find_question_from_normalized_text(text)
+    normalized_text = text.gsub(/\\s+/, ' ').strip
+    # Use database function to normalize the 'question' column for comparison
+    # Assumes PostgreSQL - adjust regexp_replace if using MySQL/SQLite
+    question = Question.where("trim(regexp_replace(question, '\\\\s+', ' ', 'g')) = ?", normalized_text).first
+
+    logger.error("Could not find question from subject fragment: #{text}") unless question
+    question
+  end
+
+  def self.find_group_by_name(name, original_subject)
+    group = Group.find_by_name(name)
+    logger.error("No group found with name: '#{name}' from subject: #{original_subject}") unless group
+    group
+  end
+
+  # --- Answer Creation Logic ---
+
+  def self.create_answer_if_cycle_active(user, question_record, textbody)
+    cycle = QuestionCycle.find_by(question_record_id: question_record.id)
+
+    if cycle&.status_active?
+      # Use create! to raise potential validation errors
+      answer = Answer.create!(
+        answer: textbody,
+        user_id: user.id,
+        question_record_id: question_record.id
+      )
+      logger.info("Successfully created answer ##{answer.id} for question record ##{question_record.id}")
+      answer
+    else
+      logger.info("INVALID CYCLE STATUS: Answering has closed for this question (cycle status: #{cycle&.status}). Record ID: #{question_record.id}")
+      nil
+    end
+  end
+
+  # --- Instance Validations ---
+
   def answer_present?
-    return if answer.present? || read_attribute(:answer).present?
+    # Assuming ActionText, `answer.body.present?` might be needed if `answer` itself is the rich text object
+    # Checking `read_attribute` handles cases before ActionText association is loaded/saved
+    return if answer.present? && (!answer.respond_to?(:body) || answer.body.present?) || read_attribute(:answer).present?
     errors.add(:answer, "can't be blank")
   end
 
   def answer_within_valid_period
-    # Get the question cycle
-    cycle = QuestionCycle.find_by(question_record_id: question_record_id)
+    # Fetch the cycle directly associated with the answer's question_record
+    cycle = question_record&.question_cycle # Assumes `has_one :question_cycle` on QuestionRecord
 
-    if cycle && cycle.status != 'active'
-      errors.add(:base, "The question is no longer accepting answers")
+    # If there's no cycle or it's not active, add an error
+    if cycle.nil? || !cycle.status_active?
+      # Fetch status for logging, handling nil cycle
+      status = cycle ? cycle.status : 'no cycle found'
+      logger.warn "Attempt to answer question record #{question_record_id} outside active cycle (Status: #{status})."
+      errors.add(:base, "The question is no longer accepting answers.")
     end
   end
 end
