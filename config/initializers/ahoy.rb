@@ -1,5 +1,8 @@
 class Ahoy::Store < Ahoy::DatabaseStore
-  # Track all visits including bots
+  ##
+  # Tracks a visit, including those from bots, by delegating the tracking to the superclass.
+  #
+  # @param data [Hash] The visit tracking data.
   def track_visit(data)
     super(data)
   end

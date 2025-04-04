@@ -19,6 +19,14 @@ class QuestionRecord < ApplicationRecord
     .limit(1)
   }
 
+  ##
+  # Retrieves the next QuestionRecord for the same group that was created after the current record.
+  #
+  # This method queries the associated question records for the group, filtering for those with a
+  # creation timestamp greater than that of the current record, orders them in ascending order by creation time,
+  # and returns the first record found.
+  #
+  # @return [QuestionRecord, nil] the next digest or nil if no subsequent record exists
   def next_digest
     group.question_records
          .where('created_at > ?', created_at)
@@ -26,6 +34,13 @@ class QuestionRecord < ApplicationRecord
          .first
   end
 
+  ##
+  # Retrieves the previous digest record for the current group.
+  #
+  # It queries the group's question records for those created before the current record's timestamp,
+  # orders them in descending order by creation time, and returns the first record found.
+  #
+  # @return [QuestionRecord, nil] the previous digest record if it exists, otherwise nil
   def previous_digest
     group.question_records
          .where('created_at < ?', created_at)

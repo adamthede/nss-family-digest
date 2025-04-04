@@ -13,7 +13,24 @@ class ApplicationMailer < ActionMailer::Base
 
   REPLY_DELIMITER = "---- Reply Above This Line ----"
 
-  # Helper method to generate consistent message IDs
+  ##
+  # Generates a unique message ID by combining a type with optional identifiers.
+  #
+  # This method builds a consistent message ID by starting with the provided type and appending key-value pairs from the
+  # given hash where each value is present. The final message ID is wrapped in angle brackets and includes the application
+  # domain, taken from the 'APP_DOMAIN' environment variable or defaulting to 'answers2answers.app'.
+  #
+  # @param type [String] The primary identifier for the message.
+  # @param ids [Hash] A hash of additional identifiers; only entries with present values are included.
+  # @return [String] A formatted message ID in the format "<type-key1-value1-key2-value2@domain>".
+  #
+  # @example Generate a message ID using only a type:
+  #   generate_message_id("mail")
+  #   # => "<mail@answers2answers.app>"
+  #
+  # @example Generate a message ID with a type and additional IDs:
+  #   generate_message_id("notification", { user: 42, order: 100 })
+  #   # => "<notification-user-42-order-100@answers2answers.app>"
   def generate_message_id(type, ids = {})
     components = ["#{type}"]
 
@@ -26,7 +43,17 @@ class ApplicationMailer < ActionMailer::Base
     "<#{components.join('-')}@#{ENV['APP_DOMAIN'] || 'answers2answers.app'}>"
   end
 
-  # Helper to add standard application headers to all messages
+  ##
+  # Adds application-specific headers to the email message.
+  #
+  # Iterates over a provided hash of identifiers and adds each as a custom header by prefixing
+  # the CamelCased key with "X-Answers2Answers-". The header is only added if the corresponding
+  # value is present.
+  #
+  # @param ids [Hash] A hash of identifier keys and their corresponding values.
+  #
+  # @example
+  #   add_app_headers(user_id: 123, campaign_id: 'spring_sale')
   def add_app_headers(ids = {})
     # Add each ID as a separate header
     ids.each do |key, value|
@@ -35,7 +62,21 @@ class ApplicationMailer < ActionMailer::Base
   end
 
   # Generate a secure reply-to address with a signed ID
-  # This is more reliable than using headers for reply tracking
+  ##
+  # Generates a secure reply-to email address with an embedded signed record identifier.
+  #
+  # This method creates a reply-to email address that securely encodes the provided
+  # record ID within its local-part. It derives the base email from the SENDGRID_INBOUND
+  # environment variable (or defaults to "reply@answers2answers.app"), and then uses
+  # Rails' message verifier to generate a signed token (valid for 30 days) from the record ID.
+  # The resulting reply-to address is formatted as "reply+signed_id@domain.com".
+  #
+  # @param record_id The identifier to be signed and embedded for secure reply tracking.
+  # @return [String] A secure reply-to email address in the format "reply+signed_id@domain.com".
+  #
+  # @example
+  #   secure_reply_to(123)
+  #   # => "reply+<signed_token>@answers2answers.app"
   def secure_reply_to(record_id)
     base_email = ENV['SENDGRID_INBOUND'] || 'reply@answers2answers.app'
     email_parts = base_email.split('@')

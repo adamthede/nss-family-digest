@@ -4,6 +4,13 @@ class EmailResponseController < ApplicationController
 
   REPLY_DELIMITER = "---- Reply Above This Line ----"
 
+  ##
+  # Processes an inbound email webhook payload.
+  #
+  # Permits all incoming parameters, logs the resulting payload, and creates an InboundEmail record with a status of 'received'. 
+  # If the record is successfully persisted, the email reply is processed synchronously via EmailReplyService; otherwise, an error is logged.
+  #
+  # Always responds with an HTTP 200 OK status and a content type of 'text/html'.
   def create_from_inbound_hook
     # Use permit! carefully, ensure SendGrid payload is trusted or filter params more strictly
     payload = params.permit!.to_h

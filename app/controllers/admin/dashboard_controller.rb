@@ -168,6 +168,16 @@ class Admin::DashboardController < ApplicationController
     }
   end
 
+  ##
+  # Renders JSON-encoded daily counts of group activities over the last 30 days.
+  #
+  # This method checks whether the GroupActivity model is defined. If so, it aggregates group activity
+  # data by day based on each record's creation date. Otherwise, it falls back to using Membership records
+  # as a proxy for group activity. The result is rendered directly as a JSON response.
+  #
+  # @example
+  #   # Returns a JSON object with daily group activity counts
+  #   group_activity_data
   def group_activity_data
     # Check if GroupActivity exists before trying to use it
     if defined?(GroupActivity)
@@ -178,6 +188,24 @@ class Admin::DashboardController < ApplicationController
     end
   end
 
+  ##
+  # Renders email reply statistics for a specified time period.
+  #
+  # This action retrieves email reply events occurring after a dynamically
+  # calculated start date based on the 'period' query parameter (defaulting
+  # to 'week'). It groups events by identification method and event type,
+  # computes the success rate of replies, and then renders the resulting
+  # data as either an HTML view or a JSON response.
+  #
+  # Allowed period values: 'day', 'week', or 'month'.
+  #
+  # @example JSON response format:
+  #   {
+  #     "identification_methods": { "auto": 10, "manual": 5 },
+  #     "event_counts": { "answer_created": 15, "other_event": 3 },
+  #     "success_rate": 83.33,
+  #     "time_period": "week"
+  #   }
   def email_reply_stats
     @time_period = params[:period] || 'week'
 
@@ -233,6 +261,7 @@ class Admin::DashboardController < ApplicationController
 
   private
 
+  #
   def set_common_stats
     @total_users = User.count
     @total_visits = Ahoy::Visit.count
