@@ -1,5 +1,10 @@
 class Ahoy::Store < Ahoy::DatabaseStore
-  # Track all visits including bots
+  ##
+  # Records a visit, ensuring that all visits—including those from bots—are tracked.
+  #
+  # Delegates visit tracking to the parent store by passing along the provided data.
+  #
+  # @param data [Hash] A hash of visit attributes used for tracking.
   def track_visit(data)
     super(data)
   end
