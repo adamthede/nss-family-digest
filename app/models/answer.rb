@@ -39,14 +39,31 @@ class Answer < ApplicationRecord
   class << self
     private
 
-    # --- User Lookup ---
+    ##
+    # Retrieves a user corresponding to the specified email address.
+    #
+    # The method converts the input to a string and searches for a matching user record.
+    # If no matching user is found, an informational log is generated.
+    #
+    # @param from [#to_s] An email address or an object convertible to a string.
+    # @return [User, nil] The found user, or nil if no user matches the email.
     def find_user_by_email(from)
       user = User.find_by_email(from.to_s)
       logger.info("No user found with email: #{from.to_s}") unless user
       user
     end
 
-    # --- QuestionRecord Lookup Logic ---
+    ##
+    # Retrieves a QuestionRecord using provided header information.
+    #
+    # This method first attempts to locate a question record by a direct identifier from the headers.
+    # If a "QuestionRecordId" is present but the record is not accepting answers, it will try to find
+    # an alternative active record using the "GroupId" and "QuestionId" headers. Returns nil if the
+    # headers are missing or do not yield a valid, active record.
+    #
+    # @param headers [Hash] Header values that may include 'X-Answers2Answers-QuestionRecordId',
+    #                        'X-Answers2Answers-GroupId', and 'X-Answers2Answers-QuestionId'.
+    # @return [QuestionRecord, nil] The valid, active question record if found, or nil otherwise.
     def find_question_record_from_headers(headers)
       return nil unless headers.present?
 
@@ -75,6 +92,14 @@ class Answer < ApplicationRecord
       nil # Headers present but didn't contain usable IDs
     end
 
+    ##
+    # Extracts question and group information from the email subject and returns the corresponding question record.
+    #
+    # This method parses the subject to obtain the question text and group name, looks up the associated question and group, and then retrieves
+    # an active or the most recent question record based on these details. It returns nil if any of the required information cannot be found.
+    #
+    # @param subject [String] The email subject containing encoded question text and group name.
+    # @return [QuestionRecord, nil] The active or most recent question record if found; otherwise, nil.
     def find_question_record_from_subject(subject)
       logger.info("Headers not found or invalid, falling back to subject parsing")
       parsed_info = parse_subject_info(subject)
@@ -89,13 +114,33 @@ class Answer < ApplicationRecord
       find_active_or_recent_record(group.id.to_s, question.id.to_s)
     end
 
-    # Finds an active record, falling back to the most recent if no active one exists
+    ##
+    # Retrieves an active question record for the specified group and question.
+    #
+    # If no active record exists, falls back to returning the most recent available record.
+    #
+    # @param group_id [Integer] Identifier for the group associated with the question record.
+    # @param question_id [Integer] Identifier for the question.
+    # @return [QuestionRecord, nil] The active question record or the most recent one if active record is absent, or nil if no record is found.
     def find_active_or_recent_record(group_id, question_id)
       QuestionRecord.find_active_record(group_id, question_id) ||
         QuestionRecord.most_recent_for(group_id, question_id).first
     end
 
-    # --- Subject Parsing Helpers ---
+    ##
+    # Parses an email subject to extract the question text and group name.
+    #
+    # The subject must contain a section enclosed by asterisks ('*') representing the question text.
+    # Any leading "Re:" prefix is removed, and the group name is extracted as the first component 
+    # from the subject before a hyphen ('-'). If the subject lacks the required format or parsing fails,
+    # the method returns nil.
+    #
+    # @param subject [String] The email subject containing the question and group information.
+    # @return [Hash{Symbol=>String}, nil] A hash with keys :question_text and :group_name if parsing is successful; nil otherwise.
+    #
+    # @example
+    #   parse_subject_info("Re: Sales Team - *What time is the meeting?*")
+    #   # => { question_text: "What time is the meeting?", group_name: "Sales Team" }
     def parse_subject_info(subject)
       return nil unless subject.include?('*')
 
@@ -116,6 +161,15 @@ class Answer < ApplicationRecord
       { question_text: question_text, group_name: group_name }
     end
 
+    ##
+    # Finds a Question record by matching its normalized text against the provided input.
+    #
+    # The provided text is normalized by collapsing multiple whitespace characters into a single space and trimming leading or trailing whitespace.
+    # The database query applies a similar normalization to the question field using PostgreSQL's regexp_replace function.
+    # An error is logged if no matching Question record is found.
+    #
+    # @param text [String] the text fragment to be normalized and used for matching
+    # @return [Question, nil] the matching Question record if found; otherwise, nil
     def find_question_from_normalized_text(text)
       normalized_text = text.gsub(/\s+/, ' ').strip
       # Use database function to normalize the 'question' column for comparison
@@ -126,13 +180,32 @@ class Answer < ApplicationRecord
       question
     end
 
+    ##
+    # Finds a group by its name.
+    #
+    # Searches for a group record using the provided name. If no group is found, logs
+    # an error that includes the original subject for additional context.
+    #
+    # @param name [String] The name of the group to locate.
+    # @param original_subject [String] The original subject used for error logging if the group is not found.
+    # @return [Group, nil] The group record if found; otherwise, nil.
     def find_group_by_name(name, original_subject)
       group = Group.find_by_name(name)
       logger.error("No group found with name: '#{name}' from subject: #{original_subject}") unless group
       group
     end
 
-    # --- Answer Creation Logic ---
+    ##
+    # Creates an answer record if the associated question cycle is active.
+    #
+    # This method retrieves the question cycle for the provided question record and checks if the cycle is active.
+    # If active, it creates an answer linked to the given user and question record using `create!` and returns the created answer.
+    # If the cycle is not active, the method returns nil.
+    #
+    # @param user [User] The user submitting the answer.
+    # @param question_record [QuestionRecord] The question record being answered.
+    # @param textbody [String] The content of the answer.
+    # @return [Answer, nil] The created answer if the cycle is active, or nil otherwise.
     def create_answer_if_cycle_active(user, question_record, textbody)
       cycle = QuestionCycle.find_by(question_record_id: question_record.id)
 
@@ -154,7 +227,12 @@ class Answer < ApplicationRecord
 
   # --- Instance Validations --- #
   # Note: These remain instance methods and are correctly affected by `private` if needed (though they seem intended to be public validations)
-  private # This will correctly make instance methods below private if needed
+  private ##
+  # Validates that an answer is present.
+  #
+  # This validation method checks whether the answer is provided either as a rich text attribute (with a non-empty
+  # body, if applicable) or via the raw attribute stored in the database. If neither check passes, an error is added
+  # indicating that the answer can't be blank.
 
   def answer_present?
     # Assuming ActionText, `answer.body.present?` might be needed if `answer` itself is the rich text object
@@ -163,6 +241,14 @@ class Answer < ApplicationRecord
     errors.add(:answer, "can't be blank")
   end
 
+  ##
+  # Validates that the answer is submitted during an active cycle.
+  #
+  # Checks if the associated question_record has a question_cycle that is active. If no cycle is found or the
+  # cycle is inactive, the method logs a warning and adds a base error indicating that the question is no longer
+  # accepting answers.
+  #
+  # @note Assumes that question_record has a has_one association with question_cycle.
   def answer_within_valid_period
     # Fetch the cycle directly associated with the answer's question_record
     cycle = question_record&.question_cycle # Assumes `has_one :question_cycle` on QuestionRecord

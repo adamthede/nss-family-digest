@@ -4,6 +4,18 @@ class EmailResponseController < ApplicationController
 
   REPLY_DELIMITER = "---- Reply Above This Line ----"
 
+  ##
+  # Processes an inbound email hook by persisting the raw email payload and initiating reply processing.
+  #
+  # The method extracts all parameters from the request (using `permit!`), logs the payload,
+  # and creates an `InboundEmail` record with a status of 'received'. If the record is successfully persisted,
+  # it synchronously processes the email reply through the `EmailReplyService`. Otherwise, an error is logged
+  # with the validation issues. Regardless of the outcome, the method always responds with an HTTP 200 OK status,
+  # ensuring the mail provider receives a successful acknowledgment.
+  #
+  # Note: Use of `permit!` assumes that the payload is trusted (e.g., originating from a service like SendGrid).
+  #
+  # @return [void] Sends an HTTP 200 OK response with a text/html content type.
   def create_from_inbound_hook
     # Use permit! carefully, ensure SendGrid payload is trusted or filter params more strictly
     payload = params.permit!.to_h

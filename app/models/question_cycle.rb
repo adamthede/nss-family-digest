@@ -6,7 +6,15 @@ class QuestionCycle < ApplicationRecord
   # Updated enum definition with correct options for Rails 8
   enum :status, { scheduled: 0, active: 1, closed: 2, completed: 3 }, suffix: true
 
-  # Helper method for status comparisons
+  ##
+  # Checks whether the current cycle's status matches the provided value.
+  #
+  # Performs a type-sensitive comparison between the cycle's status and the given value.
+  # If an integer is provided, it compares by converting the status to an integer.
+  # If a string or symbol is provided, it compares the string representations.
+  #
+  # @param value [Integer, String, Symbol] the value to compare against the cycle's status
+  # @return [Boolean] true if the cycle's status matches the provided value, false otherwise
   def status?(value)
     case value
     when Integer
@@ -20,19 +28,39 @@ class QuestionCycle < ApplicationRecord
     end
   end
 
-  # More intuitive status check methods
+  ##
+  # Returns true if the question cycle is active.
+  #
+  # This method provides an intuitive check for verifying whether the cycle's status is active by delegating to the underlying status check.
+  #
+  # @return [Boolean] true if the cycle is active, false otherwise.
   def active?
     status_active?
   end
 
+  ##
+  # Returns whether the question cycle is closed.
+  #
+  # @return [Boolean] true if the cycle is in the closed state; false otherwise.
   def closed?
     status_closed?
   end
 
+  ##
+  # Determines if the cycle's status is set to scheduled.
+  #
+  # This is a convenience method that returns a Boolean indicating whether the
+  # question cycle is in the scheduled state.
+  #
+  # @return [Boolean] True if the cycle is scheduled, false otherwise.
   def scheduled?
     status_scheduled?
   end
 
+  ##
+  # Checks if the question cycle is marked as completed.
+  #
+  # @return [Boolean] true if the cycle status is completed, false otherwise.
   def completed?
     status_completed?
   end

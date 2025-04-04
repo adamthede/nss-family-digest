@@ -168,6 +168,11 @@ class Admin::DashboardController < ApplicationController
     }
   end
 
+  ##
+  # Renders JSON of group activity counts over the last 30 days, grouped by day.
+  #
+  # Uses the GroupActivity model for aggregating counts if available; otherwise falls back
+  # to using Membership records as a proxy for group activity.
   def group_activity_data
     # Check if GroupActivity exists before trying to use it
     if defined?(GroupActivity)
@@ -178,6 +183,15 @@ class Admin::DashboardController < ApplicationController
     end
   end
 
+  ##
+  # Renders computed statistics for email reply events over a specified time period.
+  #
+  # This method determines the start date based on the requested period (via `params[:period]`, defaulting to "week") and retrieves all email reply events from the Ahoy::Event log since that time. It then computes:
+  # - The distribution of identification methods for answer-created events.
+  # - Event counts grouped by type (with the "email_reply." prefix removed).
+  # - The success rate of email reply events.
+  #
+  # The resulting statistics are rendered as JSON if requested, or the default HTML view is rendered.
   def email_reply_stats
     @time_period = params[:period] || 'week'
 
@@ -233,6 +247,15 @@ class Admin::DashboardController < ApplicationController
 
   private
 
+  ##
+  # Sets common statistics for users, visits, events, and emails.
+  #
+  # Retrieves the total counts from the User, Ahoy::Visit, Ahoy::Event, and Ahoy::Message models
+  # and assigns them to instance variables for use in the admin dashboard.
+  # - @total_users: Total number of users.
+  # - @total_visits: Total number of visits.
+  # - @total_events: Total number of events.
+  # - @total_emails_sent: Total number of emails sent.
   def set_common_stats
     @total_users = User.count
     @total_visits = Ahoy::Visit.count
