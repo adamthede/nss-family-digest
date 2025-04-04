@@ -186,82 +186,87 @@ class EmailReplyService
 
   # Identify the question record using multiple methods, with fallbacks
   def identify_question_record
-    # Method 1: Try to get the record ID from the signed reply-to
+    # Try each identification method in order of preference
+    identify_by_signed_reply_to ||
+      identify_by_headers ||
+      identify_by_subject ||
+      handle_identification_failure
+  end
+
+  def identify_by_signed_reply_to
     record_id = extract_record_id_from_reply_to
-    if record_id
-      @identification_method = "signed_reply_to"
-      record = QuestionRecord.find_by(id: record_id)
-      return record if record
-    end
+    return nil unless record_id
 
-    # Method 2: Try to get the record from headers
+    @identification_method = "signed_reply_to"
+    record = QuestionRecord.find_by(id: record_id)
+
+    return record if record && QuestionRecord.accepting_answers.exists?(id: record_id)
+
+    # If record exists but not accepting answers, try to find another active one
+    group_id = params[:envelope]&.dig(:to)&.match(/group-(\d+)/)&.[](1)
+    question_id = params[:envelope]&.dig(:to)&.match(/question-(\d+)/)&.[](1)
+
+    find_active_or_recent_record(group_id, question_id) if group_id && question_id
+  end
+
+  def identify_by_headers
     headers = extract_headers
-    if headers.present?
-      @identification_method = "headers"
+    return nil unless headers.present?
 
-      group_id = headers[:"X-Answers2Answers-GroupId"]
-      question_id = headers[:"X-Answers2Answers-QuestionId"]
-      question_record_id = headers[:"X-Answers2Answers-QuestionRecordId"]
+    @identification_method = "headers"
 
-      # Try to find by direct record ID first
-      if question_record_id.present?
-        record = QuestionRecord.find_by(id: question_record_id)
-        return record if record
-
-        # If record exists but not accepting answers, find another active one
-        if group_id.present? && question_id.present?
-          record = QuestionRecord.find_active_record(group_id, question_id)
-          return record if record
-        end
-      elsif group_id.present? && question_id.present?
-        # Try to find active record by group and question
-        record = QuestionRecord.find_active_record(group_id, question_id)
-        return record if record
-
-        # Fall back to most recent
-        record = QuestionRecord.most_recent_for(group_id, question_id).first
-        return record if record
-      end
+    # Try direct record ID first
+    if (record_id = headers[:"X-Answers2Answers-QuestionRecordId"])
+      record = QuestionRecord.find_by(id: record_id)
+      return record if record && QuestionRecord.accepting_answers.exists?(id: record_id)
     end
 
-    # Method 3: Parse from subject (last resort)
+    # Try group and question IDs
+    group_id = headers[:"X-Answers2Answers-GroupId"]
+    question_id = headers[:"X-Answers2Answers-QuestionId"]
+
+    return nil unless group_id && question_id
+
+    find_active_or_recent_record(group_id, question_id)
+  end
+
+  def identify_by_subject
+    return nil unless subject.include?('*')
+
     @identification_method = "subject_parsing"
 
-    # Extract question text between asterisks
-    if subject.include?('*')
-      question_parts = subject.split('*')
-      question_text = question_parts[1].strip if question_parts.length > 1
+    question = find_question_from_subject
+    return nil unless question
 
-      # Look up the question
-      question_obj = question_text ? Question.find_by_question(question_text) : nil
-      return nil unless question_obj
+    group = find_group_from_subject
+    return nil unless group
 
-      question_id = question_obj.id
+    find_active_or_recent_record(group.id.to_s, question.id.to_s)
+  end
 
-      # Extract group name from the subject
-      clean_subject = subject
-      if clean_subject.start_with?('Re: ')
-        clean_subject = clean_subject[4..-1] # Remove 'Re: ' prefix
-      end
+  def find_question_from_subject
+    question_parts = subject.split('*')
+    question_text = question_parts[1]&.strip
+    return nil unless question_text
 
-      # Try to get group name (everything before the dash)
-      if clean_subject.include?('-')
-        group_name = clean_subject.split('-').first.strip
-        group = Group.find_by_name(group_name)
+    normalized_text = question_text.gsub(/\s+/, ' ').strip
+    Question.where("trim(regexp_replace(question, '\\s+', ' ', 'g')) = ?", normalized_text).first
+  end
 
-        if group
-          # Try to find an active record first
-          record = QuestionRecord.find_active_record(group.id, question_id)
-          return record if record
+  def find_group_from_subject
+    clean_subject = subject.sub(/^Re:\s*/, '')
+    group_name = clean_subject.split('-').first&.strip
+    return nil unless group_name
 
-          # Fall back to most recent
-          record = QuestionRecord.most_recent_for(group.id, question_id).first
-          return record if record
-        end
-      end
-    end
+    Group.find_by_name(group_name)
+  end
 
-    # If we get here, all identification methods failed
+  def find_active_or_recent_record(group_id, question_id)
+    QuestionRecord.find_active_record(group_id, question_id) ||
+      QuestionRecord.most_recent_for(group_id, question_id).first
+  end
+
+  def handle_identification_failure
     @identification_method = "failed"
     nil
   end
