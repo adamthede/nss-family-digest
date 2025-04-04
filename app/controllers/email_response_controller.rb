@@ -4,44 +4,35 @@ class EmailResponseController < ApplicationController
 
   REPLY_DELIMITER = "---- Reply Above This Line ----"
 
+  ##
+  # Processes an inbound email webhook payload.
+  #
+  # This method permits and logs the incoming payload, stores it in an InboundEmail
+  # record with a status of "received", and triggers synchronous email reply processing via
+  # EmailReplyService if the record is persisted successfully. In case of a persistence failure,
+  # it logs an error indicating the validation issues but still returns an HTTP 200 response.
+  #
+  # @return [void] Always returns an HTTP 200 response with content type "text/html".
   def create_from_inbound_hook
-    Rails.logger.info "Inbound email params: #{params.inspect}"
+    # Use permit! carefully, ensure SendGrid payload is trusted or filter params more strictly
+    payload = params.permit!.to_h
+    Rails.logger.info "Inbound email params: #{payload.inspect}"
 
-    from_email = extract_email(params)
-    subject    = params['subject']
+    # Store the raw payload immediately
+    inbound_email = InboundEmail.create(payload: payload, status: 'received')
 
-    # Get the raw text portion.
-    raw_text = params['text'] || params['html'] || ""
+    if inbound_email.persisted?
+      # Process the email reply synchronously using the stored record
+      EmailReplyService.process_reply(inbound_email)
+    else
+      Rails.logger.error "Failed to store inbound email payload: #{inbound_email.errors.full_messages.join(', ')}"
+      # Optionally, notify admins or trigger monitoring here
+    end
 
-    # If present, split at the custom delimiter.
-    new_content = if raw_text.include?(REPLY_DELIMITER)
-                    raw_text.split(REPLY_DELIMITER).first
-                  else
-                    raw_text
-                  end
-
-    # Further process the text to remove common quoting, if needed.
-    new_content = EmailReplyParser.parse_reply(new_content)
-
-    Answer.create_from_email(from_email, subject, new_content)
+    # Always return success to the mail provider
+    # Note: This response now waits for processing to complete
     head :ok, content_type: 'text/html'
   end
 
-  private
-
-  def extract_email(params)
-    # Try to parse the 'envelope' attribute for a clean sender email.
-    if params['envelope']
-      envelope = JSON.parse(params['envelope']) rescue {}
-      return envelope['from'] if envelope['from'].present?
-    end
-
-    # Fallback to extracting from the 'from' header
-    from_header = params['from']
-    if from_header =~ /<(.+?)>/
-      Regexp.last_match(1)
-    else
-      from_header
-    end
-  end
+  # Remove private methods related to parsing, as they are now in the service
 end

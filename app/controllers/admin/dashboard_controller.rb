@@ -168,6 +168,13 @@ class Admin::DashboardController < ApplicationController
     }
   end
 
+  ##
+  # Renders JSON data representing group activity trends for the last 30 days.
+  #
+  # This method checks whether the GroupActivity model is defined. If it is, the method groups
+  # GroupActivity records by their creation date; otherwise, it falls back to grouping Membership
+  # records as a proxy for group activity. The resulting data is rendered as a JSON response
+  # where keys represent dates and values represent the count of activities for that day.
   def group_activity_data
     # Check if GroupActivity exists before trying to use it
     if defined?(GroupActivity)
@@ -178,8 +185,82 @@ class Admin::DashboardController < ApplicationController
     end
   end
 
+  ##
+  # Computes and renders statistics for email reply events.
+  #
+  # Determines the analysis time period based on the "period" request parameter (defaulting
+  # to "week" if not provided), retrieves email reply events from Ahoy::Event occurring
+  # after the computed start date, and calculates several metrics:
+  #
+  # - Identification methods count for events with name "email_reply.answer_created"
+  # - Aggregated event counts by event type (with the "email_reply." prefix removed)
+  # - Success rate as the percentage of successful replies over all email reply events
+  #
+  # The action responds with an HTML view by default and with a JSON payload containing
+  # the computed statistics if requested.
+  #
+  # @return [void] Renders HTML or JSON with email reply statistics.
+  def email_reply_stats
+    @time_period = params[:period] || 'week'
+
+    case @time_period
+    when 'day'
+      @start_date = 1.day.ago
+    when 'week'
+      @start_date = 1.week.ago
+    when 'month'
+      @start_date = 1.month.ago
+    else
+      @start_date = 1.month.ago
+    end
+
+    # Get all email reply events
+    @email_events = Ahoy::Event
+      .where("name LIKE 'email_reply.%'")
+      .where('time > ?', @start_date)
+
+    # Get counts for different reply identification methods
+    @identification_methods = @email_events
+      .where(name: 'email_reply.answer_created')
+      .group("properties ->> 'identification_method'")
+      .count
+
+    # Get counts by event type
+    @event_counts = @email_events
+      .group('name')
+      .count
+      .transform_keys { |k| k.gsub('email_reply.', '') }
+
+    # Get success rate
+    @successful_replies = @email_events
+      .where(name: 'email_reply.answer_created')
+      .count
+
+    @all_replies = @email_events.count
+    @success_rate = @all_replies > 0 ? (@successful_replies.to_f / @all_replies * 100).round(2) : 0
+
+    # Return JSON if requested
+    respond_to do |format|
+      format.html # Render HTML view
+      format.json do
+        render json: {
+          identification_methods: @identification_methods,
+          event_counts: @event_counts,
+          success_rate: @success_rate,
+          time_period: @time_period
+        }
+      end
+    end
+  end
+
   private
 
+  ##
+  # Sets instance variables with aggregate statistics for the admin dashboard.
+  #
+  # Retrieves and assigns the total count of users, visits, events, and emails sent from the
+  # corresponding models (User, Ahoy::Visit, Ahoy::Event, Ahoy::Message) to instance variables.
+  # These statistics are used to power various analytics displays on the dashboard.
   def set_common_stats
     @total_users = User.count
     @total_visits = Ahoy::Visit.count
