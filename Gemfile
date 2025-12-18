@@ -6,7 +6,7 @@ gem 'rails', '8.0.1'
 gem 'carrierwave', '~> 3.1.1'
 gem 'turbo-rails', '~> 2.0.11'
 gem 'devise'
-gem 'aws-sdk-s3', '~> 1.141'
+gem 'aws-sdk-s3', '~> 1.208'
 gem 'jbuilder'
 # Re-add sprockets-rails so asset tasks (and CSS precompilation) work
 gem 'sprockets-rails'
