@@ -43,3 +43,4 @@ latest.dump
 docs/**
 
 ROADMAP.md
+.cursorindexingignore
