@@ -64,6 +64,7 @@ Rails.application.routes.draw do
     get 'dashboard/events', to: 'dashboard#events'
     get 'dashboard/users', to: 'dashboard#users'
     get 'dashboard/users/:id', to: 'dashboard#user_details', as: 'dashboard_user_details'
+    get 'dashboard/email_reply_stats', to: 'dashboard#email_reply_stats', as: 'email_reply_stats'
 
     # Chart data endpoints
     get 'dashboard/daily_visits_data', to: 'dashboard#daily_visits_data'
